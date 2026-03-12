@@ -194,6 +194,25 @@ function renderArticle(article) {
       html += `</div>`;
       if (section.body) html += `<div class="article-body" style="margin-top:16px">${section.body}</div>`;
 
+    } else if (section.type === "flags") {
+      html += `<div class="flags-showcase">`;
+      section.flags.forEach(f => {
+        html += `
+          <div class="flag-card">
+            <div class="flag-img-wrap">
+              <img class="flag-img" src="${f.image}" alt="${f.name}" loading="lazy" />
+              <span class="flag-badge" style="background:${f.badgeColor}">${f.badge}</span>
+            </div>
+            <div class="flag-card-body">
+              <div class="flag-name">${f.name}</div>
+              <div class="flag-era">${f.era}</div>
+              <div class="flag-desc">${f.desc}</div>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
     } else if (section.type === "map") {
       html += `<div id="${section.mapId}" class="article-map"></div>`;
       if (section.note) {
