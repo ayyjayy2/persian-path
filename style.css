@@ -1182,6 +1182,7 @@ main {
   align-items: center;
   justify-content: center;
   padding: 20px 24px;
+  overflow: hidden;
 }
 
 .flag-img {
@@ -1192,6 +1193,10 @@ main {
   border-radius: 6px;
   box-shadow: 0 3px 14px rgba(0,0,0,0.18);
   display: block;
+}
+
+.flag-img-crop {
+  transform: scale(1.45);
 }
 
 .flag-badge {

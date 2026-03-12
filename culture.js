@@ -157,6 +157,7 @@ The green represents Islam and the fertility of the land; white symbolizes peace
             image: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Lion_and_Sun_flag_%28emoji%29.svg",
             badge: "Pahlavi Era",
             badgeColor: "#FF9600",
+            crop: true,
             desc: `The flag of the Qajar and Pahlavi dynasties — arguably the most recognized symbol of pre-revolutionary Iran. The <strong>Lion and Sun</strong> (<em>Shir o Khorshid</em>) is one of the oldest symbols of Persian royalty, appearing on royal seals and coinage as far back as the 12th century. The lion represents power and valor; the rising sun behind it represents divine light and sovereignty. Many Iranians in the diaspora still identify with this flag as a symbol of cultural pride and opposition to the Islamic Republic.`
           },
           {

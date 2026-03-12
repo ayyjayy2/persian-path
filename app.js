@@ -200,7 +200,7 @@ function renderArticle(article) {
         html += `
           <div class="flag-card">
             <div class="flag-img-wrap">
-              <img class="flag-img" src="${f.image}" alt="${f.name}" loading="lazy" />
+              <img class="flag-img${f.crop ? ' flag-img-crop' : ''}" src="${f.image}" alt="${f.name}" loading="lazy" />
               <span class="flag-badge" style="background:${f.badgeColor}">${f.badge}</span>
             </div>
             <div class="flag-card-body">
