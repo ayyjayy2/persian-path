@@ -124,6 +124,63 @@ These are mutually intelligible — a Persian speaker from Tehran can generally 
     ]
   },
   {
+    id: "iranian-flags",
+    title: "The Iranian Flag",
+    subtitle: "Three flags, three eras of Persian identity",
+    icon: "🚩",
+    color: "#2D8C3C",
+    readTime: "4 min read",
+    category: "Culture",
+    preview: "Iran's flag has changed dramatically over the centuries — from a legendary purple royal standard to the beloved Lion & Sun, to today's Islamic Republic emblem.",
+    sections: [
+      {
+        heading: "A flag shaped by history",
+        body: `Iran's national flag carries the colors <strong>green, white, and red</strong> — a palette that dates back to at least the early 19th century under the Qajar dynasty. But the <em>symbol</em> in the center has changed dramatically with each change of government, making the flag itself a window into Iran's political and cultural soul.
+
+The green represents Islam and the fertility of the land; white symbolizes peace; and red stands for the blood of martyrs — though older interpretations link the colors to different provinces of the Persian Empire. What has changed most dramatically across the centuries is what sits at the heart of the flag.`
+      },
+      {
+        type: "flags",
+        heading: "Three flags, three eras",
+        flags: [
+          {
+            name: "The Islamic Republic Flag",
+            era: "1980 – Present",
+            image: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Flag_of_Iran.svg",
+            badge: "Current",
+            badgeColor: "#2D8C3C",
+            desc: `Adopted after the 1979 Islamic Revolution. The central emblem is a stylized form of the word <strong>Allah</strong> — a tulip-like shape that also symbolizes the blood of martyrs. Along the white stripe, the phrase <strong>Allahu Akbar</strong> ("God is great") is repeated 22 times — once for each day of the Iranian calendar month of Bahman, the month the revolution succeeded. The calligraphic script was a deliberate break from the pre-revolutionary flag's royal imagery.`
+          },
+          {
+            name: "The Lion & Sun Flag",
+            era: "~1906 – 1979",
+            image: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Lion_and_Sun_flag_%28emoji%29.svg",
+            badge: "Pahlavi Era",
+            badgeColor: "#FF9600",
+            crop: true,
+            desc: `The flag of the Qajar and Pahlavi dynasties — arguably the most recognized symbol of pre-revolutionary Iran. The <strong>Lion and Sun</strong> (<em>Shir o Khorshid</em>) is one of the oldest symbols of Persian royalty, appearing on royal seals and coinage as far back as the 12th century. The lion represents power and valor; the rising sun behind it represents divine light and sovereignty. Many Iranians in the diaspora still identify with this flag as a symbol of cultural pride and opposition to the Islamic Republic.`
+          },
+          {
+            name: "Derafsh Kaviani",
+            era: "Ancient – 651 AD",
+            image: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Derafsh_Kaviani_by_modern_standard_size_of_flags_%281.75_ratio%29.png",
+            badge: "Ancient",
+            badgeColor: "#7C3AED",
+            desc: `The legendary royal standard of the <strong>Sassanid Persian Empire</strong>. According to Persian legend, it began as the leather apron of <strong>Kaveh the Blacksmith</strong>, who led a revolt against the tyrant Zahhak — and whose apron became a rallying banner for liberation. The Sassanid kings decorated it with rubies, emeralds, and gold, making it a jewel-encrusted purple standard. When Arab armies defeated the Sassanids in 651 AD, they reportedly tore it apart to divide the gems — ending 400 years of Sassanid rule. Kaveh's legend lives on in Ferdowsi's <em>Shahnameh</em>, and Nowruz bonfires echo his uprising.`
+          }
+        ]
+      },
+      {
+        heading: "The Lion & Sun today",
+        body: `Even though it is no longer Iran's official flag, the <strong>Lion & Sun</strong> remains deeply embedded in Persian cultural identity. You'll see it at Persian New Year celebrations, in diaspora communities worldwide, and worn proudly by Iranians who view it as a pre-political symbol of civilization — not a partisan emblem.
+
+Within Iran, displaying it is politically sensitive. Outside Iran, it serves for many as a statement of cultural pride that predates the 1979 revolution — a way of saying: <em>our identity is older and deeper than any government.</em>
+
+The lion itself is ancient. It appears carved in the ruins of <strong>Persepolis</strong>, placed there by Achaemenid craftsmen 2,500 years ago. Whether on a Sassanid battle standard, a Qajar royal seal, or a modern protest banner, the lion of Persia endures.`
+      }
+    ]
+  },
+  {
     id: "geography",
     title: "Persian World: Geography",
     subtitle: "Mountains, deserts, and ancient crossroads",
