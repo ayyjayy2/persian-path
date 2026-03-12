@@ -148,6 +148,18 @@
   <!-- Confetti -->
   <div class="confetti-container" id="confetti-container"></div>
 
+  <!-- Holiday Detail Modal -->
+  <div id="holiday-modal" class="holiday-modal-overlay" onclick="closeHolidayModal()">
+    <div class="holiday-modal-panel" onclick="event.stopPropagation()">
+      <div class="holiday-modal-handle"></div>
+      <div class="holiday-modal-header">
+        <div class="holiday-modal-title" id="holiday-modal-title"></div>
+        <button class="holiday-modal-close" onclick="closeHolidayModal()">✕</button>
+      </div>
+      <div class="holiday-modal-scroll" id="holiday-modal-body"></div>
+    </div>
+  </div>
+
   <script src="data.js"></script>
   <script src="culture.js"></script>
   <script src="app.js"></script>

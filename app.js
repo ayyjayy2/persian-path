@@ -194,6 +194,29 @@ function renderArticle(article) {
       html += `</div>`;
       if (section.body) html += `<div class="article-body" style="margin-top:16px">${section.body}</div>`;
 
+    } else if (section.type === "holiday-cards") {
+      if (!window._holidays) window._holidays = {};
+      html += `<div class="holiday-grid">`;
+      section.holidays.forEach(h => {
+        const hid = h.name.toLowerCase().replace(/\s+/g, "-");
+        window._holidays[hid] = h;
+        html += `
+          <div class="holiday-card" style="--hol-color:${h.color}">
+            <div class="holiday-card-top">
+              <span class="holiday-emoji">${h.emoji}</span>
+              <div class="holiday-card-head">
+                <div class="holiday-name">${h.name} <span class="holiday-persian">${h.persian}</span></div>
+                <div class="holiday-timing">📅 ${h.timing}</div>
+              </div>
+              ${h.badge ? `<span class="holiday-badge" style="background:${h.color}">${h.badge}</span>` : ""}
+            </div>
+            <div class="holiday-desc">${h.desc}</div>
+            ${h.detail ? `<button class="holiday-more-btn" style="--hol-color:${h.color}" onclick="openHolidayModal('${hid}')">More ›</button>` : ""}
+          </div>
+        `;
+      });
+      html += `</div>`;
+
     } else if (section.type === "flags") {
       html += `<div class="flags-showcase">`;
       section.flags.forEach(f => {
@@ -811,6 +834,45 @@ function shuffle(arr) {
 
 function escHtml(str) {
   return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+}
+
+// ===== HOLIDAY MODAL =====
+function openHolidayModal(hid) {
+  const h = window._holidays && window._holidays[hid];
+  if (!h || !h.detail) return;
+
+  document.getElementById("holiday-modal-title").innerHTML =
+    `<span>${h.emoji}</span> ${h.name} <span class="modal-title-persian">${h.persian}</span>`;
+
+  const body = document.getElementById("holiday-modal-body");
+  let html = "";
+  h.detail.sections.forEach(s => {
+    html += `<div class="modal-section">`;
+    if (s.heading) html += `<h3 class="modal-section-heading">${s.heading}</h3>`;
+    if (s.images && s.images.length) {
+      html += `<div class="modal-images">`;
+      s.images.forEach(img => {
+        html += `
+          <figure class="modal-figure">
+            <img src="${img.url}" alt="${img.caption}" loading="lazy" />
+            <figcaption>${img.caption}</figcaption>
+          </figure>`;
+      });
+      html += `</div>`;
+    }
+    if (s.body) html += `<div class="modal-body-text">${s.body}</div>`;
+    html += `</div>`;
+  });
+
+  body.innerHTML = html;
+  body.scrollTop = 0;
+  document.getElementById("holiday-modal").classList.add("open");
+  document.body.classList.add("modal-open");
+}
+
+function closeHolidayModal() {
+  document.getElementById("holiday-modal").classList.remove("open");
+  document.body.classList.remove("modal-open");
 }
 
 // ===== INIT =====
