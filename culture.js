@@ -383,7 +383,57 @@ The relief carvings on its walls show delegations from 23 nations bringing tribu
             timing: "March 20–21",
             color: "#58CC02",
             badge: "Coming up!",
-            desc: "The Persian New Year — 13 days of celebration beginning at the exact moment of the spring equinox. The most important holiday in Iranian culture, celebrated by over 300 million people worldwide across Iran, Afghanistan, Tajikistan, Kurdistan, and diaspora communities everywhere."
+            desc: "The Persian New Year — 13 days of celebration beginning at the exact moment of the spring equinox. The most important holiday in Iranian culture, celebrated by over 300 million people worldwide.",
+            detail: {
+              sections: [
+                {
+                  heading: "What is Nowruz?",
+                  images: [
+                    { url: "https://upload.wikimedia.org/wikipedia/commons/8/8a/Nowruz_2017_in_Bisaran%2C_Kurdistan_province.jpg", caption: "Nowruz celebrations in Bisaran, Kurdistan province, Iran (2017)" }
+                  ],
+                  body: `Nowruz (<strong>نوروز</strong> — "New Day") is the Persian New Year, observed at the <strong>exact astronomical moment</strong> the sun crosses the celestial equator — the spring equinox. This moment is calculated to the second each year, and the entire country pauses around the Haft-Sin table to mark it together. With over 3,000 years of history, it is one of humanity's oldest living traditions and a <strong>UNESCO Intangible Cultural Heritage</strong>. It is celebrated by over 300 million people across Iran, Afghanistan, Tajikistan, Iraqi Kurdistan, Azerbaijan, and Persian diaspora communities worldwide.`
+                },
+                {
+                  heading: "The Haft-Sin Table (هفت‌سین)",
+                  images: [
+                    { url: "https://upload.wikimedia.org/wikipedia/commons/f/f7/Haft_Seen_1392.jpg", caption: "A traditional Haft-Sin table — each family arranges it a little differently" },
+                    { url: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Iranian_New_Year_Haft_Sin.jpg", caption: "A Haft-Sin display at an Iranian New Year celebration" }
+                  ],
+                  body: `The centerpiece of every Nowruz is the <strong>Haft-Sin</strong> table — "Haft" meaning seven, and "Sin" being the Persian letter ﺱ (S). The table holds seven items whose names all begin with the letter S, each carrying a symbolic wish for the new year. <em>Note: "Sin" here refers to the letter of the alphabet, not anything moral — it is a celebration of spring and renewal.</em>
+
+<ul>
+  <li>🌱 <strong>Sabzeh</strong> (سبزه) — fresh wheat or lentil sprouts grown at home · <em>renewal, rebirth, and growth</em></li>
+  <li>🍯 <strong>Samanu</strong> (سمنو) — a sweet, rich pudding made from sprouted wheat · <em>affluence and power</em></li>
+  <li>🫒 <strong>Senjed</strong> (سنجد) — dried oleaster (silver berry) fruit · <em>love, affection, and wisdom</em></li>
+  <li>🧄 <strong>Sir</strong> (سیر) — garlic · <em>medicine, good health, and protection</em></li>
+  <li>🍎 <strong>Sib</strong> (سیب) — red apple · <em>beauty and health</em></li>
+  <li>🌿 <strong>Somagh</strong> (سماق) — sumac berries · <em>the color of sunrise, patience</em></li>
+  <li>🫙 <strong>Serkeh</strong> (سرکه) — vinegar · <em>patience, wisdom, and the passage of time</em></li>
+</ul>
+
+Beyond the seven S's, most families also include: a <strong>mirror</strong> (reflection and clarity), lit <strong>candles</strong> (one per child, for enlightenment), <strong>decorated eggs</strong> (fertility), a bowl of water with a <strong>goldfish</strong> (life and the end of the old year), fresh <strong>hyacinth flowers</strong> (the scent of spring), and a copy of the <strong>Hafez Divan</strong> or the Quran.`
+                },
+                {
+                  heading: "The New Year Moment & Eidi",
+                  images: [
+                    { url: "https://upload.wikimedia.org/wikipedia/commons/d/d5/Norooz_Haft_Sin_in_Los_Angeles%2C_2022.jpg", caption: "Persian New Year Haft-Sin display in Los Angeles, 2022 — the diaspora carries the tradition worldwide" }
+                  ],
+                  body: `At the exact second of the equinox — announced on national television and radio in Iran — families gather around the Haft-Sin table. The moment is called <em>sal tahvil</em> (سال تحویل), "the turning of the year." There is often a beat of silence, then hugging, tears, and joy.
+
+<strong>Eidi (عیدی)</strong> — elders give children and younger relatives crisp new banknotes as gifts. This is one of the most beloved parts of Nowruz for kids. Everyone wears brand-new clothes bought specifically for the occasion. The house has been deep-cleaned in the weeks before (called <em>khaneh tekani</em> — "shaking the house").`
+                },
+                {
+                  heading: "13 Days of Celebration",
+                  body: `Nowruz lasts <strong>13 days</strong>. During this time:
+<ul>
+  <li>Family visits are made in order — oldest and most senior relatives first</li>
+  <li>Businesses close, schools are out, and cities empty as people return to hometowns</li>
+  <li>Sweets like <em>shirini</em>, dried fruits, and nuts are set out for every visitor</li>
+  <li>The 13th and final day is <strong>Sizdah Bedar</strong> — everyone goes outside for a picnic, and the sabzeh (sprouts) from the Haft-Sin table are thrown into running water, carrying away bad luck and closing the new year season</li>
+</ul>`
+                }
+              ]
+            }
           },
           {
             name: "Chaharshanbe Suri",
@@ -392,7 +442,35 @@ The relief carvings on its walls show delegations from 23 nations bringing tribu
             timing: "Eve of last Wednesday before Nowruz",
             color: "#FF4B4B",
             badge: "Nowruz season",
-            desc: "The fire festival — Iranians jump over bonfires in the street shouting 'Sorkhiye to az man, zardiye man az to' (Your red glow to me, my pallor to you) — giving sickness and weakness to the fire and taking its warmth and energy. One of the most exhilarating nights of the year."
+            desc: "The fire festival — Iranians jump over bonfires shouting the ancient chant, giving weakness to the flames and taking warmth in return. One of the most exhilarating nights of the year.",
+            detail: {
+              sections: [
+                {
+                  heading: "The Night of Fire",
+                  images: [
+                    { url: "https://upload.wikimedia.org/wikipedia/commons/9/9f/West_Vancouver%2C_Chaharshanbe_Suri%2C_19_mars_2008%2C_2.jpg", caption: "Chaharshanbe Suri fire-jumping in West Vancouver, Canada — Iranians worldwide keep the tradition alive" }
+                  ],
+                  body: `On the Tuesday night before the last Wednesday of the Persian year, Iranians build bonfires in the street and take turns jumping over the flames. The ritual is called <strong>Chaharshanbe Suri</strong> (چهارشنبه‌سوری) — "Red Wednesday" or "Festive Wednesday." It is a pre-Islamic, Zoroastrian purification rite over 2,500 years old.`
+                },
+                {
+                  heading: "The Chant",
+                  body: `As you leap over the fire, you shout:
+
+<blockquote style="font-style:italic;border-left:4px solid #FF4B4B;padding:8px 16px;margin:12px 0;color:#555">
+  "Zardiye man az to, sorkhiye to az man"<br>
+  <span style="font-size:0.85em;color:#888">زردی من از تو، سرخی تو از من</span>
+</blockquote>
+
+<strong>"My yellowness to you, your redness to me"</strong> — you give the fire your pallor, illness, and the tiredness of the old year. In return you take its warmth, energy, and red glow into the new year. It is a symbolic rebirth through fire.`
+                },
+                {
+                  heading: "Other traditions",
+                  body: `Children bang on pots and pans going door-to-door through the neighborhood (similar to Halloween) collecting treats. Firecrackers and sparklers light up the night. Some families make <em>âsh-e reshteh</em> (a thick noodle soup) to share with neighbors.
+
+In modern Iran, the government has sometimes discouraged or restricted Chaharshanbe Suri as a pre-Islamic tradition — but Iranians celebrate regardless, and in diaspora communities around the world it has become a powerful, joyful expression of cultural identity.`
+                }
+              ]
+            }
           },
           {
             name: "Sizdah Bedar",
@@ -401,7 +479,24 @@ The relief carvings on its walls show delegations from 23 nations bringing tribu
             timing: "April 2 (13th day of Nowruz)",
             color: "#1CB0F6",
             badge: "Nowruz season",
-            desc: "\"Thirteen outside\" — on the 13th and final day of Nowruz, everyone leaves the house for a picnic in nature. The number 13 is considered unlucky indoors, so you spend the day outside. Young unmarried women tie knots in green sprouts (sabzeh) and make a wish for a partner before throwing it into running water."
+            desc: "\"Thirteen outside\" — on the final day of Nowruz everyone leaves home for a picnic in nature. Young women tie knots in green sprouts and wish for love before releasing them into running water.",
+            detail: {
+              sections: [
+                {
+                  heading: "The 13th Day",
+                  images: [
+                    { url: "https://upload.wikimedia.org/wikipedia/commons/1/11/Sizdah_bedar_in_parvaz_park_tehran.jpg", caption: "Sizdah Bedar picnics in Parvaz Park, Tehran — parks fill with families on this day" }
+                  ],
+                  body: `<strong>Sizdah Bedar</strong> (سیزده به‌در — "Thirteen Outside") is the 13th and final day of the Nowruz celebration. The number 13 is considered unlucky in Persian culture — so the solution is simple: don't stay inside. Everyone leaves their home and spends the entire day outdoors, usually in parks, forests, or by rivers. Tehran's parks fill to capacity; families spread out picnic blankets from dawn to dusk. It is one of the most joyful, communal days of the year.`
+                },
+                {
+                  heading: "The Sabzeh Ritual",
+                  body: `The <strong>sabzeh</strong> (سبزه) — the wheat or lentil sprouts grown on the Haft-Sin table — are brought to the picnic and thrown into running water at the end of the day. As they float away, they carry all the bad luck and hardship of the old year with them.
+
+Young unmarried women tie <strong>knots in the sabzeh</strong> before releasing it, making a silent wish: they hope to be married before the next Sizdah Bedar. The tied knot symbolizes a bond — a future partnership. It is a tender, hopeful ritual woven into the joy of the day.`
+                }
+              ]
+            }
           },
           {
             name: "Yalda Night",
@@ -410,7 +505,36 @@ The relief carvings on its walls show delegations from 23 nations bringing tribu
             timing: "December 21",
             color: "#CE82FF",
             badge: "Winter",
-            desc: "The longest night of the year — families gather and stay up until midnight reading poetry (especially Hafez), eating pomegranates, watermelon, and nuts. The red fruits symbolize the dawn and the warmth of the sun. Yalda is a Syriac word meaning 'birth' — it celebrates the rebirth of the sun after the darkest night."
+            desc: "The longest night of the year — families gather to read Hafez, eat pomegranates and watermelon, and stay up past midnight celebrating the sun's return.",
+            detail: {
+              sections: [
+                {
+                  heading: "The Longest Night",
+                  images: [
+                    { url: "https://upload.wikimedia.org/wikipedia/commons/7/7d/Sarpol-e_Zahab_Yalda_Night_1.jpg", caption: "A Yalda Night gathering in Sarpol-e Zahab, Iran — candles, pomegranates, and poetry" }
+                  ],
+                  body: `<strong>Shab-e Yalda</strong> (شب یلدا — "Night of Birth") is celebrated on the winter solstice, December 21 — the longest, darkest night of the year. "Yalda" is a Syriac word meaning birth, referring to the symbolic birth or rebirth of the sun: after this night, the days begin to lengthen again.
+
+The tradition is to gather with family and <strong>stay awake together until after midnight</strong>, keeping the darkness at bay with light, warmth, food, and poetry. It is one of the most intimate and beloved Persian celebrations.`
+                },
+                {
+                  heading: "Fâl-e Hafez — Divination by Poetry",
+                  body: `The centerpiece of Yalda is <strong>Fâl-e Hafez</strong> (فال حافظ) — divination through the poetry of Hafez, the 14th-century Persian lyric master. Every Iranian family keeps a copy of his <em>Divan</em> (collected poems).
+
+The ritual: close your eyes, hold the book, think of a question or make a wish, then open to a random page. The poem you land on is interpreted as an answer or guidance from Hafez himself. It can be playful or deeply personal — people ask about love, career, family, the future. An elder usually reads the poem aloud and offers an interpretation while everyone listens. It is literary, spiritual, and deeply Persian.`
+                },
+                {
+                  heading: "The Foods of Yalda",
+                  body: `The foods are deliberately <strong>red</strong> — symbolic of the dawn that is coming and the warmth of the sun:
+<ul>
+  <li>🍎 <strong>Pomegranate (anâr)</strong> — the queen of Yalda fruits. Its red seeds represent the glow of the sun. Eaten plain or scattered over everything.</li>
+  <li>🍉 <strong>Watermelon</strong> — surprisingly, watermelon is a Yalda staple. Families preserve summer watermelons specifically for this night. Its red interior mirrors the theme.</li>
+  <li>🌰 <strong>Ajil</strong> — a mix of dried fruits, nuts, and seeds (walnuts, almonds, pistachios, raisins, figs, mulberries). Bowls of ajil are passed around all night.</li>
+</ul>
+The combination of candles, poetry, red fruit, and family on the longest night of the year makes Yalda one of the most atmospheric and beloved nights in the Persian calendar — celebrated not just in Iran but by Persians everywhere.`
+                }
+              ]
+            }
           },
           {
             name: "Mehregan",
@@ -419,7 +543,28 @@ The relief carvings on its walls show delegations from 23 nations bringing tribu
             timing: "October 2",
             color: "#FF9600",
             badge: "Ancient",
-            desc: "One of the oldest Persian festivals, dedicated to Mithra — the deity of light, covenant, and friendship. Celebrated at the autumn equinox as a harvest festival. Predates Islam by over 2,000 years. Celebrated with feasting, wearing new clothes, and giving gifts — often called the Persian Thanksgiving."
+            desc: "One of the oldest Persian festivals, dedicated to Mithra — the deity of light and friendship. A harvest celebration often called the Persian Thanksgiving.",
+            detail: {
+              sections: [
+                {
+                  heading: "Festival of Mithra",
+                  body: `<strong>Mehregan</strong> (مهرگان) is one of the two most important ancient Persian festivals — the other being Nowruz. It falls around <strong>October 2</strong> on the Persian solar calendar, roughly the autumnal equinox, and is dedicated to <strong>Mithra</strong> (Mehr/مهر) — the Zoroastrian deity of light, covenant, friendship, and the sun.
+
+"Mehr" in Persian also means love and the sun — so this is a celebration of light, warmth, and human bonds as the days begin to shorten. It predates Islam by over 2,500 years.`
+                },
+                {
+                  heading: "How it's celebrated",
+                  body: `Mehregan is sometimes called the <strong>Persian Thanksgiving</strong>. Traditional observances include:
+<ul>
+  <li>Wearing new or colorful clothes (similar to Nowruz)</li>
+  <li>Spraying rosewater and applying kohl (antimony) to the eyes — a Zoroastrian purification rite</li>
+  <li>Feasting with family and exchanging gifts</li>
+  <li>Setting a ceremonial table (similar in concept to the Haft-Sin) with symbolic autumn foods</li>
+</ul>
+Mehregan declined after the Arab conquest in 651 AD, but has seen a strong revival in recent decades — especially in the Iranian diaspora — as a celebration of pre-Islamic Persian cultural identity.`
+                }
+              ]
+            }
           },
           {
             name: "Tirgan",
@@ -428,7 +573,21 @@ The relief carvings on its walls show delegations from 23 nations bringing tribu
             timing: "July 1–2",
             color: "#1CB0F6",
             badge: "Ancient",
-            desc: "A mid-summer water festival celebrating rain and the hero Arash the Archer — who sacrificed himself to shoot an arrow that defined the border of Iran and saved the country. People splash water on each other and dance. One of the most joyful and ancient of Persian celebrations."
+            desc: "A mid-summer water festival celebrating rain and the hero Arash the Archer, who sacrificed himself to save Iran. People splash water on each other and dance.",
+            detail: {
+              sections: [
+                {
+                  heading: "The Legend of Arash",
+                  body: `<strong>Tirgan</strong> (تیرگان — "Festival of the Arrow") commemorates one of the most beloved legends in Persian mythology: <strong>Arash the Archer (Arash-e Kamangir)</strong>.
+
+After a war between Iran and Turan, the two sides agreed to settle their border dispute with a single arrow: an Iranian archer would shoot as far as he could, and wherever the arrow landed would be the border. Arash — a legendary hero — climbed Mount Damavand, put every ounce of his life force into the bowstring, and released. The arrow flew for three days before landing on the banks of the Oxus River (Amu Darya in Central Asia) — defining a vast territory for Iran. Arash himself shattered to pieces from the effort, sacrificing his life for his country.`
+                },
+                {
+                  heading: "The Water Festival",
+                  body: `Tirgan is celebrated with <strong>water</strong> — people splash each other in the streets, rivers, and parks. It is one of the most joyful and physically exuberant Persian celebrations, a summer festival with ancient rain-prayer roots. In ancient times it was tied to hopes for rain and a good harvest. Today it is a day of dancing, music, and getting soaked — Persians have celebrated it for over 2,500 years.`
+                }
+              ]
+            }
           },
           {
             name: "Eid al-Fitr",
@@ -437,16 +596,50 @@ The relief carvings on its walls show delegations from 23 nations bringing tribu
             timing: "End of Ramadan (lunar calendar)",
             color: "#58CC02",
             badge: "Religious",
-            desc: "The celebration marking the end of Ramadan — a month of fasting from dawn to dusk. Families gather for large feasts, exchange gifts, give charity (Zakat al-Fitr), and visit relatives. In Iran it is a national holiday, though it is celebrated more quietly than Nowruz."
+            desc: "The celebration marking the end of Ramadan — a month of fasting. Families feast, exchange gifts, and give charity. A national holiday in Iran.",
+            detail: {
+              sections: [
+                {
+                  heading: "Breaking the Fast",
+                  body: `<strong>Eid al-Fitr</strong> (عید فطر — "Festival of Breaking the Fast") marks the end of Ramadan, the Islamic holy month of fasting from dawn to dusk. The date shifts each year as it follows the lunar Hijri calendar — moving about 11 days earlier every solar year.
+
+The night before Eid, families look for the crescent moon that officially ends Ramadan. On Eid morning, there is communal prayer, followed by feasting — the first daytime meal after a month of fasting. Special sweets and dishes are prepared; in Iran, <em>reshteh-khoshkâr</em> (noodle sweets) and <em>zulbia and bâmiyeh</em> (deep-fried fritters in syrup) are traditional.`
+                },
+                {
+                  heading: "Giving & Visiting",
+                  body: `A key obligation of Eid al-Fitr is <strong>Zakat al-Fitr</strong> — a mandatory charity given to the poor before the Eid prayer, so that everyone can celebrate. Gifts (<em>eidi</em>) are exchanged, new clothes are worn, and family visits follow the same protocol as Nowruz — elders first. In Iran, Eid al-Fitr is a 3-day national holiday, though it is celebrated more quietly than Nowruz.`
+                }
+              ]
+            }
           },
           {
             name: "Ashura",
             persian: "عاشورا",
             emoji: "⚫",
             timing: "10th of Muharram (lunar calendar)",
-            color: "#777",
+            color: "#555",
             badge: "Religious",
-            desc: "The most solemn day in the Shia Islamic calendar — commemorating the martyrdom of Imam Hussein (grandson of the Prophet Muhammad) at the Battle of Karbala in 680 AD. In Iran, massive processions fill the streets, with passion plays (ta'zieh) and communal mourning. Deeply central to Shia identity."
+            desc: "The most solemn day in the Shia Islamic calendar — commemorating the martyrdom of Imam Hussein at Karbala in 680 AD. Processions, passion plays, and communal mourning fill the streets of Iran.",
+            detail: {
+              sections: [
+                {
+                  heading: "The Battle of Karbala",
+                  body: `<strong>Ashura</strong> (عاشورا — "the tenth") falls on the 10th day of Muharram, the first month of the Islamic lunar calendar. It commemorates the <strong>martyrdom of Imam Hussein ibn Ali</strong> — the grandson of the Prophet Muhammad — at the Battle of Karbala in modern-day Iraq on October 10, 680 AD.
+
+Hussein refused to pledge allegiance to the Umayyad Caliph Yazid I, whom he considered an unjust ruler. He and a small group of 72 followers and family members were surrounded by a vastly larger army. All the men were killed; the women and children were taken captive. For Shia Muslims, Hussein's sacrifice represents the ultimate stand against tyranny and injustice — his death is the defining event of Shia identity.`
+                },
+                {
+                  heading: "How it is observed in Iran",
+                  body: `Ashura is a <strong>national day of mourning</strong> in Iran. Observances include:
+<ul>
+  <li><strong>Ta'zieh (تعزیه)</strong> — elaborate passion plays reenacting the events of Karbala, performed in town squares. One of the world's oldest continuous dramatic traditions.</li>
+  <li><strong>Processions</strong> — men and women march through streets in black, chanting elegies (<em>nowheh</em>) and beating their chests in grief.</li>
+  <li><strong>Nazri</strong> — free food distributed to anyone in the street, as an act of charity in Hussein's name. Huge pots of stew, rice, and soup are cooked and given away.</li>
+</ul>
+Ashura is not a joyful celebration but a day of deep spiritual and emotional significance — a reminder, in the Shia tradition, that justice is worth dying for.`
+                }
+              ]
+            }
           }
         ]
       },
