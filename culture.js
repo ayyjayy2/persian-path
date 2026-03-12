@@ -374,7 +374,7 @@ The relief carvings on its walls show delegations from 23 nations bringing tribu
       },
       {
         type: "holiday-cards",
-        heading: "Holidays at a glance",
+        heading: "Persian Holidays",
         holidays: [
           {
             name: "Nowruz",
@@ -643,48 +643,6 @@ Ashura is not a joyful celebration but a day of deep spiritual and emotional sig
           }
         ]
       },
-      {
-        heading: "Nowruz: The New Year in detail",
-        body: `Nowruz (<strong>نوروز</strong> — literally "New Day") is the most important celebration in the Persian world. It has been observed for at least <strong>3,000 years</strong>, making it one of humanity's oldest living traditions. UNESCO recognized it as an Intangible Cultural Heritage of Humanity in 2009.
-
-<strong>The Haft-Sin table (هفت‌سین)</strong><br>
-Every Persian household sets up a ceremonial table with seven items that all begin with the letter "S" (Sin, س) in Persian — each symbolizing a wish for the new year:
-<ul>
-  <li>🌱 <strong>Sabzeh</strong> (سبزه) — wheat or lentil sprouts · <em>rebirth and renewal</em></li>
-  <li>🍎 <strong>Sib</strong> (سیب) — apple · <em>health and beauty</em></li>
-  <li>🌿 <strong>Senjed</strong> (سنجد) — dried oleaster · <em>love and affection</em></li>
-  <li>🧄 <strong>Sir</strong> (سیر) — garlic · <em>medicine and good health</em></li>
-  <li>🌊 <strong>Somaq</strong> (سماق) — sumac · <em>the color of sunrise</em></li>
-  <li>🪙 <strong>Sekkeh</strong> (سکه) — coins · <em>prosperity and wealth</em></li>
-  <li>🌸 <strong>Serkeh</strong> (سرکه) — vinegar · <em>patience and wisdom</em></li>
-</ul>
-The table also typically includes a mirror, candles, colored eggs, a bowl of water with a goldfish, a copy of the Quran or the Shahnameh, and hyacinth flowers.
-
-<strong>The new year moment</strong><br>
-At the exact second the sun crosses the equator (calculated to the minute each year), families gather around the Haft-Sin table. Elders give children <em>eidi</em> — new banknotes as gifts. Everyone wears new clothes. The moment is announced on national television and radio, and the country erupts.
-
-<strong>13 days of celebration</strong><br>
-Nowruz lasts 13 days. Family visits are made in a specific order (older relatives first). Businesses close. The cities empty as people travel to their hometowns. On the 13th day, Sizdah Bedar, everyone goes outside — and the celebrations end with the sabzeh (sprouts from the Haft-Sin table) thrown into running water, carrying away bad luck.`
-      },
-      {
-        heading: "Chaharshanbe Suri: jumping the fire",
-        body: `The Tuesday night before the last Wednesday of the Persian year, Iranians take to the streets and build bonfires. The ritual is simple but electric: you run and <strong>jump over the flames</strong>, chanting:
-
-<em>"Zardiye man az to, sorkhiye to az man"</em><br>
-("My yellowness to you, your redness to me")
-
-You give the fire your pallor, weakness, and illness — and take its warmth, energy, and red glow into the new year. It is a purification ritual thousands of years old, rooted in Zoroastrian reverence for fire as sacred and cleansing.
-
-Children bang on pots and pans going door-to-door (similar to Halloween), and firecrackers light up the night. In modern Iran the celebrations have sometimes been restricted by authorities — but Iranians find a way to celebrate regardless. In diaspora communities worldwide, Chaharshanbe Suri has become a powerful expression of cultural identity.`
-      },
-      {
-        heading: "Yalda Night: poetry and pomegranates",
-        body: `On the winter solstice — the longest, darkest night of the year — Iranians celebrate <strong>Shab-e Yalda</strong> (شب یلدا). The tradition is to stay awake together until after midnight, keeping the dark at bay with light, warmth, company, and poetry.
-
-The centerpiece is <strong>Fâl-e Hafez</strong> — divination by Hafez. You close your eyes, make a wish, and open the <em>Divan of Hafez</em> at a random page. The poem you land on is interpreted as guidance for your question. Every Iranian family keeps a Hafez for this purpose.
-
-The foods of Yalda are deliberately red — <strong>pomegranate</strong> (anar) and <strong>watermelon</strong> — symbolizing the glow of dawn and the warmth of the sun that will now begin to return. Nuts, dried fruits, and sweets round out the spread. It is one of the coziest, most literary nights of the Persian year — and one the diaspora carries with them wherever they go.`
-      }
     ]
   }
 ];
