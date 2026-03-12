@@ -376,11 +376,25 @@ function updateHeaderStats() {
 // ===== AUDIO PLAYBACK =====
 let _currentAudio = null;
 
+function toAudioFileName(english, phonetic) {
+  const clean = s => s
+    .toLowerCase()
+    .replace(/\(.*?\)/g, "")       // remove (parentheticals)
+    .replace(/—.*$/, "")           // remove em-dash and after
+    .replace(/[/|]/g, " ")         // slashes to spaces
+    .replace(/[^a-z0-9\s-]/g, "")  // remove special chars
+    .trim()
+    .replace(/\s+/g, "-")          // spaces to hyphens
+    .replace(/-+/g, "-")           // collapse multiple hyphens
+    .replace(/^-|-$/g, "");        // trim leading/trailing hyphens
+  return `${clean(english)}-${clean(phonetic)}.wav`;
+}
+
 function getAudioPath(persian) {
   if (!currentLesson) return null;
-  const idx = currentLesson.words.findIndex(w => w.persian === persian);
-  if (idx === -1) return null;
-  return `audio/${currentLesson.id}-${idx}.wav`;
+  const word = currentLesson.words.find(w => w.persian === persian);
+  if (!word) return null;
+  return `audio/${toAudioFileName(word.english, word.phonetic)}`;
 }
 
 function speak(persian, onEnd) {

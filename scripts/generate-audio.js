@@ -35,8 +35,18 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function sanitize(str) {
-  return str.replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").toLowerCase();
+function toAudioFileName(english, phonetic) {
+  const clean = s => s
+    .toLowerCase()
+    .replace(/\(.*?\)/g, "")       // remove (parentheticals)
+    .replace(/—.*$/, "")           // remove em-dash and after
+    .replace(/[/|]/g, " ")         // slashes to spaces
+    .replace(/[^a-z0-9\s-]/g, "")  // remove special chars
+    .trim()
+    .replace(/\s+/g, "-")          // spaces to hyphens
+    .replace(/-+/g, "-")           // collapse multiple hyphens
+    .replace(/^-|-$/g, "");        // trim leading/trailing hyphens
+  return `${clean(english)}-${clean(phonetic)}.wav`;
 }
 
 async function main() {
@@ -52,7 +62,7 @@ async function main() {
 
     for (let i = 0; i < lesson.words.length; i++) {
       const word = lesson.words[i];
-      const filename = `${lesson.id}-${i}.wav`;
+      const filename = toAudioFileName(word.english, word.phonetic);
       const filepath = path.join(AUDIO_DIR, filename);
       total++;
 
