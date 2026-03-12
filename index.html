@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farsi Flow — Learn Persian</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <a class="logo" href="#" onclick="goHome(); return false;">
+      <span class="logo-flag">🌙</span>
+      Farsi Flow
+    </a>
+    <div class="header-stats">
+      <div class="stat-pill streak">
+        <span class="icon">🔥</span>
+        <span id="stat-streak">0</span>
+      </div>
+      <div class="stat-pill xp">
+        <span class="icon">⚡</span>
+        <span id="stat-xp">0</span>
+      </div>
+      <div class="stat-pill hearts">
+        <span id="stat-hearts">❤️❤️❤️❤️❤️</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== HOME SCREEN ===== -->
+    <div id="home-screen" class="screen">
+      <div class="home-header">
+        <h1>Learn Persian</h1>
+        <p>Master the language one lesson at a time</p>
+      </div>
+
+      <div class="xp-bar-container">
+        <div class="xp-bar-label">
+          <span id="xp-level-label">Level 1</span>
+          <span id="xp-label">0/100 XP</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="lessons-grid" id="lessons-grid"></div>
+    </div>
+
+    <!-- ===== EXPLORE SCREEN ===== -->
+    <div id="explore-screen" class="screen">
+      <div class="home-header">
+        <h1>Explore</h1>
+        <p>History, geography, and culture</p>
+      </div>
+      <div class="explore-grid" id="explore-grid"></div>
+    </div>
+
+    <!-- ===== ARTICLE SCREEN ===== -->
+    <div id="article-screen" class="screen">
+      <div class="article-nav">
+        <button class="back-btn" id="back-from-article">←</button>
+        <div class="article-nav-meta">
+          <span class="article-nav-category" id="article-nav-category"></span>
+          <span class="article-nav-read-time" id="article-nav-read-time"></span>
+        </div>
+      </div>
+      <div id="article-content"></div>
+    </div>
+
+    <!-- ===== LESSON MENU SCREEN ===== -->
+    <div id="lesson-screen" class="screen">
+      <div class="lesson-menu-header">
+        <button class="back-btn" id="back-from-lesson">←</button>
+        <div class="lesson-menu-title">
+          <h2><span id="lesson-menu-icon"></span> <span id="lesson-menu-title"></span></h2>
+          <p id="lesson-menu-desc"></p>
+        </div>
+      </div>
+      <div class="activity-cards" id="activity-cards"></div>
+    </div>
+
+    <!-- ===== EXERCISE SCREEN ===== -->
+    <div id="exercise-screen" class="screen">
+      <div class="exercise-header">
+        <button class="back-btn" id="back-from-exercise">✕</button>
+        <div class="progress-bar-ex">
+          <div class="progress-bar-ex-fill" id="ex-progress-fill" style="width:0%"></div>
+        </div>
+        <div class="hearts-display" id="ex-hearts">❤️❤️❤️❤️❤️</div>
+      </div>
+      <div id="exercise-content"></div>
+    </div>
+
+    <!-- ===== RESULTS SCREEN ===== -->
+    <div id="results-screen" class="screen">
+      <div class="results-wrapper">
+        <div class="results-trophy bounce-in" id="results-trophy">🏆</div>
+        <div class="results-title" id="results-title">Lesson Complete!</div>
+        <div style="color: var(--text-light); font-size:0.95rem;" id="results-lesson-name"></div>
+
+        <div class="results-stats">
+          <div class="result-stat xp">
+            <span class="rs-val" id="result-xp">+10</span>
+            <span class="rs-label">XP Earned</span>
+          </div>
+          <div class="result-stat streak">
+            <span class="rs-val" id="result-streak">1</span>
+            <span class="rs-label">Day Streak</span>
+          </div>
+          <div class="result-stat accuracy">
+            <span class="rs-val" id="result-accuracy">100%</span>
+            <span class="rs-label">Accuracy</span>
+          </div>
+        </div>
+
+        <div class="results-buttons">
+          <button class="btn-big green" id="btn-play-again">Practice Again</button>
+          <button class="btn-big outline" id="btn-go-home">Back to Lessons</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-btn active" id="nav-learn" onclick="switchTab('learn')">
+      <span class="nav-icon">📚</span>
+      <span class="nav-label">Learn</span>
+    </button>
+    <button class="bottom-nav-btn" id="nav-explore" onclick="switchTab('explore')">
+      <span class="nav-icon">🌍</span>
+      <span class="nav-label">Explore</span>
+    </button>
+  </nav>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Confetti -->
+  <div class="confetti-container" id="confetti-container"></div>
+
+  <script src="data.js"></script>
+  <script src="culture.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
