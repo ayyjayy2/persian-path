@@ -357,5 +357,141 @@ Kurds and Persians share several deep cultural bonds. Most notably, both celebra
 The relief carvings on its walls show delegations from 23 nations bringing tribute — Egyptians with vases, Babylonians with textiles, Indians with elephants — a visual record of the empire's vast reach. Alexander the Great burned it in 330 BC, reportedly in revenge for the Persian sack of Athens. Today it stands as a UNESCO World Heritage Site and one of the most important archaeological sites in the world.`
       }
     ]
+  },
+  {
+    id: "holidays",
+    title: "Persian Holidays",
+    subtitle: "Fire, poetry, sprouts, and the New Year",
+    icon: "🎊",
+    color: "#FF9600",
+    readTime: "6 min read",
+    category: "Culture",
+    preview: "From the ancient fire-jumping of Chaharshanbe Suri to the poetry of Yalda Night — Persian celebrations are among the world's most beautiful and oldest traditions. And Nowruz is almost here.",
+    sections: [
+      {
+        heading: "A calendar rooted in nature",
+        body: `Persian holidays are largely tied to the <strong>Solar Hijri calendar</strong> — Iran's official calendar — which follows the sun and begins on the spring equinox. This makes the Persian New Year astronomically precise: it falls at the <em>exact moment</em> the sun crosses the celestial equator, to the second. Many Persian celebrations predate Islam by thousands of years, rooted in <strong>Zoroastrian</strong> and ancient Iranian traditions that honor fire, nature, and the cycle of seasons.`
+      },
+      {
+        type: "holiday-cards",
+        heading: "Holidays at a glance",
+        holidays: [
+          {
+            name: "Nowruz",
+            persian: "نوروز",
+            emoji: "🌸",
+            timing: "March 20–21",
+            color: "#58CC02",
+            badge: "Coming up!",
+            desc: "The Persian New Year — 13 days of celebration beginning at the exact moment of the spring equinox. The most important holiday in Iranian culture, celebrated by over 300 million people worldwide across Iran, Afghanistan, Tajikistan, Kurdistan, and diaspora communities everywhere."
+          },
+          {
+            name: "Chaharshanbe Suri",
+            persian: "چهارشنبه‌سوری",
+            emoji: "🔥",
+            timing: "Eve of last Wednesday before Nowruz",
+            color: "#FF4B4B",
+            badge: "Nowruz season",
+            desc: "The fire festival — Iranians jump over bonfires in the street shouting 'Sorkhiye to az man, zardiye man az to' (Your red glow to me, my pallor to you) — giving sickness and weakness to the fire and taking its warmth and energy. One of the most exhilarating nights of the year."
+          },
+          {
+            name: "Sizdah Bedar",
+            persian: "سیزده‌بدر",
+            emoji: "🌿",
+            timing: "April 2 (13th day of Nowruz)",
+            color: "#1CB0F6",
+            badge: "Nowruz season",
+            desc: "\"Thirteen outside\" — on the 13th and final day of Nowruz, everyone leaves the house for a picnic in nature. The number 13 is considered unlucky indoors, so you spend the day outside. Young unmarried women tie knots in green sprouts (sabzeh) and make a wish for a partner before throwing it into running water."
+          },
+          {
+            name: "Yalda Night",
+            persian: "شب یلدا",
+            emoji: "🍉",
+            timing: "December 21",
+            color: "#CE82FF",
+            badge: "Winter",
+            desc: "The longest night of the year — families gather and stay up until midnight reading poetry (especially Hafez), eating pomegranates, watermelon, and nuts. The red fruits symbolize the dawn and the warmth of the sun. Yalda is a Syriac word meaning 'birth' — it celebrates the rebirth of the sun after the darkest night."
+          },
+          {
+            name: "Mehregan",
+            persian: "مهرگان",
+            emoji: "🍂",
+            timing: "October 2",
+            color: "#FF9600",
+            badge: "Ancient",
+            desc: "One of the oldest Persian festivals, dedicated to Mithra — the deity of light, covenant, and friendship. Celebrated at the autumn equinox as a harvest festival. Predates Islam by over 2,000 years. Celebrated with feasting, wearing new clothes, and giving gifts — often called the Persian Thanksgiving."
+          },
+          {
+            name: "Tirgan",
+            persian: "تیرگان",
+            emoji: "💧",
+            timing: "July 1–2",
+            color: "#1CB0F6",
+            badge: "Ancient",
+            desc: "A mid-summer water festival celebrating rain and the hero Arash the Archer — who sacrificed himself to shoot an arrow that defined the border of Iran and saved the country. People splash water on each other and dance. One of the most joyful and ancient of Persian celebrations."
+          },
+          {
+            name: "Eid al-Fitr",
+            persian: "عید فطر",
+            emoji: "🌙",
+            timing: "End of Ramadan (lunar calendar)",
+            color: "#58CC02",
+            badge: "Religious",
+            desc: "The celebration marking the end of Ramadan — a month of fasting from dawn to dusk. Families gather for large feasts, exchange gifts, give charity (Zakat al-Fitr), and visit relatives. In Iran it is a national holiday, though it is celebrated more quietly than Nowruz."
+          },
+          {
+            name: "Ashura",
+            persian: "عاشورا",
+            emoji: "⚫",
+            timing: "10th of Muharram (lunar calendar)",
+            color: "#777",
+            badge: "Religious",
+            desc: "The most solemn day in the Shia Islamic calendar — commemorating the martyrdom of Imam Hussein (grandson of the Prophet Muhammad) at the Battle of Karbala in 680 AD. In Iran, massive processions fill the streets, with passion plays (ta'zieh) and communal mourning. Deeply central to Shia identity."
+          }
+        ]
+      },
+      {
+        heading: "Nowruz: The New Year in detail",
+        body: `Nowruz (<strong>نوروز</strong> — literally "New Day") is the most important celebration in the Persian world. It has been observed for at least <strong>3,000 years</strong>, making it one of humanity's oldest living traditions. UNESCO recognized it as an Intangible Cultural Heritage of Humanity in 2009.
+
+<strong>The Haft-Sin table (هفت‌سین)</strong><br>
+Every Persian household sets up a ceremonial table with seven items that all begin with the letter "S" (Sin, س) in Persian — each symbolizing a wish for the new year:
+<ul>
+  <li>🌱 <strong>Sabzeh</strong> (سبزه) — wheat or lentil sprouts · <em>rebirth and renewal</em></li>
+  <li>🍎 <strong>Sib</strong> (سیب) — apple · <em>health and beauty</em></li>
+  <li>🌿 <strong>Senjed</strong> (سنجد) — dried oleaster · <em>love and affection</em></li>
+  <li>🧄 <strong>Sir</strong> (سیر) — garlic · <em>medicine and good health</em></li>
+  <li>🌊 <strong>Somaq</strong> (سماق) — sumac · <em>the color of sunrise</em></li>
+  <li>🪙 <strong>Sekkeh</strong> (سکه) — coins · <em>prosperity and wealth</em></li>
+  <li>🌸 <strong>Serkeh</strong> (سرکه) — vinegar · <em>patience and wisdom</em></li>
+</ul>
+The table also typically includes a mirror, candles, colored eggs, a bowl of water with a goldfish, a copy of the Quran or the Shahnameh, and hyacinth flowers.
+
+<strong>The new year moment</strong><br>
+At the exact second the sun crosses the equator (calculated to the minute each year), families gather around the Haft-Sin table. Elders give children <em>eidi</em> — new banknotes as gifts. Everyone wears new clothes. The moment is announced on national television and radio, and the country erupts.
+
+<strong>13 days of celebration</strong><br>
+Nowruz lasts 13 days. Family visits are made in a specific order (older relatives first). Businesses close. The cities empty as people travel to their hometowns. On the 13th day, Sizdah Bedar, everyone goes outside — and the celebrations end with the sabzeh (sprouts from the Haft-Sin table) thrown into running water, carrying away bad luck.`
+      },
+      {
+        heading: "Chaharshanbe Suri: jumping the fire",
+        body: `The Tuesday night before the last Wednesday of the Persian year, Iranians take to the streets and build bonfires. The ritual is simple but electric: you run and <strong>jump over the flames</strong>, chanting:
+
+<em>"Zardiye man az to, sorkhiye to az man"</em><br>
+("My yellowness to you, your redness to me")
+
+You give the fire your pallor, weakness, and illness — and take its warmth, energy, and red glow into the new year. It is a purification ritual thousands of years old, rooted in Zoroastrian reverence for fire as sacred and cleansing.
+
+Children bang on pots and pans going door-to-door (similar to Halloween), and firecrackers light up the night. In modern Iran the celebrations have sometimes been restricted by authorities — but Iranians find a way to celebrate regardless. In diaspora communities worldwide, Chaharshanbe Suri has become a powerful expression of cultural identity.`
+      },
+      {
+        heading: "Yalda Night: poetry and pomegranates",
+        body: `On the winter solstice — the longest, darkest night of the year — Iranians celebrate <strong>Shab-e Yalda</strong> (شب یلدا). The tradition is to stay awake together until after midnight, keeping the dark at bay with light, warmth, company, and poetry.
+
+The centerpiece is <strong>Fâl-e Hafez</strong> — divination by Hafez. You close your eyes, make a wish, and open the <em>Divan of Hafez</em> at a random page. The poem you land on is interpreted as guidance for your question. Every Iranian family keeps a Hafez for this purpose.
+
+The foods of Yalda are deliberately red — <strong>pomegranate</strong> (anar) and <strong>watermelon</strong> — symbolizing the glow of dawn and the warmth of the sun that will now begin to return. Nuts, dried fruits, and sweets round out the spread. It is one of the coziest, most literary nights of the Persian year — and one the diaspora carries with them wherever they go.`
+      }
+    ]
   }
 ];

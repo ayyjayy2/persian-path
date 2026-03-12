@@ -194,6 +194,25 @@ function renderArticle(article) {
       html += `</div>`;
       if (section.body) html += `<div class="article-body" style="margin-top:16px">${section.body}</div>`;
 
+    } else if (section.type === "holiday-cards") {
+      html += `<div class="holiday-grid">`;
+      section.holidays.forEach(h => {
+        html += `
+          <div class="holiday-card" style="--hol-color:${h.color}">
+            <div class="holiday-card-top">
+              <span class="holiday-emoji">${h.emoji}</span>
+              <div class="holiday-card-head">
+                <div class="holiday-name">${h.name} <span class="holiday-persian">${h.persian}</span></div>
+                <div class="holiday-timing">📅 ${h.timing}</div>
+              </div>
+              ${h.badge ? `<span class="holiday-badge" style="background:${h.color}">${h.badge}</span>` : ""}
+            </div>
+            <div class="holiday-desc">${h.desc}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
     } else if (section.type === "flags") {
       html += `<div class="flags-showcase">`;
       section.flags.forEach(f => {
