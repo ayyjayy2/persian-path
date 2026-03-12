@@ -154,7 +154,7 @@ The green represents Islam and the fertility of the land; white symbolizes peace
           {
             name: "The Lion & Sun Flag",
             era: "~1906 – 1979",
-            image: "https://upload.wikimedia.org/wikipedia/commons/0/04/Civil_flag_of_Iran_%281964%E2%80%931980%29.svg",
+            image: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Lion_and_Sun_flag_%28emoji%29.svg",
             badge: "Pahlavi Era",
             badgeColor: "#FF9600",
             desc: `The flag of the Qajar and Pahlavi dynasties — arguably the most recognized symbol of pre-revolutionary Iran. The <strong>Lion and Sun</strong> (<em>Shir o Khorshid</em>) is one of the oldest symbols of Persian royalty, appearing on royal seals and coinage as far back as the 12th century. The lion represents power and valor; the rising sun behind it represents divine light and sovereignty. Many Iranians in the diaspora still identify with this flag as a symbol of cultural pride and opposition to the Islamic Republic.`
@@ -162,7 +162,7 @@ The green represents Islam and the fertility of the land; white symbolizes peace
           {
             name: "Derafsh Kaviani",
             era: "Ancient – 651 AD",
-            image: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Derafsh_Kaviani.png",
+            image: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Derafsh_Kaviani_by_modern_standard_size_of_flags_%281.75_ratio%29.png",
             badge: "Ancient",
             badgeColor: "#7C3AED",
             desc: `The legendary royal standard of the <strong>Sassanid Persian Empire</strong>. According to Persian legend, it began as the leather apron of <strong>Kaveh the Blacksmith</strong>, who led a revolt against the tyrant Zahhak — and whose apron became a rallying banner for liberation. The Sassanid kings decorated it with rubies, emeralds, and gold, making it a jewel-encrusted purple standard. When Arab armies defeated the Sassanids in 651 AD, they reportedly tore it apart to divide the gems — ending 400 years of Sassanid rule. Kaveh's legend lives on in Ferdowsi's <em>Shahnameh</em>, and Nowruz bonfires echo his uprising.`
