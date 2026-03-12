@@ -1196,7 +1196,9 @@ main {
 }
 
 .flag-img-crop {
-  transform: scale(1.45);
+  width: 166.67%;
+  max-width: none;
+  margin-left: -33.33%;
 }
 
 .flag-badge {
