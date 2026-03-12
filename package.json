@@ -1,0 +1,14 @@
+{
+  "name": "persian-path",
+  "version": "1.0.0",
+  "description": "Persian language learning webapp",
+  "scripts": {
+    "generate-audio": "node scripts/generate-audio.js"
+  },
+  "dependencies": {
+    "openai": "^4.47.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
+  }
+}

@@ -373,25 +373,48 @@ function updateHeaderStats() {
   document.getElementById("stat-hearts").textContent = "❤️".repeat(Math.max(0, state.hearts));
 }
 
-// ===== SPEECH SYNTHESIS =====
-function speak(text, onEnd) {
-  if (!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
+// ===== AUDIO PLAYBACK =====
+let _currentAudio = null;
+
+function getAudioPath(persian) {
+  if (!currentLesson) return null;
+  const idx = currentLesson.words.findIndex(w => w.persian === persian);
+  if (idx === -1) return null;
+  return `audio/${currentLesson.id}-${idx}.wav`;
+}
+
+function speak(persian, onEnd) {
+  // Stop anything already playing
+  if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+  if (window.speechSynthesis) speechSynthesis.cancel();
+
+  const filePath = getAudioPath(persian);
+  if (filePath) {
+    const audio = new Audio(filePath);
+    _currentAudio = audio;
+    if (onEnd) audio.onended = onEnd;
+    audio.onerror = () => _ttsFallback(persian, onEnd); // fall back if file missing
+    audio.play().catch(() => _ttsFallback(persian, onEnd));
+  } else {
+    _ttsFallback(persian, onEnd);
+  }
+}
+
+function _ttsFallback(persian, onEnd) {
+  if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
+  const utter = new SpeechSynthesisUtterance(persian);
   utter.lang = "fa-IR";
   utter.rate = 0.85;
-  utter.pitch = 1;
   if (onEnd) utter.onend = onEnd;
-  // Try to find a Persian voice
   const voices = speechSynthesis.getVoices();
   const faVoice = voices.find(v => v.lang.startsWith("fa"));
   if (faVoice) utter.voice = faVoice;
   speechSynthesis.speak(utter);
 }
 
-function speakWithButton(text, btn) {
+function speakWithButton(persian, btn) {
   btn.classList.add("speaking");
-  speak(text, () => btn.classList.remove("speaking"));
+  speak(persian, () => btn.classList.remove("speaking"));
 }
 
 // ===== FLASHCARD ACTIVITY =====

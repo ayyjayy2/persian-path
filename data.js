@@ -306,3 +306,6 @@ const LESSONS = [
 
 const XP_PER_LESSON = 10;
 const HEARTS_MAX = 5;
+
+// Node.js compatibility (used by generate-audio.js)
+if (typeof module !== "undefined") module.exports = { LESSONS };
