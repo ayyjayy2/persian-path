@@ -133,8 +133,16 @@
 
         <!-- Word Collection -->
         <div class="profile-section">
-          <h3 class="profile-section-title">Word Collection</h3>
-          <div id="word-collection"></div>
+          <div class="profile-nav-card" onclick="showWordCollection()">
+            <div class="profile-nav-card-left">
+              <span class="profile-nav-card-icon">📖</span>
+              <div>
+                <div class="profile-nav-card-title">Word Collection</div>
+                <div class="profile-nav-card-sub" id="wc-summary">Words you've learned</div>
+              </div>
+            </div>
+            <span class="profile-nav-card-arrow">›</span>
+          </div>
         </div>
 
       </div>
@@ -203,6 +211,15 @@
       </div>
       <div class="holiday-modal-scroll" id="holiday-modal-body"></div>
     </div>
+  </div>
+
+  <!-- WORD COLLECTION SCREEN -->
+  <div id="wordcollection-screen" class="screen">
+    <div class="wc-screen-nav">
+      <button class="back-btn" id="back-from-wordcollection">←</button>
+      <h2 class="wc-screen-title">Word Collection</h2>
+    </div>
+    <div id="word-collection-content" class="wc-screen-content"></div>
   </div>
 
   <!-- AUTH MODAL -->

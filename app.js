@@ -66,7 +66,7 @@ let currentActivity = null;
 let currentTab = "learn"; // "learn" | "explore"
 let articleReturnScreen = "explore-screen"; // where back-from-article goes
 
-const HIDE_NAV_SCREENS = new Set(["exercise-screen", "results-screen", "article-screen"]);
+const HIDE_NAV_SCREENS = new Set(["exercise-screen", "results-screen", "article-screen", "wordcollection-screen"]);
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
@@ -1002,8 +1002,16 @@ function renderProfile() {
     `;
   }).join('');
 
-  // Word collection
-  const container = document.getElementById('word-collection');
+  // Word collection summary
+  const words = learnedWords();
+  const lessonCount = LESSONS.filter(l => (state.completedLessons[l.id] || {}).flashcard).length;
+  document.getElementById('wc-summary').textContent =
+    words.length > 0 ? `${words.length} words across ${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}` : 'Complete flashcards to start collecting';
+}
+
+function showWordCollection() {
+  showScreen('wordcollection-screen');
+  const container = document.getElementById('word-collection-content');
   const words = learnedWords();
   if (words.length === 0) {
     container.innerHTML = '<p class="wc-empty">Complete flashcard activities to build your word collection!</p>';
@@ -1146,4 +1154,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
   document.getElementById("btn-play-again").onclick = () => startActivity(currentActivity);
   document.getElementById("btn-go-home").onclick = goHome;
+  document.getElementById("back-from-wordcollection").onclick = () => {
+    showScreen("profile-screen");
+    renderProfile();
+  };
 });

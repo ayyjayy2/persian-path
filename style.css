@@ -1816,6 +1816,73 @@ body.modal-open { overflow: hidden; }
   font-weight: 600;
 }
 
+/* Profile nav card (word collection entry) */
+.profile-nav-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.profile-nav-card:active {
+  border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(88,204,2,0.15);
+}
+
+.profile-nav-card-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-nav-card-icon { font-size: 1.6rem; }
+
+.profile-nav-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.profile-nav-card-sub {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.profile-nav-card-arrow {
+  font-size: 1.4rem;
+  color: var(--text-light);
+  line-height: 1;
+}
+
+/* Word Collection Screen */
+.wc-screen-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px 12px;
+  background: white;
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.wc-screen-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.wc-screen-content {
+  padding: 16px;
+}
+
 /* ===== AUTH MODAL ===== */
 .auth-modal-overlay {
   display: none;
