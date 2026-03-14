@@ -1,3 +1,10 @@
+// ===== SUPABASE =====
+const SUPABASE_URL = 'https://rpnwwtsdfclcyexdafks.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_40HGCpUI6aogWTGhS8fGDA_B3Fozx_w';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let _currentUser = null;
+let _authTab = 'signin';
+
 // ===== STATE =====
 let state = {
   xp: 0,
@@ -8,12 +15,24 @@ let state = {
 };
 
 // Load saved state
-function loadState() {
-  const saved = localStorage.getItem("persian_app_state");
-  if (saved) {
-    try {
-      state = { ...state, ...JSON.parse(saved) };
-    } catch (e) {}
+async function loadState() {
+  let isNewUser = false;
+  if (_currentUser) {
+    const { data } = await _sb.from('profiles').select('*').eq('id', _currentUser.id).single();
+    if (data) {
+      state.xp = data.xp ?? 0;
+      state.streak = data.streak ?? 0;
+      state.hearts = data.hearts ?? 5;
+      state.lastPlayedDate = data.last_played_date ?? null;
+      state.completedLessons = data.completed_lessons ?? {};
+    } else {
+      isNewUser = true;
+    }
+  } else {
+    const saved = localStorage.getItem("persian_app_state");
+    if (saved) {
+      try { state = { ...state, ...JSON.parse(saved) }; } catch (e) {}
+    }
   }
   // Update streak
   const today = new Date().toDateString();
@@ -21,11 +40,24 @@ function loadState() {
     const yesterday = new Date(Date.now() - 86400000).toDateString();
     if (state.lastPlayedDate !== yesterday) state.streak = 0;
   }
+  return isNewUser;
 }
 
-function saveState() {
+async function saveState() {
   state.lastPlayedDate = new Date().toDateString();
-  localStorage.setItem("persian_app_state", JSON.stringify(state));
+  if (_currentUser) {
+    await _sb.from('profiles').upsert({
+      id: _currentUser.id,
+      xp: state.xp,
+      streak: state.streak,
+      hearts: state.hearts,
+      last_played_date: state.lastPlayedDate,
+      completed_lessons: state.completedLessons,
+      updated_at: new Date().toISOString(),
+    });
+  } else {
+    localStorage.setItem("persian_app_state", JSON.stringify(state));
+  }
 }
 
 // ===== NAVIGATION =====
@@ -58,15 +90,19 @@ function switchTab(tab) {
   if (tab === "learn") {
     showScreen("home-screen");
     renderHome();
-  } else {
+  } else if (tab === "explore") {
     showScreen("explore-screen");
     renderExplore();
+  } else if (tab === "profile") {
+    showScreen("profile-screen");
+    renderProfile();
   }
 }
 
 function setActiveTab(tab) {
   document.getElementById("nav-learn").classList.toggle("active", tab === "learn");
   document.getElementById("nav-explore").classList.toggle("active", tab === "explore");
+  document.getElementById("nav-profile").classList.toggle("active", tab === "profile");
 }
 
 function openLesson(lessonId) {
@@ -754,7 +790,7 @@ function updateExerciseHeader(current, total) {
 }
 
 // ===== FINISH ACTIVITY =====
-function finishActivity(correct, total) {
+async function finishActivity(correct, total) {
   const xpEarned = XP_PER_LESSON + Math.round((correct / total) * XP_PER_LESSON);
   state.xp += xpEarned;
   state.streak = Math.max(state.streak, 1);
@@ -763,7 +799,7 @@ function finishActivity(correct, total) {
     state.completedLessons[currentLesson.id] = {};
   }
   state.completedLessons[currentLesson.id][currentActivity] = true;
-  saveState();
+  await saveState();
 
   renderResults(correct, total, xpEarned);
   showScreen("results-screen");
@@ -875,15 +911,219 @@ function closeHolidayModal() {
   document.body.classList.remove("modal-open");
 }
 
+// ===== ACHIEVEMENTS =====
+const ACHIEVEMENTS = [
+  { id: 'first_step',     icon: '🌱', title: 'First Step',     desc: 'Complete your first lesson activity' },
+  { id: 'on_fire',        icon: '🔥', title: 'On Fire',        desc: 'Reach a 3-day streak' },
+  { id: 'dedicated',      icon: '📅', title: 'Dedicated',      desc: 'Reach a 7-day streak' },
+  { id: 'rising_star',    icon: '⭐', title: 'Rising Star',    desc: 'Fully complete 3 lessons' },
+  { id: 'scholar',        icon: '🎓', title: 'Scholar',        desc: 'Fully complete all lessons' },
+  { id: 'centurion',      icon: '⚡', title: 'Centurion',      desc: 'Reach 100 XP' },
+  { id: 'master',         icon: '👑', title: 'Master',         desc: 'Reach Level 5 (400 XP)' },
+  { id: 'word_collector', icon: '📖', title: 'Word Collector', desc: 'Learn words from 5 lessons' },
+];
+
+function fullyCompletedLessons() {
+  return LESSONS.filter(l => {
+    const done = state.completedLessons[l.id] || {};
+    return done.flashcard && done.quiz && done.listen;
+  });
+}
+
+function learnedWords() {
+  const words = [];
+  LESSONS.forEach(l => {
+    const done = state.completedLessons[l.id] || {};
+    if (done.flashcard) {
+      l.words.forEach(w => words.push({ ...w, lessonId: l.id, lessonTitle: l.title, lessonIcon: l.icon, lessonColor: l.color }));
+    }
+  });
+  return words;
+}
+
+function checkAchievement(id) {
+  const lessonsWithFlashcard = LESSONS.filter(l => (state.completedLessons[l.id] || {}).flashcard).length;
+  switch (id) {
+    case 'first_step':     return Object.keys(state.completedLessons).length >= 1;
+    case 'on_fire':        return state.streak >= 3;
+    case 'dedicated':      return state.streak >= 7;
+    case 'rising_star':    return fullyCompletedLessons().length >= 3;
+    case 'scholar':        return fullyCompletedLessons().length >= LESSONS.length;
+    case 'centurion':      return state.xp >= 100;
+    case 'master':         return state.xp >= 400;
+    case 'word_collector': return lessonsWithFlashcard >= 5;
+    default:               return false;
+  }
+}
+
+// ===== PROFILE =====
+function renderProfile() {
+  const isGuest = !_currentUser;
+
+  document.getElementById('profile-auth-banner').style.display = isGuest ? '' : 'none';
+  document.getElementById('profile-user-header').style.display = isGuest ? 'none' : '';
+
+  if (!isGuest) {
+    document.getElementById('profile-avatar').textContent = (_currentUser.email || '?')[0].toUpperCase();
+    document.getElementById('profile-email').textContent = _currentUser.email;
+  }
+
+  // Stats row
+  const level = Math.floor(state.xp / 100) + 1;
+  const completed = fullyCompletedLessons().length;
+  document.getElementById('profile-stats-row').innerHTML = `
+    <div class="profile-stat-card">
+      <div class="psc-value">${level}</div>
+      <div class="psc-label">Level</div>
+    </div>
+    <div class="profile-stat-card">
+      <div class="psc-value">${state.xp}</div>
+      <div class="psc-label">Total XP</div>
+    </div>
+    <div class="profile-stat-card">
+      <div class="psc-value">${state.streak}</div>
+      <div class="psc-label">🔥 Streak</div>
+    </div>
+    <div class="profile-stat-card">
+      <div class="psc-value">${completed}/${LESSONS.length}</div>
+      <div class="psc-label">Lessons Done</div>
+    </div>
+  `;
+
+  // Achievements
+  document.getElementById('achievements-grid').innerHTML = ACHIEVEMENTS.map(a => {
+    const unlocked = checkAchievement(a.id);
+    return `
+      <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
+        <div class="achievement-icon">${a.icon}</div>
+        <div class="achievement-title">${a.title}</div>
+        <div class="achievement-desc">${a.desc}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Word collection
+  const container = document.getElementById('word-collection');
+  const words = learnedWords();
+  if (words.length === 0) {
+    container.innerHTML = '<p class="wc-empty">Complete flashcard activities to build your word collection!</p>';
+    return;
+  }
+  const byLesson = {};
+  words.forEach(w => {
+    if (!byLesson[w.lessonId]) byLesson[w.lessonId] = { title: w.lessonTitle, icon: w.lessonIcon, color: w.lessonColor, words: [] };
+    byLesson[w.lessonId].words.push(w);
+  });
+  container.innerHTML = Object.values(byLesson).map(lesson => `
+    <div class="wc-lesson">
+      <div class="wc-lesson-header" style="--lesson-color:${lesson.color}">
+        <span>${lesson.icon}</span> ${lesson.title}
+      </div>
+      <div class="wc-words">
+        ${lesson.words.map(w => `
+          <div class="wc-word">
+            <div class="wc-persian">${w.persian}</div>
+            <div class="wc-phonetic">${w.phonetic}</div>
+            <div class="wc-english">${w.english}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== AUTH =====
+function openAuthModal() {
+  document.getElementById('auth-modal').classList.add('open');
+  document.body.classList.add('modal-open');
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-modal').classList.remove('open');
+  document.body.classList.remove('modal-open');
+}
+
+function showAuthTab(tab) {
+  _authTab = tab;
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('auth-submit').textContent = tab === 'signin' ? 'Sign In' : 'Sign Up';
+  document.getElementById('auth-modal-title').textContent = tab === 'signin' ? 'Welcome Back' : 'Create Account';
+  const errEl = document.getElementById('auth-error');
+  errEl.style.display = 'none';
+  errEl.style.color = '';
+}
+
+async function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  const btn = document.getElementById('auth-submit');
+
+  errEl.style.display = 'none';
+  errEl.style.color = '';
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  const result = _authTab === 'signin'
+    ? await _sb.auth.signInWithPassword({ email, password })
+    : await _sb.auth.signUp({ email, password });
+
+  btn.disabled = false;
+  btn.textContent = _authTab === 'signin' ? 'Sign In' : 'Sign Up';
+
+  if (result.error) {
+    errEl.textContent = result.error.message;
+    errEl.style.display = '';
+    return;
+  }
+
+  // Sign up with email confirmation pending
+  if (_authTab === 'signup' && result.data?.user && !result.data.session) {
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = 'Check your email to confirm your account!';
+    errEl.style.display = '';
+    return;
+  }
+}
+
+async function signOut() {
+  await _sb.auth.signOut();
+  _currentUser = null;
+  await loadState();
+  renderProfile();
+  showToast('Signed out');
+}
+
 // ===== INIT =====
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Load voices (browsers need this)
   speechSynthesis.getVoices();
   speechSynthesis.onvoiceschanged = () => {};
 
-  loadState();
+  await loadState();
   renderHome();
   showScreen("home-screen");
+
+  // Supabase auth listener — fires immediately on load if session exists
+  _sb.auth.onAuthStateChange(async (event, session) => {
+    _currentUser = session?.user ?? null;
+    if (_currentUser) {
+      const isNewUser = await loadState();
+      if (isNewUser) await saveState(); // sync local progress to new account
+      renderHome();
+      if (currentTab === 'profile') renderProfile();
+      if (document.getElementById('auth-modal').classList.contains('open')) {
+        closeAuthModal();
+        showToast('Signed in! Progress synced. 🎉');
+      }
+    } else if (event === 'SIGNED_OUT') {
+      await loadState();
+      renderHome();
+      if (currentTab === 'profile') renderProfile();
+    }
+  });
 
   // Wire back buttons
   document.getElementById("back-from-lesson").onclick = () => {
