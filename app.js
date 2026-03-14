@@ -852,11 +852,16 @@ function launchConfetti() {
 }
 
 // ===== TOAST =====
+let _toastTimeout = null;
 function showToast(msg) {
   const toast = document.getElementById("toast");
   toast.textContent = msg;
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2500);
+  if (_toastTimeout) clearTimeout(_toastTimeout);
+  _toastTimeout = setTimeout(() => {
+    toast.classList.remove("show");
+    _toastTimeout = null;
+  }, 2500);
 }
 
 // ===== UTILS =====
