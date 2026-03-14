@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -99,6 +100,54 @@
       <div id="exercise-content"></div>
     </div>
 
+    <!-- ===== PROFILE SCREEN ===== -->
+    <div id="profile-screen" class="screen">
+      <div class="profile-page">
+
+        <!-- Auth banner (guest) -->
+        <div id="profile-auth-banner" class="profile-auth-banner">
+          <div class="profile-auth-text">
+            <strong>Save progress across devices</strong>
+            <span>You're currently in guest mode</span>
+          </div>
+          <button class="profile-auth-btn" onclick="openAuthModal()">Sign In</button>
+        </div>
+
+        <!-- User header (signed in) -->
+        <div id="profile-user-header" class="profile-user-header">
+          <div class="profile-avatar-circle" id="profile-avatar"></div>
+          <div class="profile-user-info">
+            <div class="profile-email" id="profile-email"></div>
+            <button class="profile-signout" onclick="signOut()">Sign out</button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="profile-stats-row" id="profile-stats-row"></div>
+
+        <!-- Achievements -->
+        <div class="profile-section">
+          <h3 class="profile-section-title">Achievements</h3>
+          <div class="achievements-grid" id="achievements-grid"></div>
+        </div>
+
+        <!-- Word Collection -->
+        <div class="profile-section">
+          <div class="profile-nav-card" onclick="showWordCollection()">
+            <div class="profile-nav-card-left">
+              <span class="profile-nav-card-icon">📖</span>
+              <div>
+                <div class="profile-nav-card-title">Word Collection</div>
+                <div class="profile-nav-card-sub" id="wc-summary">Words you've learned</div>
+              </div>
+            </div>
+            <span class="profile-nav-card-arrow">›</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ===== RESULTS SCREEN ===== -->
     <div id="results-screen" class="screen">
       <div class="results-wrapper">
@@ -140,6 +189,10 @@
       <span class="nav-icon">🌍</span>
       <span class="nav-label">Explore</span>
     </button>
+    <button class="bottom-nav-btn" id="nav-profile" onclick="switchTab('profile')">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">Profile</span>
+    </button>
   </nav>
 
   <!-- Toast -->
@@ -157,6 +210,37 @@
         <button class="holiday-modal-close" onclick="closeHolidayModal()">✕</button>
       </div>
       <div class="holiday-modal-scroll" id="holiday-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- WORD COLLECTION SCREEN -->
+  <div id="wordcollection-screen" class="screen">
+    <div class="wc-screen-nav">
+      <button class="back-btn" id="back-from-wordcollection">←</button>
+      <h2 class="wc-screen-title">Word Collection</h2>
+    </div>
+    <div id="word-collection-content" class="wc-screen-content"></div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" class="auth-modal-overlay" onclick="closeAuthModal()">
+    <div class="auth-modal-panel" onclick="event.stopPropagation()">
+      <div class="auth-modal-handle"></div>
+      <div class="auth-modal-header">
+        <h2 class="auth-modal-title" id="auth-modal-title">Welcome Back</h2>
+        <button class="auth-modal-close" onclick="closeAuthModal()">✕</button>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signin" onclick="showAuthTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tab-signup" onclick="showAuthTab('signup')">Sign Up</button>
+      </div>
+      <div id="auth-error" class="auth-error" style="display:none"></div>
+      <form id="auth-form" onsubmit="handleAuth(event)">
+        <input type="email" id="auth-email" class="auth-input" placeholder="Email address" required autocomplete="email" />
+        <input type="password" id="auth-password" class="auth-input" placeholder="Password (min 6 characters)" required minlength="6" />
+        <button type="submit" class="btn-big green" id="auth-submit" style="width:100%;margin-top:4px">Sign In</button>
+      </form>
+      <p class="auth-note">Your local progress will sync to your account on sign in.</p>
     </div>
   </div>
 
