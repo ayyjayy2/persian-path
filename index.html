@@ -70,6 +70,15 @@
       <div class="explore-grid" id="explore-grid"></div>
     </div>
 
+    <!-- ===== MAP SCREEN ===== -->
+    <div id="map-screen" class="screen">
+      <div class="map-screen-nav">
+        <button class="back-btn" id="back-from-map">←</button>
+        <h2 class="map-screen-title" id="map-screen-title"></h2>
+      </div>
+      <div id="map-screen-container" class="map-screen-container"></div>
+    </div>
+
     <!-- ===== ARTICLE SCREEN ===== -->
     <div id="article-screen" class="screen">
       <div class="article-nav">
@@ -124,7 +133,7 @@
           <div class="profile-avatar-circle" id="profile-avatar"></div>
           <div class="profile-user-info">
             <div class="profile-email" id="profile-email"></div>
-            <button class="profile-signout" onclick="signOut()">Sign out</button>
+            <button class="profile-signout" onclick="openSignoutModal()">Sign out</button>
           </div>
         </div>
 
@@ -226,6 +235,19 @@
       <h2 class="wc-screen-title">Word Collection</h2>
     </div>
     <div id="word-collection-content" class="wc-screen-content"></div>
+  </div>
+
+  <!-- SIGN OUT CONFIRM MODAL -->
+  <div id="signout-modal" class="confirm-modal-overlay" onclick="closeSignoutModal()">
+    <div class="confirm-modal-panel" onclick="event.stopPropagation()">
+      <div class="confirm-modal-icon">👋</div>
+      <div class="confirm-modal-title">Sign out?</div>
+      <div class="confirm-modal-body">Your progress is saved to your account and will be here when you return.</div>
+      <div class="confirm-modal-btns">
+        <button class="confirm-btn cancel" onclick="closeSignoutModal()">Cancel</button>
+        <button class="confirm-btn danger" id="signout-confirm-btn" onclick="confirmSignOut()">Sign Out</button>
+      </div>
+    </div>
   </div>
 
   <!-- AUTH MODAL -->

@@ -66,7 +66,7 @@ let currentActivity = null;
 let currentTab = "learn"; // "learn" | "explore"
 let articleReturnScreen = "explore-screen"; // where back-from-article goes
 
-const HIDE_NAV_SCREENS = new Set(["exercise-screen", "results-screen", "article-screen", "wordcollection-screen"]);
+const HIDE_NAV_SCREENS = new Set(["exercise-screen", "results-screen", "article-screen", "wordcollection-screen", "map-screen"]);
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
@@ -273,10 +273,19 @@ function renderArticle(article) {
       html += `</div>`;
 
     } else if (section.type === "map") {
-      html += `<div id="${section.mapId}" class="article-map"></div>`;
-      if (section.note) {
-        html += `<p class="map-note">${section.note}</p>`;
-      }
+      const mapIdx = article.sections.indexOf(section);
+      html += `
+        <div class="map-link-card" onclick="showMap('${article.id}', ${mapIdx})">
+          <div class="map-link-card-left">
+            <span class="map-link-icon">🗺️</span>
+            <div>
+              <div class="map-link-title">${section.heading}</div>
+              <div class="map-link-sub">Tap to open interactive map</div>
+            </div>
+          </div>
+          <span class="map-link-arrow">›</span>
+        </div>
+      `;
     }
 
     html += `</div>`; // close article-section
@@ -290,6 +299,50 @@ function renderArticle(article) {
   // Initialize any maps in this article
   destroyMaps();
   setTimeout(() => initArticleMaps(article), 50);
+}
+
+// ===== MAP SCREEN =====
+let _currentMapSection = null;
+
+function showMap(articleId, sectionIdx) {
+  const article = ARTICLES.find(a => a.id === articleId);
+  if (!article) return;
+  _currentMapSection = article.sections[sectionIdx];
+  if (!_currentMapSection) return;
+
+  document.getElementById('map-screen-title').textContent = _currentMapSection.heading;
+  document.getElementById('map-screen-container').innerHTML =
+    `<div id="map-screen-map" class="map-screen-map"></div>
+     ${_currentMapSection.note ? `<p class="map-note map-note-screen">${_currentMapSection.note}</p>` : ''}`;
+
+  showScreen('map-screen');
+  destroyMaps();
+  setTimeout(() => initSingleMap('map-screen-map', _currentMapSection), 50);
+}
+
+function initSingleMap(elementId, section) {
+  if (typeof L === 'undefined') return;
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  const tiles = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  const attr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
+  const map = L.map(elementId, { center: section.center, zoom: section.zoom, zoomControl: true, scrollWheelZoom: true });
+  L.tileLayer(tiles, { attribution: attr, maxZoom: 18 }).addTo(map);
+
+  section.markers.forEach(m => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:34px;height:34px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:15px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.28);cursor:pointer">${m.emoji}</div>`,
+      iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -22],
+    });
+    L.marker([m.lat, m.lng], { icon })
+      .addTo(map)
+      .bindPopup(`<div style="font-size:13px;line-height:1.5">${m.popup}</div>`, { maxWidth: 220 });
+  });
+
+  _maps[elementId] = map;
 }
 
 // ===== LEAFLET MAP MANAGEMENT =====
@@ -1101,10 +1154,25 @@ async function handleAuth(e) {
   }
 }
 
-async function signOut() {
-  await _sb.auth.signOut();
+function openSignoutModal() {
+  document.getElementById('signout-modal').classList.add('open');
+}
+
+function closeSignoutModal() {
+  document.getElementById('signout-modal').classList.remove('open');
+}
+
+async function confirmSignOut() {
+  const btn = document.getElementById('signout-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+  try {
+    await _sb.auth.signOut();
+  } catch (e) {}
   _currentUser = null;
+  closeSignoutModal();
   await loadState();
+  renderHome();
   renderProfile();
   showToast('Signed out');
 }
@@ -1159,6 +1227,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
   document.getElementById("btn-play-again").onclick = () => startActivity(currentActivity);
   document.getElementById("btn-go-home").onclick = goHome;
+  document.getElementById("back-from-map").onclick = () => {
+    destroyMaps();
+    showScreen("article-screen");
+  };
   document.getElementById("back-from-wordcollection").onclick = () => {
     showScreen("profile-screen");
     renderProfile();

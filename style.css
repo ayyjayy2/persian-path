@@ -1816,6 +1816,85 @@ body.modal-open { overflow: hidden; }
   font-weight: 600;
 }
 
+/* Map link card (replaces inline map in articles) */
+.map-link-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  margin: 4px 0;
+  transition: border-color 0.15s;
+}
+
+.map-link-card:active { border-color: var(--blue); }
+
+.map-link-card-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.map-link-icon { font-size: 1.8rem; }
+
+.map-link-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.map-link-sub {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.map-link-arrow {
+  font-size: 1.4rem;
+  color: var(--text-light);
+}
+
+/* Map screen */
+.map-screen-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px 12px;
+  background: white;
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.map-screen-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.map-screen-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px - 60px);
+}
+
+.map-screen-map {
+  flex: 1;
+  min-height: 0;
+}
+
+.map-note-screen {
+  padding: 10px 16px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  background: white;
+  border-top: 1px solid var(--border);
+}
+
 /* Profile nav card (word collection entry) */
 .profile-nav-card {
   display: flex;
@@ -1882,6 +1961,59 @@ body.modal-open { overflow: hidden; }
 .wc-screen-content {
   padding: 16px;
 }
+
+/* ===== CONFIRM MODAL ===== */
+.confirm-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 600;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.confirm-modal-overlay.open { display: flex; }
+
+.confirm-modal-panel {
+  background: white;
+  border-radius: 20px;
+  padding: 28px 24px 24px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: bounceIn 0.2s ease;
+}
+
+.confirm-modal-icon { font-size: 2.2rem; }
+.confirm-modal-title { font-size: 1.15rem; font-weight: 800; color: var(--text); }
+.confirm-modal-body { font-size: 0.88rem; color: var(--text-light); line-height: 1.5; }
+
+.confirm-modal-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.confirm-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.confirm-btn.cancel { background: var(--bg); color: var(--text); }
+.confirm-btn.danger { background: var(--red); color: white; border-color: var(--red); }
+.confirm-btn:active { filter: brightness(0.92); }
+.confirm-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ===== AUTH MODAL ===== */
 .auth-modal-overlay {
