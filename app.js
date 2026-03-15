@@ -1101,10 +1101,25 @@ async function handleAuth(e) {
   }
 }
 
-async function signOut() {
-  await _sb.auth.signOut();
+function openSignoutModal() {
+  document.getElementById('signout-modal').classList.add('open');
+}
+
+function closeSignoutModal() {
+  document.getElementById('signout-modal').classList.remove('open');
+}
+
+async function confirmSignOut() {
+  const btn = document.getElementById('signout-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+  try {
+    await _sb.auth.signOut();
+  } catch (e) {}
   _currentUser = null;
+  closeSignoutModal();
   await loadState();
+  renderHome();
   renderProfile();
   showToast('Signed out');
 }
