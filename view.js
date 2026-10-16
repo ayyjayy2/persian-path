@@ -609,6 +609,7 @@ ${(v.is.map) ? html`
     <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
     <h1 style="font-size:30px;font-weight:400;margin:0;line-height:1.1">${v.M.heading}</h1>
   </div>
+  ${(v.M.offline) ? html`<p role="status" style="margin:0;font-size:13px;line-height:1.55;display:flex;gap:8px;border-top:1px solid var(--color-text);padding-top:10px"><span style="color:var(--color-accent-700);flex:none">${v.ic.bulbSm}</span><span><em>You're offline.</em> Only parts of the map you've viewed before will show; the markers all work.</span></p>` : null}
   <div id="pl-map" class="plate" style="height:min(70vh,560px);width:100%"></div>
   ${(v.M.note) ? html`<p class="rich" style="margin:0;font-size:13px;line-height:1.55;font-style:italic;color:var(--color-neutral-800)" dangerouslySetInnerHTML=${{ __html: v.M.note }}></p>` : null}
 </div>

@@ -1,5 +1,7 @@
 [build]
   publish = "."
+  # Refresh the service worker's precache list (and its version hash) on every deploy
+  command = "node scripts/build-precache.js"
 
 [[headers]]
   for = "/*"
@@ -7,3 +9,14 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# The service worker and its file list must never be served stale
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/precache-manifest.js"
+  [headers.values]
+    Cache-Control = "no-cache"

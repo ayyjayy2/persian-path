@@ -40,7 +40,7 @@ class App extends Component {
   state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
     xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
     progress: {}, srs: {}, mistakes: [], prefs: {}, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
-    user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, holiday: null, mapSection: null };
+    online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, holiday: null, mapSection: null };
 
   componentDidMount() {
     this.D = D;
@@ -49,6 +49,8 @@ class App extends Component {
     window.addEventListener('resize', this._r);
     this._bip = e => { e.preventDefault(); this._deferred = e; };
     window.addEventListener('beforeinstallprompt', this._bip);
+    this._net = () => { this.setState({ online: navigator.onLine }); if (navigator.onLine) this.pushRemote(); };
+    window.addEventListener('online', this._net); window.addEventListener('offline', this._net);
     if (sb) sb.auth.onAuthStateChange((event, session) => {
       const user = session ? session.user : null;
       const was = this.state.user;
@@ -56,7 +58,7 @@ class App extends Component {
       if (user && (!was || was.id !== user.id)) setTimeout(() => this.pullRemote(user), 0);
     });
   }
-  componentWillUnmount() { window.removeEventListener('resize', this._r); window.removeEventListener('beforeinstallprompt', this._bip); }
+  componentWillUnmount() { window.removeEventListener('resize', this._r); window.removeEventListener('beforeinstallprompt', this._bip); window.removeEventListener('online', this._net); window.removeEventListener('offline', this._net); }
   componentDidUpdate(prevProps, prev) {
     if (!this.state.ready) return;
     const s = this.state;
@@ -92,7 +94,7 @@ class App extends Component {
     this.pushRemote();
   }
   pushRemote() {
-    const s = this.state; if (!sb || !s.user) return;
+    const s = this.state; if (!sb || !s.user || !navigator.onLine) return;
     clearTimeout(this._pushT);
     this._pushT = setTimeout(() => {
       sb.from('profiles').upsert({ id: s.user.id, xp: this.state.xp, streak: this.state.streak, last_played_date: this.state.lastPlayedDate,
@@ -101,7 +103,7 @@ class App extends Component {
   }
   async submitAuth(e) {
     e.preventDefault();
-    const s = this.state; if (!sb) return this.setState({ authMsg: 'Accounts are unavailable offline.', authErr: true });
+    const s = this.state; if (!sb || !navigator.onLine) return this.setState({ authMsg: "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.", authErr: true });
     this.setState({ authBusy: true, authMsg: null });
     const creds = { email: s.authEmail.trim(), password: s.authPassword };
     const res = s.authMode === 'signin' ? await sb.auth.signInWithPassword(creds) : await sb.auth.signUp(creds);
@@ -528,7 +530,8 @@ class App extends Component {
     }
     v.openMap = sec => this.setState({ mapSection: sec, route: { name: 'map', from: r } }, () => window.scrollTo(0, 0));
     v.openHoliday = hol => this.setState({ sheet: 'holiday', holiday: hol });
-    if (view === 'map') v.M = { heading: s.mapSection.heading, note: s.mapSection.note };
+    if (view === 'map') v.M = { heading: s.mapSection.heading, note: s.mapSection.note, offline: !s.online };
+    v.offline = !s.online;
 
     // profile
     const fullDone = lessons.filter(l => D.ACTIVITIES.slice(0, 3).every(a => prog(l.id)[a.id])).length;
@@ -554,7 +557,9 @@ class App extends Component {
     v.H = s.sheet === 'holiday' ? s.holiday.detail : null;
     v.closeSheet = () => this.setState({ sheet: null, authMsg: null });
     v.isGuest = !s.user; v.userEmail = s.user ? s.user.email : ''; v.openSignOut = () => this.setState({ sheet: 'signout' }); v.doSignOut = () => this.signOut();
-    v.authEmail = s.authEmail; v.authPassword = s.authPassword; v.authBusy = s.authBusy; v.authMsg = s.authMsg; v.authMsgRule = s.authErr ? 'var(--color-text)' : 'var(--color-accent)';
+    v.authEmail = s.authEmail; v.authPassword = s.authPassword; v.authBusy = s.authBusy || !s.online;
+    v.authMsg = s.authMsg || (s.online ? null : "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.");
+    v.authMsgRule = s.authErr || !s.online ? 'var(--color-text)' : 'var(--color-accent)';
     v.setAuthEmail = e => this.setState({ authEmail: e.target.value }); v.setAuthPassword = e => this.setState({ authPassword: e.target.value });
     v.authPwAuto = s.authMode === 'signin' ? 'current-password' : 'new-password'; v.submitAuth = e => this.submitAuth(e); v.stop = e => e.stopPropagation();
     v.authTabs = [['signin', 'Sign in'], ['signup', 'Sign up']].map(([id, label], j) => ({ label, go: () => this.setState({ authMode: id, authMsg: null }), bl: j ? '1px solid var(--color-divider)' : '0', shadow: s.authMode === id ? 'inset 0 0 0 1px var(--color-accent)' : 'none', color: s.authMode === id ? 'var(--color-accent-700)' : 'var(--color-text)' }));
@@ -568,6 +573,6 @@ class App extends Component {
 
 render(h(App, {}), document.getElementById('app'));
 
-if ('serviceWorker' in navigator && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 }
