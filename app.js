@@ -1,1238 +1,578 @@
+// Persian Learnin v2 — app logic. Ported from the v2 design export; markup lives in view.js.
+import { h, render, Component } from './vendor/preact-htm.js';
+import * as D from './learn-data.js';
+import { view } from './view.js';
+
 // ===== SUPABASE =====
 const SUPABASE_URL = 'https://rpnwwtsdfclcyexdafks.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_40HGCpUI6aogWTGhS8fGDA_B3Fozx_w';
-const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-let _currentUser = null;
-let _authTab = 'signin';
-
-// ===== STATE =====
-let state = {
-  xp: 0,
-  streak: 0,
-  hearts: 5,
-  completedLessons: {},  // lessonId -> { flashcard, quiz, listen }
-  lastPlayedDate: null,
-};
-
-// Load saved state
-async function loadState() {
-  let isNewUser = false;
-  if (_currentUser) {
-    const { data } = await _sb.from('profiles').select('*').eq('id', _currentUser.id).single();
-    if (data) {
-      state.xp = data.xp ?? 0;
-      state.streak = data.streak ?? 0;
-      state.hearts = data.hearts ?? 5;
-      state.lastPlayedDate = data.last_played_date ?? null;
-      state.completedLessons = data.completed_lessons ?? {};
-    } else {
-      isNewUser = true;
-    }
-  } else {
-    const saved = localStorage.getItem("persian_app_state");
-    if (saved) {
-      try { state = { ...state, ...JSON.parse(saved) }; } catch (e) {}
-    }
-  }
-  // Update streak
-  const today = new Date().toDateString();
-  if (state.lastPlayedDate !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-    if (state.lastPlayedDate !== yesterday) state.streak = 0;
-  }
-  return isNewUser;
-}
-
-async function saveState() {
-  state.lastPlayedDate = new Date().toDateString();
-  if (_currentUser) {
-    await _sb.from('profiles').upsert({
-      id: _currentUser.id,
-      xp: state.xp,
-      streak: state.streak,
-      hearts: state.hearts,
-      last_played_date: state.lastPlayedDate,
-      completed_lessons: state.completedLessons,
-      updated_at: new Date().toISOString(),
-    });
-  } else {
-    localStorage.setItem("persian_app_state", JSON.stringify(state));
-  }
-}
-
-// ===== NAVIGATION =====
-let currentLesson = null;
-let currentActivity = null;
-let currentTab = "learn"; // "learn" | "explore"
-let articleReturnScreen = "explore-screen"; // where back-from-article goes
-
-const HIDE_NAV_SCREENS = new Set(["exercise-screen", "results-screen", "article-screen", "wordcollection-screen", "map-screen"]);
-
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  const el = document.getElementById(id);
-  if (el) el.classList.add("active");
-  // Show/hide bottom nav
-  const nav = document.getElementById("bottom-nav");
-  if (nav) nav.classList.toggle("hidden", HIDE_NAV_SCREENS.has(id));
-}
-
-function goHome() {
-  currentTab = "learn";
-  setActiveTab("learn");
-  showScreen("home-screen");
-  renderHome();
-}
-
-function switchTab(tab) {
-  currentTab = tab;
-  setActiveTab(tab);
-  if (tab === "learn") {
-    showScreen("home-screen");
-    renderHome();
-  } else if (tab === "explore") {
-    showScreen("explore-screen");
-    renderExplore();
-  } else if (tab === "profile") {
-    showScreen("profile-screen");
-    renderProfile();
-  }
-}
-
-function setActiveTab(tab) {
-  document.getElementById("nav-learn").classList.toggle("active", tab === "learn");
-  document.getElementById("nav-explore").classList.toggle("active", tab === "explore");
-  document.getElementById("nav-profile").classList.toggle("active", tab === "profile");
-}
-
-function openLesson(lessonId) {
-  currentLesson = LESSONS.find(l => l.id === lessonId);
-  if (!currentLesson) return;
-  renderLessonMenu();
-  showScreen("lesson-screen");
-}
-
-// ===== EXPLORE SCREEN =====
-function renderExplore() {
-  const grid = document.getElementById("explore-grid");
-  grid.innerHTML = "";
-  ARTICLES.forEach(article => {
-    const card = document.createElement("div");
-    card.className = "explore-card";
-    card.style.setProperty("--card-color", article.color);
-    card.innerHTML = `
-      <div class="explore-card-icon" style="background:${article.color}22">${article.icon}</div>
-      <div class="explore-card-body">
-        <div class="explore-card-meta">
-          <span class="explore-card-category">${article.category}</span>
-          <span class="explore-card-read-time">· ${article.readTime}</span>
-        </div>
-        <h3>${article.title}</h3>
-        <p>${article.preview}</p>
-      </div>
-    `;
-    card.onclick = () => openArticle(article.id);
-    grid.appendChild(card);
-  });
-}
-
-function openArticle(articleId) {
-  const article = ARTICLES.find(a => a.id === articleId);
-  if (!article) return;
-  articleReturnScreen = currentTab === "explore" ? "explore-screen" : "home-screen";
-  renderArticle(article);
-  showScreen("article-screen");
-}
-
-function renderArticle(article) {
-  // Update nav meta
-  document.getElementById("article-nav-category").textContent = article.category;
-  document.getElementById("article-nav-read-time").textContent = article.readTime;
-
-  const container = document.getElementById("article-content");
-  let html = `
-    <div class="article-hero">
-      <div class="article-hero-icon">${article.icon}</div>
-      <h1>${article.title}</h1>
-      <p class="hero-subtitle">${article.subtitle}</p>
-    </div>
-  `;
-
-  article.sections.forEach(section => {
-    html += `<div class="article-section" style="--article-color:${article.color}">`;
-    html += `<h2>${section.heading}</h2>`;
-
-    if (!section.type || section.type === "text") {
-      html += `<div class="article-body">${section.body}</div>`;
-
-    } else if (section.type === "timeline") {
-      html += `<div class="timeline">`;
-      section.items.forEach(item => {
-        html += `
-          <div class="timeline-item">
-            <div class="timeline-left">
-              <div class="timeline-dot">${item.emoji}</div>
-              <div class="timeline-line"></div>
-            </div>
-            <div class="timeline-right">
-              <div class="timeline-date">${item.date}</div>
-              <div class="timeline-era">${item.era}</div>
-              <div class="timeline-body">${item.body}</div>
-            </div>
-          </div>
-        `;
-      });
-      html += `</div>`;
-
-    } else if (section.type === "people") {
-      html += `<div class="people-grid">`;
-      section.people.forEach(p => {
-        html += `
-          <div class="person-card">
-            <div class="person-emoji">${p.emoji}</div>
-            <div class="person-name">${p.name}</div>
-            <div class="person-dates">${p.dates}</div>
-            <div class="person-role">${p.role}</div>
-            <div class="person-note">${p.note}</div>
-          </div>
-        `;
-      });
-      html += `</div>`;
-
-    } else if (section.type === "geo-facts") {
-      html += `<div class="geo-facts-grid">`;
-      section.facts.forEach(f => {
-        html += `
-          <div class="geo-fact">
-            <div class="geo-fact-icon">${f.icon}</div>
-            <div>
-              <div class="geo-fact-label">${f.label}</div>
-              <div class="geo-fact-value">${f.value}</div>
-            </div>
-          </div>
-        `;
-      });
-      html += `</div>`;
-
-    } else if (section.type === "cities") {
-      html += `<div class="cities-list">`;
-      section.cities.forEach(c => {
-        html += `
-          <div class="city-card">
-            <div class="city-emoji">${c.emoji}</div>
-            <div>
-              <div class="city-name">${c.name}</div>
-              <div class="city-note">${c.note}</div>
-            </div>
-          </div>
-        `;
-      });
-      html += `</div>`;
-      if (section.body) html += `<div class="article-body" style="margin-top:16px">${section.body}</div>`;
-
-    } else if (section.type === "holiday-cards") {
-      if (!window._holidays) window._holidays = {};
-      html += `<div class="holiday-grid">`;
-      section.holidays.forEach(h => {
-        const hid = h.name.toLowerCase().replace(/\s+/g, "-");
-        window._holidays[hid] = h;
-        html += `
-          <div class="holiday-card" style="--hol-color:${h.color}">
-            <div class="holiday-card-top">
-              <span class="holiday-emoji">${h.emoji}</span>
-              <div class="holiday-card-head">
-                <div class="holiday-name">${h.name} <span class="holiday-persian">${h.persian}</span></div>
-                <div class="holiday-timing">📅 ${h.timing}</div>
-              </div>
-              ${h.badge ? `<span class="holiday-badge" style="background:${h.color}">${h.badge}</span>` : ""}
-            </div>
-            <div class="holiday-desc">${h.desc}</div>
-            ${h.detail ? `<button class="holiday-more-btn" style="--hol-color:${h.color}" onclick="openHolidayModal('${hid}')">More ›</button>` : ""}
-          </div>
-        `;
-      });
-      html += `</div>`;
-
-    } else if (section.type === "flags") {
-      html += `<div class="flags-showcase">`;
-      section.flags.forEach(f => {
-        html += `
-          <div class="flag-card">
-            <div class="flag-img-wrap">
-              <img class="flag-img${f.crop ? ' flag-img-crop' : ''}" src="${f.image}" alt="${f.name}" loading="lazy" />
-              <span class="flag-badge" style="background:${f.badgeColor}">${f.badge}</span>
-            </div>
-            <div class="flag-card-body">
-              <div class="flag-name">${f.name}</div>
-              <div class="flag-era">${f.era}</div>
-              <div class="flag-desc">${f.desc}</div>
-            </div>
-          </div>
-        `;
-      });
-      html += `</div>`;
-
-    } else if (section.type === "map") {
-      const mapIdx = article.sections.indexOf(section);
-      html += `
-        <div class="map-link-card" onclick="showMap('${article.id}', ${mapIdx})">
-          <div class="map-link-card-left">
-            <span class="map-link-icon">🗺️</span>
-            <div>
-              <div class="map-link-title">${section.heading}</div>
-              <div class="map-link-sub">Tap to open interactive map</div>
-            </div>
-          </div>
-          <span class="map-link-arrow">›</span>
-        </div>
-      `;
-    }
-
-    html += `</div>`; // close article-section
-  });
-
-  container.innerHTML = html;
-  container.scrollTop = 0;
-  document.getElementById("article-screen").scrollTop = 0;
-  window.scrollTo(0, 0);
-
-  // Initialize any maps in this article
-  destroyMaps();
-  setTimeout(() => initArticleMaps(article), 50);
-}
-
-// ===== MAP SCREEN =====
-let _currentMapSection = null;
-
-function showMap(articleId, sectionIdx) {
-  const article = ARTICLES.find(a => a.id === articleId);
-  if (!article) return;
-  _currentMapSection = article.sections[sectionIdx];
-  if (!_currentMapSection) return;
-
-  document.getElementById('map-screen-title').textContent = _currentMapSection.heading;
-  document.getElementById('map-screen-container').innerHTML =
-    `<div id="map-screen-map" class="map-screen-map"></div>
-     ${_currentMapSection.note ? `<p class="map-note map-note-screen">${_currentMapSection.note}</p>` : ''}`;
-
-  showScreen('map-screen');
-  destroyMaps();
-  setTimeout(() => initSingleMap('map-screen-map', _currentMapSection), 50);
-}
-
-function initSingleMap(elementId, section) {
-  if (typeof L === 'undefined') return;
-  const el = document.getElementById(elementId);
-  if (!el) return;
-
-  const tiles = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-  const attr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
-
-  const map = L.map(elementId, { center: section.center, zoom: section.zoom, zoomControl: true, scrollWheelZoom: true });
-  L.tileLayer(tiles, { attribution: attr, maxZoom: 18 }).addTo(map);
-
-  section.markers.forEach(m => {
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="width:34px;height:34px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;font-size:15px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.28);cursor:pointer">${m.emoji}</div>`,
-      iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -22],
-    });
-    L.marker([m.lat, m.lng], { icon })
-      .addTo(map)
-      .bindPopup(`<div style="font-size:13px;line-height:1.5">${m.popup}</div>`, { maxWidth: 220 });
-  });
-
-  _maps[elementId] = map;
-}
-
-// ===== LEAFLET MAP MANAGEMENT =====
-const _maps = {};
-
-function destroyMaps() {
-  Object.keys(_maps).forEach(id => {
-    try { _maps[id].remove(); } catch (e) {}
-    delete _maps[id];
-  });
-}
-
-function initArticleMaps(article) {
-  if (typeof L === "undefined") return;
-
-  const tiles = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
-  const attr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
-
-  article.sections.forEach(section => {
-    if (section.type !== "map") return;
-    const el = document.getElementById(section.mapId);
-    if (!el) return;
-
-    const map = L.map(section.mapId, {
-      center: section.center,
-      zoom: section.zoom,
-      zoomControl: true,
-      scrollWheelZoom: false, // prevent accidental scroll-hijack
-    });
-
-    L.tileLayer(tiles, { attribution: attr, maxZoom: 18 }).addTo(map);
-
-    section.markers.forEach(m => {
-      const icon = L.divIcon({
-        className: "",
-        html: `<div style="
-          width:34px;height:34px;border-radius:50%;
-          background:${m.color};
-          display:flex;align-items:center;justify-content:center;
-          font-size:15px;
-          border:3px solid white;
-          box-shadow:0 2px 8px rgba(0,0,0,0.28);
-          cursor:pointer;
-        ">${m.emoji}</div>`,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
-        popupAnchor: [0, -22],
-      });
-
-      L.marker([m.lat, m.lng], { icon })
-        .addTo(map)
-        .bindPopup(`<div style="font-size:13px;line-height:1.5">${m.popup}</div>`, { maxWidth: 220 });
-    });
-
-    _maps[section.mapId] = map;
-  });
-}
-
-// ===== RENDER HOME =====
-function renderHome() {
-  updateHeaderStats();
-
-  // XP bar (per 100 xp = 1 level)
-  const level = Math.floor(state.xp / 100) + 1;
-  const xpInLevel = state.xp % 100;
-  document.getElementById("xp-bar-fill").style.width = xpInLevel + "%";
-  document.getElementById("xp-level-label").textContent = `Level ${level}`;
-  document.getElementById("xp-label").textContent = `${xpInLevel}/100 XP`;
-
-  const grid = document.getElementById("lessons-grid");
-  grid.innerHTML = "";
-
-  LESSONS.forEach((lesson, i) => {
-    const done = state.completedLessons[lesson.id] || {};
-    const activitiesCount = ["flashcard", "quiz", "listen"].filter(a => done[a]).length;
-    const progress = Math.round((activitiesCount / 3) * 100);
-    const stars = activitiesCount >= 3 ? "⭐⭐⭐" : activitiesCount >= 2 ? "⭐⭐☆" : activitiesCount >= 1 ? "⭐☆☆" : "☆☆☆";
-
-    const card = document.createElement("div");
-    card.className = "lesson-card" + (activitiesCount === 3 ? " completed" : "");
-    card.style.setProperty("--lesson-color", lesson.color);
-    card.style.setProperty("--lesson-color-light", lesson.color + "22");
-
-    card.innerHTML = `
-      <div class="lesson-icon">${lesson.icon}</div>
-      <div class="lesson-info">
-        <h3>${lesson.title}</h3>
-        <p>${lesson.description} · ${lesson.words.length} words</p>
-      </div>
-      <div class="lesson-progress">
-        <div class="lesson-progress-bar">
-          <div class="lesson-progress-fill" style="width:${progress}%"></div>
-        </div>
-        <div class="lesson-stars">${stars}</div>
-      </div>
-      ${activitiesCount === 3 ? '<div class="complete-badge">✓</div>' : ""}
-    `;
-    card.onclick = () => openLesson(lesson.id);
-    grid.appendChild(card);
-  });
-}
-
-// ===== RENDER LESSON MENU =====
-function renderLessonMenu() {
-  const lesson = currentLesson;
-  const done = state.completedLessons[lesson.id] || {};
-
-  document.getElementById("lesson-menu-icon").textContent = lesson.icon;
-  document.getElementById("lesson-menu-title").textContent = lesson.title;
-  document.getElementById("lesson-menu-desc").textContent = `${lesson.words.length} words`;
-
-  const activities = [
-    {
-      id: "flashcard",
-      icon: "🃏",
-      title: "Flashcards",
-      desc: "Flip through all words with audio",
-      color: "#CE82FF",
-    },
-    {
-      id: "quiz",
-      icon: "🧠",
-      title: "Quiz",
-      desc: "Multiple choice challenge",
-      color: "#FF9600",
-    },
-    {
-      id: "listen",
-      icon: "🔊",
-      title: "Listen & Choose",
-      desc: "Hear the word, pick the meaning",
-      color: "#1CB0F6",
-    },
-  ];
-
-  const container = document.getElementById("activity-cards");
-  container.innerHTML = "";
-
-  activities.forEach(act => {
-    const completed = done[act.id];
-    const card = document.createElement("div");
-    card.className = "activity-card";
-    card.style.setProperty("--act-color", act.color);
-    card.innerHTML = `
-      <div class="act-icon">${act.icon}${completed ? " ✅" : ""}</div>
-      <h3>${act.title}</h3>
-      <p>${act.desc}</p>
-      <span class="act-xp">+${XP_PER_LESSON} XP</span>
-    `;
-    card.onclick = () => startActivity(act.id);
-    container.appendChild(card);
-  });
-}
-
-// ===== UPDATE HEADER =====
-function updateHeaderStats() {
-  document.getElementById("stat-xp").textContent = state.xp;
-  document.getElementById("stat-streak").textContent = state.streak;
-  document.getElementById("stat-hearts").textContent = "❤️".repeat(Math.max(0, state.hearts));
-}
-
-// ===== AUDIO PLAYBACK =====
-let _currentAudio = null;
-
-function toAudioFileName(english, phonetic) {
-  const clean = s => s
-    .toLowerCase()
-    .replace(/\(.*?\)/g, "")       // remove (parentheticals)
-    .replace(/—.*$/, "")           // remove em-dash and after
-    .replace(/[/|]/g, " ")         // slashes to spaces
-    .replace(/[^a-z0-9\s-]/g, "")  // remove special chars
-    .trim()
-    .replace(/\s+/g, "-")          // spaces to hyphens
-    .replace(/-+/g, "-")           // collapse multiple hyphens
-    .replace(/^-|-$/g, "");        // trim leading/trailing hyphens
-  return `${clean(english)}-${clean(phonetic)}.wav`;
-}
-
-function getAudioPath(persian) {
-  if (!currentLesson) return null;
-  const word = currentLesson.words.find(w => w.persian === persian);
-  if (!word) return null;
-  return `audio/${toAudioFileName(word.english, word.phonetic)}`;
-}
-
-function speak(persian, onEnd) {
-  // Stop anything already playing
-  if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
-  if (window.speechSynthesis) speechSynthesis.cancel();
-
-  const filePath = getAudioPath(persian);
-  if (filePath) {
-    const audio = new Audio(filePath);
-    _currentAudio = audio;
-    if (onEnd) audio.onended = onEnd;
-    audio.onerror = () => _ttsFallback(persian, onEnd); // fall back if file missing
-    audio.play().catch(() => _ttsFallback(persian, onEnd));
-  } else {
-    _ttsFallback(persian, onEnd);
-  }
-}
-
-function _ttsFallback(persian, onEnd) {
-  if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
-  const utter = new SpeechSynthesisUtterance(persian);
-  utter.lang = "fa-IR";
-  utter.rate = 0.85;
-  if (onEnd) utter.onend = onEnd;
-  const voices = speechSynthesis.getVoices();
-  const faVoice = voices.find(v => v.lang.startsWith("fa"));
-  if (faVoice) utter.voice = faVoice;
-  speechSynthesis.speak(utter);
-}
-
-function speakWithButton(persian, btn) {
-  btn.classList.add("speaking");
-  speak(persian, () => btn.classList.remove("speaking"));
-}
-
-// ===== FLASHCARD ACTIVITY =====
-let fcIndex = 0;
-let fcFlipped = false;
-
-function startActivity(activityId) {
-  currentActivity = activityId;
-  if (!currentLesson) return;
-
-  if (activityId === "flashcard") startFlashcards();
-  else if (activityId === "quiz") startQuiz();
-  else if (activityId === "listen") startListen();
-}
-
-function startFlashcards() {
-  fcIndex = 0;
-  fcFlipped = false;
-  const words = [...currentLesson.words];
-  shuffle(words);
-  window._fcWords = words;
-  renderFlashcard();
-  showScreen("exercise-screen");
-  updateExerciseHeader(0, words.length);
-}
-
-function renderFlashcard() {
-  const words = window._fcWords;
-  const word = words[fcIndex];
-  const container = document.getElementById("exercise-content");
-  fcFlipped = false;
-
-  container.innerHTML = `
-    <div class="flashcard-wrapper">
-      <p class="hint-text">Tap the card to flip it</p>
-      <div class="flashcard-scene" id="fc-scene" onclick="flipCard()">
-        <div class="flashcard" id="fc-card">
-          <div class="flashcard-face front">
-            <span class="card-label">Persian</span>
-            <div class="card-persian">${word.persian}</div>
-            <div class="card-phonetic">${word.phonetic}</div>
-            <button class="audio-btn" id="fc-audio-btn" onclick="event.stopPropagation(); speakCard()" title="Listen">🔊</button>
-          </div>
-          <div class="flashcard-face back">
-            <span class="card-label">English</span>
-            <div class="card-english">${word.english}</div>
-            <div class="card-phonetic">${word.phonetic}</div>
-            <div class="card-example">${word.example}</div>
-          </div>
-        </div>
-      </div>
-      <div class="flashcard-counter">${fcIndex + 1} / ${words.length}</div>
-      <div class="flashcard-nav">
-        ${fcIndex > 0 ? `<button class="nav-btn" onclick="fcPrev()">← Back</button>` : ""}
-        <button class="nav-btn primary" onclick="fcNext()">${fcIndex === words.length - 1 ? "Finish ✓" : "Next →"}</button>
-      </div>
-    </div>
-  `;
-
-  updateExerciseHeader(fcIndex, words.length);
-  // Auto-speak
-  setTimeout(() => speak(word.persian), 300);
-}
-
-function flipCard() {
-  const card = document.getElementById("fc-card");
-  if (!card) return;
-  fcFlipped = !fcFlipped;
-  card.classList.toggle("flipped", fcFlipped);
-}
-
-function speakCard() {
-  const words = window._fcWords;
-  const word = words[fcIndex];
-  const btn = document.getElementById("fc-audio-btn");
-  if (btn) speakWithButton(word.persian, btn);
-  else speak(word.persian);
-}
-
-function fcNext() {
-  const words = window._fcWords;
-  if (fcIndex < words.length - 1) {
-    fcIndex++;
-    renderFlashcard();
-  } else {
-    finishActivity(words.length, words.length);
-  }
-}
-
-function fcPrev() {
-  if (fcIndex > 0) {
-    fcIndex--;
-    renderFlashcard();
-  }
-}
-
-// ===== QUIZ ACTIVITY =====
-let quizIndex = 0;
-let quizCorrect = 0;
-let quizWords = [];
-
-function startQuiz() {
-  quizWords = shuffle([...currentLesson.words]);
-  quizIndex = 0;
-  quizCorrect = 0;
-  state.hearts = HEARTS_MAX;
-  renderQuiz();
-  showScreen("exercise-screen");
-}
-
-function renderQuiz() {
-  const word = quizWords[quizIndex];
-  // Generate 3 wrong answers from other words in lesson + other lessons
-  const allWords = LESSONS.flatMap(l => l.words);
-  const wrongPool = allWords.filter(w => w.english !== word.english);
-  const wrongs = shuffle(wrongPool).slice(0, 3).map(w => w.english);
-  const options = shuffle([word.english, ...wrongs]);
-
-  const container = document.getElementById("exercise-content");
-  container.innerHTML = `
-    <div class="quiz-wrapper">
-      <div class="quiz-question-label">What does this mean?</div>
-      <div class="quiz-question-card">
-        <div class="quiz-persian">${word.persian}</div>
-        <div class="quiz-phonetic">${word.phonetic}</div>
-        <button class="audio-btn" id="quiz-audio-btn" onclick="speakQuizWord()" title="Listen">🔊</button>
-      </div>
-      <div class="quiz-options" id="quiz-options">
-        ${options.map(opt => `
-          <button class="quiz-option" onclick="checkAnswer(this, '${escHtml(opt)}', '${escHtml(word.english)}')">${opt}</button>
-        `).join("")}
-      </div>
-      <div class="feedback-bar" id="feedback-bar">
-        <span class="feedback-text" id="feedback-text"></span>
-        <button class="continue-btn" id="continue-btn" onclick="quizContinue()">Continue</button>
-      </div>
-    </div>
-  `;
-
-  updateExerciseHeader(quizIndex, quizWords.length);
-  setTimeout(() => speak(word.persian), 200);
-}
-
-function speakQuizWord() {
-  const word = quizWords[quizIndex];
-  const btn = document.getElementById("quiz-audio-btn");
-  if (btn) speakWithButton(word.persian, btn);
-}
-
-function checkAnswer(btn, chosen, correct) {
-  const opts = document.querySelectorAll(".quiz-option");
-  opts.forEach(o => o.disabled = true);
-
-  const fb = document.getElementById("feedback-bar");
-  const fbText = document.getElementById("feedback-text");
-  const contBtn = document.getElementById("continue-btn");
-
-  if (chosen === correct) {
-    btn.classList.add("correct");
-    fb.className = "feedback-bar show correct-fb";
-    fbText.textContent = "🎉 Correct! Great job!";
-    contBtn.className = "continue-btn";
-    quizCorrect++;
-  } else {
-    btn.classList.add("wrong");
-    opts.forEach(o => { if (o.textContent === correct) o.classList.add("correct"); });
-    fb.className = "feedback-bar show wrong-fb";
-    fbText.textContent = `Correct answer: "${correct}"`;
-    contBtn.className = "continue-btn wrong-btn";
-    state.hearts = Math.max(0, state.hearts - 1);
-    updateHeaderStats();
-    document.getElementById("exercise-content").classList.add("shake");
-    setTimeout(() => document.getElementById("exercise-content").classList.remove("shake"), 500);
-  }
-}
-
-function quizContinue() {
-  if (state.hearts === 0) {
-    showToast("Out of hearts! Keep practicing!");
-    finishActivity(quizCorrect, quizWords.length);
-    return;
-  }
-  quizIndex++;
-  if (quizIndex >= quizWords.length) {
-    finishActivity(quizCorrect, quizWords.length);
-  } else {
-    renderQuiz();
-  }
-}
-
-// ===== LISTEN ACTIVITY =====
-let listenIndex = 0;
-let listenCorrect = 0;
-let listenWords = [];
-
-function startListen() {
-  listenWords = shuffle([...currentLesson.words]);
-  listenIndex = 0;
-  listenCorrect = 0;
-  state.hearts = HEARTS_MAX;
-  renderListen();
-  showScreen("exercise-screen");
-}
-
-function renderListen() {
-  const word = listenWords[listenIndex];
-  const allWords = LESSONS.flatMap(l => l.words);
-  const wrongPool = allWords.filter(w => w.english !== word.english);
-  const wrongs = shuffle(wrongPool).slice(0, 3).map(w => w.english);
-  const options = shuffle([word.english, ...wrongs]);
-
-  const container = document.getElementById("exercise-content");
-  container.innerHTML = `
-    <div class="listen-wrapper">
-      <p class="listen-prompt">Listen and choose the correct meaning</p>
-      <button class="listen-big-btn" id="listen-big-btn" onclick="speakListenWord()">🔊</button>
-      <button class="listen-again-btn" onclick="speakListenWord()">Play again</button>
-      <div class="quiz-options" id="listen-options" style="width:100%;max-width:480px">
-        ${options.map(opt => `
-          <button class="quiz-option" onclick="checkListenAnswer(this, '${escHtml(opt)}', '${escHtml(word.english)}')">${opt}</button>
-        `).join("")}
-      </div>
-      <div class="feedback-bar" id="feedback-bar">
-        <span class="feedback-text" id="feedback-text"></span>
-        <button class="continue-btn" id="continue-btn" onclick="listenContinue()">Continue</button>
-      </div>
-    </div>
-  `;
-
-  updateExerciseHeader(listenIndex, listenWords.length);
-  setTimeout(() => speakListenWord(), 400);
-}
-
-function speakListenWord() {
-  const word = listenWords[listenIndex];
-  const btn = document.getElementById("listen-big-btn");
-  if (btn) speakWithButton(word.persian, btn);
-}
-
-function checkListenAnswer(btn, chosen, correct) {
-  const opts = document.querySelectorAll(".quiz-option");
-  opts.forEach(o => o.disabled = true);
-
-  const fb = document.getElementById("feedback-bar");
-  const fbText = document.getElementById("feedback-text");
-  const contBtn = document.getElementById("continue-btn");
-  const word = listenWords[listenIndex];
-
-  if (chosen === correct) {
-    btn.classList.add("correct");
-    fb.className = "feedback-bar show correct-fb";
-    fbText.textContent = `🎉 Correct! "${word.persian}" = "${correct}"`;
-    contBtn.className = "continue-btn";
-    listenCorrect++;
-  } else {
-    btn.classList.add("wrong");
-    opts.forEach(o => { if (o.textContent === correct) o.classList.add("correct"); });
-    fb.className = "feedback-bar show wrong-fb";
-    fbText.textContent = `"${word.persian}" means "${correct}"`;
-    contBtn.className = "continue-btn wrong-btn";
-    state.hearts = Math.max(0, state.hearts - 1);
-    updateHeaderStats();
-  }
-}
-
-function listenContinue() {
-  listenIndex++;
-  if (listenIndex >= listenWords.length || state.hearts === 0) {
-    finishActivity(listenCorrect, listenWords.length);
-  } else {
-    renderListen();
-  }
-}
-
-// ===== EXERCISE HEADER =====
-function updateExerciseHeader(current, total) {
-  const pct = total > 0 ? (current / total) * 100 : 0;
-  document.getElementById("ex-progress-fill").style.width = pct + "%";
-  const hearts = document.getElementById("ex-hearts");
-  if (hearts) hearts.textContent = "❤️".repeat(Math.max(0, state.hearts)) + "🖤".repeat(Math.max(0, HEARTS_MAX - state.hearts));
-}
-
-// ===== FINISH ACTIVITY =====
-async function finishActivity(correct, total) {
-  const xpEarned = XP_PER_LESSON + Math.round((correct / total) * XP_PER_LESSON);
-  state.xp += xpEarned;
-  state.streak = Math.max(state.streak, 1);
-
-  if (!state.completedLessons[currentLesson.id]) {
-    state.completedLessons[currentLesson.id] = {};
-  }
-  state.completedLessons[currentLesson.id][currentActivity] = true;
-  await saveState();
-
-  renderResults(correct, total, xpEarned);
-  showScreen("results-screen");
-  if (correct === total) launchConfetti();
-}
-
-function renderResults(correct, total, xpEarned) {
-  const accuracy = Math.round((correct / total) * 100);
-  const isPerfect = correct === total;
-
-  document.getElementById("results-trophy").textContent = isPerfect ? "🏆" : correct > total / 2 ? "🎉" : "💪";
-  document.getElementById("results-title").textContent = isPerfect ? "Perfect!" : correct > total / 2 ? "Nice Work!" : "Keep Practicing!";
-  document.getElementById("result-xp").textContent = `+${xpEarned}`;
-  document.getElementById("result-streak").textContent = state.streak;
-  document.getElementById("result-accuracy").textContent = accuracy + "%";
-  document.getElementById("results-lesson-name").textContent = currentLesson.title;
-}
-
-// ===== CONFETTI =====
-function launchConfetti() {
-  const container = document.getElementById("confetti-container");
-  container.innerHTML = "";
-  const colors = ["#58CC02", "#FF9600", "#CE82FF", "#1CB0F6", "#FF4B4B", "#FFD900"];
-  for (let i = 0; i < 60; i++) {
-    const piece = document.createElement("div");
-    const size = Math.random() * 10 + 6;
-    piece.style.cssText = `
-      position:absolute;
-      left:${Math.random() * 100}%;
-      top:-20px;
-      width:${size}px;
-      height:${size}px;
-      background:${colors[Math.floor(Math.random() * colors.length)]};
-      border-radius:${Math.random() > 0.5 ? "50%" : "2px"};
-      opacity:1;
-      animation: confettiFall ${1.5 + Math.random() * 2}s ease-in ${Math.random() * 0.8}s forwards;
-    `;
-    container.appendChild(piece);
-  }
-
-  const style = document.getElementById("confetti-style") || document.createElement("style");
-  style.id = "confetti-style";
-  style.textContent = `
-    @keyframes confettiFall {
-      to { top: 110%; opacity: 0; transform: rotate(${Math.random() > 0.5 ? "" : "-"}${Math.floor(Math.random() * 720)}deg) translateX(${(Math.random() - 0.5) * 200}px); }
-    }
-  `;
-  document.head.appendChild(style);
-  setTimeout(() => container.innerHTML = "", 4000);
-}
-
-// ===== TOAST =====
-let _toastTimeout = null;
-function showToast(msg) {
-  const toast = document.getElementById("toast");
-  toast.textContent = msg;
-  toast.classList.add("show");
-  if (_toastTimeout) clearTimeout(_toastTimeout);
-  _toastTimeout = setTimeout(() => {
-    toast.classList.remove("show");
-    _toastTimeout = null;
-  }, 2500);
-}
-
-// ===== UTILS =====
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function escHtml(str) {
-  return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
-}
-
-// ===== HOLIDAY MODAL =====
-function openHolidayModal(hid) {
-  const h = window._holidays && window._holidays[hid];
-  if (!h || !h.detail) return;
-
-  document.getElementById("holiday-modal-title").innerHTML =
-    `<span>${h.emoji}</span> ${h.name} <span class="modal-title-persian">${h.persian}</span>`;
-
-  const body = document.getElementById("holiday-modal-body");
-  let html = "";
-  h.detail.sections.forEach(s => {
-    html += `<div class="modal-section">`;
-    if (s.heading) html += `<h3 class="modal-section-heading">${s.heading}</h3>`;
-    if (s.images && s.images.length) {
-      html += `<div class="modal-images">`;
-      s.images.forEach(img => {
-        html += `
-          <figure class="modal-figure">
-            <img src="${img.url}" alt="${img.caption}" loading="lazy" />
-            <figcaption>${img.caption}</figcaption>
-          </figure>`;
-      });
-      html += `</div>`;
-    }
-    if (s.body) html += `<div class="modal-body-text">${s.body}</div>`;
-    html += `</div>`;
-  });
-
-  body.innerHTML = html;
-  body.scrollTop = 0;
-  document.getElementById("holiday-modal").classList.add("open");
-  document.body.classList.add("modal-open");
-}
-
-function closeHolidayModal() {
-  document.getElementById("holiday-modal").classList.remove("open");
-  document.body.classList.remove("modal-open");
-}
-
-// ===== ACHIEVEMENTS =====
-const ACHIEVEMENTS = [
-  { id: 'first_step',     icon: '🌱', title: 'First Step',     desc: 'Complete your first lesson activity' },
-  { id: 'on_fire',        icon: '🔥', title: 'On Fire',        desc: 'Reach a 3-day streak' },
-  { id: 'dedicated',      icon: '📅', title: 'Dedicated',      desc: 'Reach a 7-day streak' },
-  { id: 'rising_star',    icon: '⭐', title: 'Rising Star',    desc: 'Fully complete 3 lessons' },
-  { id: 'scholar',        icon: '🎓', title: 'Scholar',        desc: 'Fully complete all lessons' },
-  { id: 'centurion',      icon: '⚡', title: 'Centurion',      desc: 'Reach 100 XP' },
-  { id: 'master',         icon: '👑', title: 'Master',         desc: 'Reach Level 5 (400 XP)' },
-  { id: 'word_collector', icon: '📖', title: 'Word Collector', desc: 'Learn words from 5 lessons' },
-];
-
-function fullyCompletedLessons() {
-  return LESSONS.filter(l => {
-    const done = state.completedLessons[l.id] || {};
-    return done.flashcard && done.quiz && done.listen;
-  });
-}
-
-function learnedWords() {
-  const words = [];
-  LESSONS.forEach(l => {
-    const done = state.completedLessons[l.id] || {};
-    if (done.flashcard) {
-      l.words.forEach(w => words.push({ ...w, lessonId: l.id, lessonTitle: l.title, lessonIcon: l.icon, lessonColor: l.color }));
-    }
-  });
-  return words;
-}
-
-function checkAchievement(id) {
-  const lessonsWithFlashcard = LESSONS.filter(l => (state.completedLessons[l.id] || {}).flashcard).length;
-  switch (id) {
-    case 'first_step':     return Object.keys(state.completedLessons).length >= 1;
-    case 'on_fire':        return state.streak >= 3;
-    case 'dedicated':      return state.streak >= 7;
-    case 'rising_star':    return fullyCompletedLessons().length >= 3;
-    case 'scholar':        return fullyCompletedLessons().length >= LESSONS.length;
-    case 'centurion':      return state.xp >= 100;
-    case 'master':         return state.xp >= 400;
-    case 'word_collector': return lessonsWithFlashcard >= 5;
-    default:               return false;
-  }
-}
-
-// ===== PROFILE =====
-function renderProfile() {
-  const isGuest = !_currentUser;
-
-  document.getElementById('profile-auth-banner').style.display = isGuest ? '' : 'none';
-  document.getElementById('profile-user-header').style.display = isGuest ? 'none' : '';
-
-  if (!isGuest) {
-    document.getElementById('profile-avatar').textContent = (_currentUser.email || '?')[0].toUpperCase();
-    document.getElementById('profile-email').textContent = _currentUser.email;
-  }
-
-  // Stats row
-  const level = Math.floor(state.xp / 100) + 1;
-  const completed = fullyCompletedLessons().length;
-  document.getElementById('profile-stats-row').innerHTML = `
-    <div class="profile-stat-card">
-      <div class="psc-value">${level}</div>
-      <div class="psc-label">Level</div>
-    </div>
-    <div class="profile-stat-card">
-      <div class="psc-value">${state.xp}</div>
-      <div class="psc-label">Total XP</div>
-    </div>
-    <div class="profile-stat-card">
-      <div class="psc-value">${state.streak}</div>
-      <div class="psc-label">🔥 Streak</div>
-    </div>
-    <div class="profile-stat-card">
-      <div class="psc-value">${completed}/${LESSONS.length}</div>
-      <div class="psc-label">Lessons Done</div>
-    </div>
-  `;
-
-  // Achievements
-  document.getElementById('achievements-grid').innerHTML = ACHIEVEMENTS.map(a => {
-    const unlocked = checkAchievement(a.id);
-    return `
-      <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
-        <div class="achievement-icon">${a.icon}</div>
-        <div class="achievement-title">${a.title}</div>
-        <div class="achievement-desc">${a.desc}</div>
-      </div>
-    `;
-  }).join('');
-
-  // Word collection summary
-  const words = learnedWords();
-  const lessonCount = LESSONS.filter(l => (state.completedLessons[l.id] || {}).flashcard).length;
-  document.getElementById('wc-summary').textContent =
-    words.length > 0 ? `${words.length} words across ${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}` : 'Complete flashcards to start collecting';
-}
-
-function showWordCollection() {
-  showScreen('wordcollection-screen');
-  const container = document.getElementById('word-collection-content');
-  const words = learnedWords();
-  if (words.length === 0) {
-    container.innerHTML = '<p class="wc-empty">Complete flashcard activities to build your word collection!</p>';
-    return;
-  }
-  const byLesson = {};
-  words.forEach(w => {
-    if (!byLesson[w.lessonId]) byLesson[w.lessonId] = { title: w.lessonTitle, icon: w.lessonIcon, color: w.lessonColor, words: [] };
-    byLesson[w.lessonId].words.push(w);
-  });
-  container.innerHTML = Object.values(byLesson).map(lesson => `
-    <div class="wc-lesson">
-      <div class="wc-lesson-header" style="--lesson-color:${lesson.color}">
-        <span>${lesson.icon}</span> ${lesson.title}
-      </div>
-      <div class="wc-words">
-        ${lesson.words.map(w => `
-          <div class="wc-word">
-            <div class="wc-persian">${w.persian}</div>
-            <div class="wc-phonetic">${w.phonetic}</div>
-            <div class="wc-english">${w.english}</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-}
-
-// ===== AUTH =====
-function openAuthModal() {
-  document.getElementById('auth-modal').classList.add('open');
-  document.body.classList.add('modal-open');
-}
-
-function closeAuthModal() {
-  document.getElementById('auth-modal').classList.remove('open');
-  document.body.classList.remove('modal-open');
-}
-
-function showAuthTab(tab) {
-  _authTab = tab;
-  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
-  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
-  document.getElementById('auth-submit').textContent = tab === 'signin' ? 'Sign In' : 'Sign Up';
-  document.getElementById('auth-modal-title').textContent = tab === 'signin' ? 'Welcome Back' : 'Create Account';
-  const errEl = document.getElementById('auth-error');
-  errEl.style.display = 'none';
-  errEl.style.color = '';
-}
-
-async function handleAuth(e) {
-  e.preventDefault();
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value;
-  const errEl = document.getElementById('auth-error');
-  const btn = document.getElementById('auth-submit');
-
-  errEl.style.display = 'none';
-  errEl.style.color = '';
-  btn.disabled = true;
-  btn.textContent = '...';
-
-  const result = _authTab === 'signin'
-    ? await _sb.auth.signInWithPassword({ email, password })
-    : await _sb.auth.signUp({ email, password });
-
-  btn.disabled = false;
-  btn.textContent = _authTab === 'signin' ? 'Sign In' : 'Sign Up';
-
-  if (result.error) {
-    errEl.textContent = result.error.message;
-    errEl.style.display = '';
-    return;
-  }
-
-  // Sign up with email confirmation pending
-  if (_authTab === 'signup' && result.data?.user && !result.data.session) {
-    errEl.style.color = 'var(--green)';
-    errEl.textContent = 'Check your email to confirm your account!';
-    errEl.style.display = '';
-    return;
-  }
-}
-
-function openSignoutModal() {
-  document.getElementById('signout-modal').classList.add('open');
-}
-
-function closeSignoutModal() {
-  document.getElementById('signout-modal').classList.remove('open');
-}
-
-async function confirmSignOut() {
-  const btn = document.getElementById('signout-confirm-btn');
-  btn.disabled = true;
-  btn.textContent = '...';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+// ===== PERSISTENCE =====
+const STORE_KEY = 'pl_state_v2';
+const V1_KEY = 'persian_app_state';
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen'];
+const MIN = 60e3, DAY = 864e5;
+// Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
+const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
+
+const dayKey = (t = Date.now()) => new Date(t).toDateString();
+
+function loadLocal() {
   try {
-    await _sb.auth.signOut();
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (saved) return saved;
+    // One-time carry-over from the v1 app
+    const v1 = JSON.parse(localStorage.getItem(V1_KEY) || 'null');
+    if (v1) return { xp: v1.xp || 0, streak: v1.streak || 0, lastPlayedDate: v1.lastPlayedDate || null, progress: v1.completedLessons || {} };
   } catch (e) {}
-  _currentUser = null;
-  closeSignoutModal();
-  await loadState();
-  renderHome();
-  renderProfile();
-  showToast('Signed out');
+  return {};
 }
 
-// ===== INIT =====
-document.addEventListener("DOMContentLoaded", async () => {
-  // Load voices (browsers need this)
-  speechSynthesis.getVoices();
-  speechSynthesis.onvoiceschanged = () => {};
+// Roll the daily counters forward: a new day resets today's XP; a missed day breaks the streak.
+function rollDay(s) {
+  const today = dayKey(), yesterday = dayKey(Date.now() - DAY);
+  if (s.lastPlayedDate === today) return s;
+  return { ...s, todayXp: 0, streak: s.lastPlayedDate === yesterday ? s.streak : 0 };
+}
 
-  await loadState();
-  renderHome();
-  showScreen("home-screen");
+class App extends Component {
+  state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
+    xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
+    progress: {}, srs: {}, mistakes: [], prefs: {}, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
+    online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, holiday: null, mapSection: null };
 
-  // Supabase auth listener — fires immediately on load if session exists
-  _sb.auth.onAuthStateChange(async (event, session) => {
-    _currentUser = session?.user ?? null;
-    if (_currentUser) {
-      const isNewUser = await loadState();
-      if (isNewUser) await saveState(); // sync local progress to new account
-      renderHome();
-      if (currentTab === 'profile') renderProfile();
-      if (document.getElementById('auth-modal').classList.contains('open')) {
-        closeAuthModal();
-        showToast('Signed in! Progress synced. 🎉');
+  componentDidMount() {
+    this.D = D;
+    this.setState({ ...rollDay({ ...this.state, ...loadLocal() }), ready: true });
+    this._r = () => this.setState({ w: window.innerWidth });
+    window.addEventListener('resize', this._r);
+    this._bip = e => { e.preventDefault(); this._deferred = e; };
+    window.addEventListener('beforeinstallprompt', this._bip);
+    this._net = () => { this.setState({ online: navigator.onLine }); if (navigator.onLine) this.pushRemote(); };
+    window.addEventListener('online', this._net); window.addEventListener('offline', this._net);
+    if (sb) sb.auth.onAuthStateChange((event, session) => {
+      const user = session ? session.user : null;
+      const was = this.state.user;
+      this.setState({ user });
+      if (user && (!was || was.id !== user.id)) setTimeout(() => this.pullRemote(user), 0);
+    });
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._r); window.removeEventListener('beforeinstallprompt', this._bip); window.removeEventListener('online', this._net); window.removeEventListener('offline', this._net); }
+  componentDidUpdate(prevProps, prev) {
+    if (!this.state.ready) return;
+    const s = this.state;
+    const data = {}; PERSISTED.forEach(k => { data[k] = s[k]; });
+    const json = JSON.stringify(data);
+    if (json !== this._lastSaved) {
+      this._lastSaved = json;
+      try { localStorage.setItem(STORE_KEY, json); } catch (e) {}
+      if (prev.ready) this.pushRemote();
+    }
+    const ex = s.ex;
+    const n = ex && ex.kind === 'convo' ? ex.log.length + (ex.wrongMsg ? 1 : 0) : 0;
+    if (n && n !== this._logLen) setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 60);
+    this._logLen = n;
+    if (s.route && s.route.name === 'map' && s.mapSection !== this._mapFor) this.mountMap(s.mapSection);
+    if (!(s.route && s.route.name === 'map') && this._map) this.unmountMap();
+  }
+
+  // ---------- account sync ----------
+  // The profiles table (xp, streak, last_played_date, completed_lessons) predates v2; the review
+  // schedule, mistakes and preferences stay on the device.
+  async pullRemote(user) {
+    const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    if (data) {
+      this.setState(s => {
+        const progress = { ...(data.completed_lessons || {}) };
+        Object.entries(s.progress).forEach(([id, p]) => { progress[id] = typeof p === 'object' ? { ...(progress[id] || {}), ...p } : p; });
+        const remoteNewer = data.last_played_date && (!s.lastPlayedDate || new Date(data.last_played_date) > new Date(s.lastPlayedDate));
+        return rollDay({ ...s, progress, xp: Math.max(s.xp, data.xp || 0),
+          streak: remoteNewer ? (data.streak || 0) : s.streak, lastPlayedDate: remoteNewer ? data.last_played_date : s.lastPlayedDate });
+      });
+    }
+    this.pushRemote();
+  }
+  pushRemote() {
+    const s = this.state; if (!sb || !s.user || !navigator.onLine) return;
+    clearTimeout(this._pushT);
+    this._pushT = setTimeout(() => {
+      sb.from('profiles').upsert({ id: s.user.id, xp: this.state.xp, streak: this.state.streak, last_played_date: this.state.lastPlayedDate,
+        completed_lessons: this.state.progress, updated_at: new Date().toISOString() }).then(({ error }) => { if (error) console.warn('Sync failed', error.message); });
+    }, 600);
+  }
+  async submitAuth(e) {
+    e.preventDefault();
+    const s = this.state; if (!sb || !navigator.onLine) return this.setState({ authMsg: "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.", authErr: true });
+    this.setState({ authBusy: true, authMsg: null });
+    const creds = { email: s.authEmail.trim(), password: s.authPassword };
+    const res = s.authMode === 'signin' ? await sb.auth.signInWithPassword(creds) : await sb.auth.signUp(creds);
+    if (res.error) return this.setState({ authBusy: false, authMsg: res.error.message, authErr: true });
+    if (s.authMode === 'signup' && res.data.user && !res.data.session) return this.setState({ authBusy: false, authMsg: 'Check your email to confirm your account, then sign in.', authErr: false, authMode: 'signin', authPassword: '' });
+    this.setState({ authBusy: false, sheet: null, authPassword: '', authMsg: null });
+  }
+  async signOut() {
+    this.setState({ sheet: null });
+    try { await sb.auth.signOut(); } catch (e) {}
+    // Back to a clean guest profile on this device
+    this._lastSaved = null;
+    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], scriptSeen: false, tab: 'learn', route: null });
+  }
+
+  // ---------- maps ----------
+  mountMap(section) {
+    this.unmountMap(); this._mapFor = section;
+    const el = document.getElementById('pl-map'); if (!el || !window.L || !section) return;
+    const map = L.map(el, { center: section.center, zoom: section.zoom, scrollWheelZoom: true });
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
+    section.markers.forEach(m => {
+      const icon = L.divIcon({ className: 'pl-marker', html: `<span style="--m:${m.color}">${m.emoji}</span>`, iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -18] });
+      L.marker([m.lat, m.lng], { icon, title: m.label }).addTo(map).bindPopup(m.popup, { maxWidth: 220 });
+    });
+    this._map = map;
+  }
+  unmountMap() { if (this._map) { try { this._map.remove(); } catch (e) {} } this._map = null; this._mapFor = null; }
+
+  // ---------- helpers ----------
+  icon(name, size = 20, sw = 1.6) {
+    const P = {
+      book: ['M12 7v14', 'M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z'],
+      review: ['M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8', 'M3 3v5h5'],
+      feather: ['M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z', 'M16 8 2 22', 'M17.5 15H9'],
+      compass: [{ c: [12, 12, 10] }, 'm16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z'],
+      user: ['M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2', { c: [12, 7, 4] }],
+      vol: ['M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z', 'M16 9a5 5 0 0 1 0 6', 'M19.364 18.364a9 9 0 0 0 0-12.728'],
+      mic: ['M12 19v3', 'M19 10v2a7 7 0 0 1-14 0v-2', { r: [9, 2, 6, 13, 3] }],
+      back: ['m12 19-7-7 7-7', 'M19 12H5'], x: ['M18 6 6 18', 'm6 6 12 12'], check: ['M20 6 9 17l-5-5'], chev: ['m9 18 6-6-6-6'],
+      flame: ['M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'],
+      zap: ['M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'],
+      layers: ['m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z', 'm22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65', 'm22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65'],
+      list: ['m3 17 2 2 4-4', 'm3 7 2 2 4-4', 'M13 6h8', 'M13 12h8', 'M13 18h8'],
+      headphones: ['M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3'],
+      blocks: [{ r: [14, 3, 7, 7, 1] }, 'M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3'],
+      bulb: ['M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5', 'M9 18h6', 'M10 22h4'],
+      play: ['M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z'],
+      stop: [{ r: [6, 6, 12, 12, 1] }],
+      download: ['M12 15V3', 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5'],
+      lock: [{ r: [3, 11, 18, 11, 2] }, 'M7 11V7a5 5 0 0 1 10 0v4'],
+      chat: ['M7.9 20A9 9 0 1 0 4 16.1L2 22Z'],
+    }[name] || [];
+    return h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': sw, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', style: { display: 'block', flex: 'none' } },
+      ...P.map((p, i) => typeof p === 'string' ? h('path', { key: i, d: p }) : p.c ? h('circle', { key: i, cx: p.c[0], cy: p.c[1], r: p.c[2] }) : h('rect', { key: i, x: p.r[0], y: p.r[1], width: p.r[2], height: p.r[3], rx: p.r[4] })));
+  }
+  faNum(n) { return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+  shuffle(a) { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  prefs() {
+    const p = this.state.prefs || {}, pr = this.props;
+    return { script: p.script ?? pr.scriptMode ?? 'both', register: p.register ?? pr.register ?? 'spoken', speed: p.speed ?? 1, mature: p.mature ?? pr.showMature ?? false };
+  }
+  setPref(k, v) { this.setState(s => ({ prefs: { ...s.prefs, [k]: v } })); }
+  disp(w) {
+    const written = this.prefs().register === 'written' && w.written;
+    return { fa: written ? w.written : w.persian, lat: written ? w.writtenPhonetic : w.phonetic, en: w.english };
+  }
+  lessons() {
+    const m = this.prefs().mature, all = this.D.LESSONS.filter(l => m || !l.mature);
+    const order = this.D.STAGES.flatMap(st => st.items.filter(i => i.kind === 'lesson').map(i => i.id));
+    return [...order.map(id => all.find(l => l.id === id)).filter(Boolean), ...all.filter(l => !order.includes(l.id))];
+  }
+  lessonDone(id) { const p = this.state.progress[id] || {}; return ['flashcard', 'quiz', 'listen'].every(a => p[a]); }
+  stageInfo() {
+    const s = this.state; let prevDone = true;
+    return this.D.STAGES.map(st => {
+      const playable = st.items.filter(it => it.kind === 'lesson' || it.kind === 'script');
+      const isDone = it => it.kind === 'lesson' ? this.lessonDone(it.id) : !!s.scriptSeen;
+      const doneCount = playable.filter(isDone).length;
+      const cpDone = !!s.progress['cp:' + st.checkpoint.id];
+      const complete = doneCount === playable.length && cpDone && playable.length === st.items.length;
+      const unlocked = st.n <= 2 || prevDone; prevDone = complete;
+      return { ...st, doneCount, total: playable.length, cpDone, complete, unlocked, playableCp: unlocked && !!this.D.SCENARIOS[st.checkpoint.id] };
+    });
+  }
+  startConvo(id) {
+    const sc = this.D.SCENARIOS[id]; if (!sc) return;
+    const ex = this.advanceNpc({ kind: 'convo', scId: id, sc, items: sc.turns, i: 0, step: 0, log: [], wrongMsg: null, turnWrong: false, correct: 0, total: sc.turns.filter(t => t.who === 'you').length, missed: [], picked: [], showEn: true, lessonId: null });
+    this.setState({ ex, route: { name: 'exercise' } }); window.scrollTo(0, 0);
+  }
+  advanceNpc(ex) {
+    const t = ex.sc.turns; let step = ex.step, last = null; const log = [...ex.log];
+    while (t[step] && t[step].who === 'npc') { log.push({ ...t[step] }); last = t[step]; step++; }
+    if (last) setTimeout(() => this.play({ persian: last.fa, key: 'npc' + step }), 250);
+    return { ...ex, step, log, done: step >= t.length };
+  }
+  choose(c) {
+    const ex = this.state.ex;
+    if (!c.ok) return this.exUpd({ wrongMsg: c.why, turnWrong: true, picked: [...ex.picked, c.fa] });
+    this.setState({ ex: { ...ex, log: [...ex.log, { ...c, who: 'you' }], step: ex.step + 1, wrongMsg: null, correct: ex.correct + (ex.turnWrong ? 0 : 1), turnWrong: false, picked: [] } });
+    setTimeout(() => this.setState(st => ({ ex: st.ex && st.ex.kind === 'convo' ? this.advanceNpc(st.ex) : st.ex })), 700);
+  }
+  allWords() { return this.D.LESSONS.flatMap(l => l.words.map(w => ({ ...w, lessonTitle: l.title }))); }
+  wordByKey(k) { return this.allWords().find(w => w.key === k); }
+  learned() { const p = this.state.progress; return this.D.LESSONS.filter(l => p[l.id] && p[l.id].flashcard).flatMap(l => l.words.map((w, i) => ({ ...w, lessonTitle: l.title, idx: i }))); }
+  // srs[key] = { b: Leitner box 0-4, t: when it is next due }. Words learned but never reviewed are due now.
+  box(w) { const v = this.state.srs[w.key]; return v ? v.b : 0; }
+  due() { const now = Date.now(); return this.learned().filter(w => { const v = this.state.srs[w.key]; return !v || v.t <= now; }); }
+  tip(w) { const m = /\(lit: ([^)]+)\)/.exec(w.english); return m ? `Literally “${m[1]}”.` : null; }
+
+  play(word, slow, key) {
+    try { if (this._a) this._a.pause(); if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    const rate = (slow ? 0.7 : 1) * this.prefs().speed;
+    const k = key || word.key || word.persian;
+    const done = () => this.setState(s => s.playing === k ? { playing: null } : null);
+    this.setState({ playing: k });
+    const tts = () => {
+      if (!window.speechSynthesis) return done();
+      const u = new SpeechSynthesisUtterance(word.persian); u.lang = 'fa-IR'; u.rate = 0.85 * rate;
+      const v = speechSynthesis.getVoices().find(v => v.lang.startsWith('fa')); if (v) u.voice = v;
+      u.onend = done; speechSynthesis.speak(u); setTimeout(done, 2500);
+    };
+    const f = word.english && this.D.audioFile(word.english, word.phonetic);
+    if (f) { const a = new Audio(f); this._a = a; a.playbackRate = rate; a.onended = done; a.onerror = tts; a.play().catch(tts); }
+    else tts();
+  }
+
+  // ---------- navigation ----------
+  go(tab) { this.setState({ tab, route: null }); window.scrollTo(0, 0); }
+  nav(route) { this.setState({ route }); window.scrollTo(0, 0); }
+  back() {
+    const r = this.state.route;
+    if (r && r.name === 'map') return this.nav(r.from);
+    if (r && r.name === 'results') { const lid = this.state.result && this.state.result.lessonId; return this.nav(lid ? { name: 'lesson', id: lid } : null); }
+    this.nav(null);
+  }
+
+  // ---------- exercises ----------
+  start(kind, lessonId, wordsOverride) {
+    const D = this.D;
+    const lesson = lessonId && D.LESSONS.find(l => l.id === lessonId);
+    const pool = wordsOverride || this.shuffle(lesson.words).slice(0, 10);
+    const all = this.allWords();
+    const opts = w => this.shuffle([w, ...this.shuffle(all.filter(x => x.english !== w.english && x.persian !== w.persian)).slice(0, 3)]);
+    let items;
+    if (kind === 'quiz') items = pool.map((w, i) => ({ w, dir: i % 2 ? 'en2fa' : 'fa2en', opts: opts(w) }));
+    else if (kind === 'listen') items = pool.map(w => ({ w, dir: 'listen', opts: opts(w) }));
+    else if (kind === 'build') items = D.SENTENCES.map(s => ({ s, bank: this.shuffle([...s.tiles.map((t, i) => ({ fa: t[0], lat: t[1], ord: i })), ...s.extra.map(t => ({ fa: t[0], lat: t[1], ord: -1 }))]).map((t, id) => ({ ...t, id })) }));
+    else if (kind === 'speak') items = pool.slice(0, 5).map(w => ({ w }));
+    else items = pool.map(w => ({ w }));
+    this.setState({ ex: { kind, lessonId, items, i: 0, status: null, picked: null, correct: 0, flipped: false, built: [], rec: 'idle', missed: [] }, route: { name: 'exercise' } });
+    window.scrollTo(0, 0);
+    const first = items[0];
+    if (first && first.w && kind !== 'quiz' || (first && first.dir === 'fa2en')) setTimeout(() => first.w && this.play(first.w), 350);
+  }
+  exUpd(patch) { this.setState(s => ({ ex: { ...s.ex, ...(typeof patch === 'function' ? patch(s.ex) : patch) } })); }
+  next(extra = {}) {
+    const ex = { ...this.state.ex, ...extra };
+    if (ex.i + 1 >= ex.items.length) return this.finish(ex);
+    const ni = ex.i + 1, it = ex.items[ni];
+    this.setState({ ex: { ...ex, i: ni, status: null, picked: null, flipped: false, built: [], rec: 'idle', recUrl: null } });
+    if (it.w && (ex.kind !== 'quiz' || it.dir === 'fa2en')) setTimeout(() => this.play(it.w), 300);
+  }
+  pick(o) {
+    const ex = this.state.ex; if (ex.status) return;
+    const it = ex.items[ex.i]; const right = o.key === it.w.key;
+    this.exUpd({ status: right ? 'right' : 'wrong', picked: o.key, correct: ex.correct + (right ? 1 : 0), missed: right ? ex.missed : [...ex.missed, it.w.key] });
+    if (right) this.play(it.w);
+  }
+  finish(ex) {
+    const total = ex.total || ex.items.length, xpE = 10 + Math.round((ex.correct / total) * 10);
+    const lessonId = ex.lessonId;
+    this.setState(s => {
+      const progress = { ...s.progress };
+      if (lessonId && ex.kind !== 'review') progress[lessonId] = { ...(progress[lessonId] || {}), [ex.kind]: 1 };
+      if (ex.kind === 'convo') progress['cp:' + ex.scId] = 1;
+      const mistakes = [...new Set([...ex.missed, ...s.mistakes])].slice(0, 40);
+      const srs = { ...s.srs }; ex.missed.forEach(k => { srs[k] = { b: 0, t: Date.now() }; });
+      const today = dayKey(), streak = s.lastPlayedDate === today ? s.streak : s.lastPlayedDate === dayKey(Date.now() - DAY) ? s.streak + 1 : 1;
+      return { progress, mistakes, srs, streak, lastPlayedDate: today, xp: s.xp + xpE, todayXp: (s.lastPlayedDate === today ? s.todayXp : 0) + xpE, result: { kind: ex.kind, scId: ex.scId, lessonId, correct: ex.correct, total, xp: xpE, missed: ex.missed }, route: { name: 'results' }, ex: null };
+    });
+    window.scrollTo(0, 0);
+  }
+  async record() {
+    const ex = this.state.ex;
+    if (ex.rec === 'rec') { if (this._mr && this._mr.state === 'recording') this._mr.stop(); else this.exUpd({ rec: 'done' }); clearTimeout(this._recT); return; }
+    this.exUpd({ rec: 'rec', recUrl: null });
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream); const chunks = [];
+      mr.ondataavailable = e => chunks.push(e.data);
+      mr.onstop = () => { stream.getTracks().forEach(t => t.stop()); this.exUpd({ rec: 'done', recUrl: URL.createObjectURL(new Blob(chunks)) }); };
+      this._mr = mr; mr.start(); this._recT = setTimeout(() => mr.state === 'recording' && mr.stop(), 4000);
+    } catch (e) { this._mr = null; this._recT = setTimeout(() => this.exUpd({ rec: 'done' }), 1800); }
+  }
+
+  // ---------- render ----------
+  renderVals() {
+    const s = this.state;
+    const I = (n, z, w) => this.icon(n, z, w);
+    const ic = { back: I('back', 22), x: I('x', 22), check: I('check', 18, 2), chev: I('chev', 18), flame: I('flame', 16), zap: I('zap', 16), vol: I('vol', 22), volSm: I('vol', 18), volLg: I('vol', 44, 1.3), bulb: I('bulb', 20), bulbSm: I('bulb', 16), compass: I('compass', 22), play: I('play', 16), book: I('book', 22), download: I('download', 20), refresh: I('review', 10, 2), chat: I('chat', 20) };
+    const mode = this.props.forceLayout || 'auto';
+    const wide = mode === 'desktop' || (mode === 'auto' && s.w >= 900);
+    const base = { ic, is: {}, show: { fa: true, lat: true }, tabs: [], showRail: false, showBottomTabs: false, showAppBar: false, wide };
+    if (!s.ready) return { ...base, is: { learn: false } };
+
+    const D = this.D, P = this.prefs();
+    const show = { fa: P.script !== 'latin', lat: P.script !== 'persian' };
+    const r = s.route;
+    const view = r ? r.name : s.tab;
+    const is = { [view]: true };
+    const inFlow = view === 'exercise' || view === 'results';
+    const tabDefs = [['learn', 'Learn', 'book'], ['review', 'Review', 'review'], ['script', 'Script', 'feather'], ['explore', 'Explore', 'compass'], ['profile', 'Profile', 'user']];
+    const tabs = tabDefs.map(([id, label, icn]) => { const a = s.tab === id; return { label, icon: I(icn, 22), go: () => this.go(id), rail: a ? 'var(--color-accent)' : 'transparent', railBg: a ? 'color-mix(in srgb, var(--color-accent) 8%, transparent)' : 'transparent', color: a ? 'var(--color-accent-700)' : 'var(--color-neutral-700)' }; });
+    const showBottomTabs = !wide && !inFlow;
+    const titles = { learn: ['Persian Learnin', 'فارسی'], review: ['Review', 'مرور'], script: ['Script', 'الفبا'], explore: ['Explore', 'کاوش'], profile: ['Profile', 'من'] };
+    const lessons = this.lessons();
+    const prog = id => s.progress[id] || {};
+
+    const v = { ...base, show, is, tabs, showRail: wide && !inFlow, showBottomTabs, showAppBar: !r && !wide,
+      appBarTitle: titles[s.tab][0], appBarFa: titles[s.tab][1], streak: s.streak, xp: s.xp,
+      bottomPad: showBottomTabs ? 'calc(64px + env(safe-area-inset-bottom))' : '0px',
+      mainPad: wide ? '40px 40px 64px' : (r ? '12px 20px 40px' : '22px 20px 40px'),
+      railOffset: '0px', back: () => this.back(), dueCount: this.due().length, startReview: () => { const d = this.due(); this.start('review', null, this.shuffle(d).slice(0, 10)); } };
+
+    // learn
+    const now = new Date();
+    try {
+      v.dateEn = new Intl.DateTimeFormat('en-US-u-ca-persian', { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
+      v.dateFa = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+    } catch (e) { v.dateEn = now.toDateString(); v.dateFa = ''; }
+    const hr = now.getHours();
+    v.greeting = hr < 12 ? 'Sob bekheyr.' : hr < 18 ? 'Salaam.' : 'Shab bekheyr.';
+    v.greetingSub = hr < 12 ? 'Good morning — a few minutes now is worth an hour later.' : hr < 18 ? 'Hello — pick up where you left off.' : 'Good evening — a short review before sleep helps memory settle.';
+    v.todayXp = s.todayXp; v.goal = s.goal; v.goalPct = Math.min(100, Math.round(s.todayXp / s.goal * 100)) + '%';
+    const todayIdx = (now.getDay() + 1) % 7;
+    v.week = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'].map((fa, i) => {
+      const done = i <= todayIdx && i > todayIdx - s.streak && (i < todayIdx || s.todayXp > 0);
+      const today = i === todayIdx;
+      return { fa, en: ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'][i], border: done || today ? 'var(--color-accent)' : 'var(--color-divider)', bg: done ? 'var(--color-accent-100)' : 'transparent', color: done ? 'var(--color-accent-800)' : 'var(--color-neutral-600)' };
+    });
+    const nextL = lessons.find(l => D.ACTIVITIES.some(a => !prog(l.id)[a.id])) || lessons[0];
+    const nextA = D.ACTIVITIES.find(a => !prog(nextL.id)[a.id]) || D.ACTIVITIES[0];
+    const ln = l => lessons.indexOf(l) + 1;
+    v.cont = { n: ln(nextL), title: nextL.title, glyph: nextL.glyph, next: nextA.title, pct: Math.round(D.ACTIVITIES.filter(a => prog(nextL.id)[a.id]).length / 5 * 100) + '%', open: () => this.nav({ name: 'lesson', id: nextL.id }) };
+    const wodPool = lessons.flatMap(l => l.words), wodW = wodPool[Math.floor(now / DAY) % wodPool.length]; const wd = this.disp(wodW);
+    v.wod = { fa: wd.fa, lat: wd.lat, en: wd.en, play: () => this.play(wodW) };
+    v.chapters = lessons.map((l, i) => ({ n: i + 1, nFa: this.faNum(i + 1), title: l.title, desc: l.description, count: l.words.length, glyph: l.glyph,
+      marks: D.ACTIVITIES.map(a => ({ bg: prog(l.id)[a.id] ? 'var(--color-accent)' : 'var(--color-divider)' })), open: () => this.nav({ name: 'lesson', id: l.id }) }));
+    // plan / stages
+    const SI = this.stageInfo();
+    const cur = SI.find(st => st.unlocked && !st.complete) || SI[SI.length - 1];
+    const curPct = Math.round((cur.doneCount + (cur.cpDone ? 1 : 0)) / (cur.total + 1) * 100);
+    v.track = SI.map(st => ({ level: st.level, color: st === cur ? 'var(--color-accent-700)' : 'var(--color-neutral-600)',
+      bar: st.complete ? 'var(--color-accent)' : st === cur ? `linear-gradient(to left, var(--color-accent) ${curPct}%, var(--color-divider) ${curPct}%)` : 'var(--color-divider)' }));
+    const needs = (D.CANDO_NEEDS || {})[cur.id] || [];
+    v.path = { n: cur.n, name: cur.name, fa: cur.fa, level: cur.level, weeks: cur.weeks, goal: cur.goal,
+      cando: cur.cando.map((text, i) => { const nd = needs[i]; const done = nd === 'script' ? !!s.scriptSeen : nd ? this.lessonDone(nd) : false;
+        return { text, icon: done ? I('check', 12, 2.2) : null, border: done ? 'var(--color-accent)' : 'var(--color-divider)', color: done ? 'var(--color-text)' : 'var(--color-neutral-800)' }; }) };
+    v.openPlan = () => this.nav({ name: 'path' });
+    const noop = () => {};
+    const kindIcon = { script: 'feather', grammar: 'blocks', conversation: 'chat', skill: 'headphones' };
+    const row = (it, st) => {
+      const locked = !st.unlocked;
+      if (it.kind === 'lesson') {
+        const l = D.LESSONS.find(x => x.id === it.id); if (!l || (l.mature && !P.mature)) return null; const n = ln(l);
+        return { isLesson: true, n, nFa: this.faNum(n), title: l.title, desc: `${l.description} · ${l.words.length} words`, glyph: l.glyph,
+          marks: D.ACTIVITIES.map(a => ({ bg: prog(l.id)[a.id] ? 'var(--color-accent)' : 'var(--color-divider)' })),
+          op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer', endIcon: locked ? I('lock', 14) : this.lessonDone(l.id) ? I('check', 16, 2) : ic.chev, endColor: this.lessonDone(l.id) ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
+          open: locked ? noop : () => this.nav({ name: 'lesson', id: l.id }) };
       }
-    } else if (event === 'SIGNED_OUT') {
-      await loadState();
-      renderHome();
-      if (currentTab === 'profile') renderProfile();
-    }
-  });
+      const isScript = it.kind === 'script';
+      return { isOther: true, icon: I(kindIcon[it.kind], 15), iconBorder: 'var(--color-divider)', kicker: { script: 'Script', grammar: 'Grammar', conversation: 'Conversation', skill: 'Skill' }[it.kind],
+        title: it.title, desc: it.desc, glyph: isScript ? 'الفبا' : '', op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer',
+        endIcon: locked ? I('lock', 14) : isScript && s.scriptSeen ? I('check', 16, 2) : ic.chev, endColor: isScript && s.scriptSeen ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
+        open: locked ? noop : isScript ? () => this.go('script') : noop };
+    };
+    const cpRow = st => ({ isOther: true, icon: I('chat', 15), iconBorder: 'var(--color-accent)', kicker: 'Checkpoint · conversation', title: st.checkpoint.title, desc: st.checkpoint.desc, glyph: '',
+      op: st.playableCp ? 1 : 0.5, cursor: st.playableCp ? 'pointer' : 'default', endIcon: st.cpDone ? I('check', 16, 2) : st.playableCp ? ic.chev : I('lock', 14), endColor: st.cpDone ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
+      open: st.playableCp ? () => this.startConvo(st.checkpoint.id) : noop });
+    const inPlan = new Set(D.STAGES.flatMap(st => st.items.map(i => i.id)).filter(Boolean));
+    const electives = lessons.filter(l => !inPlan.has(l.id));
+    v.stageGroups = SI.map(st => ({ fa: st.fa, title: `Stage ${st.n} · ${st.name}`, lockIcon: st.unlocked ? null : I('lock', 12),
+      meta: st.unlocked ? `${st.level} · ${st.doneCount + (st.cpDone ? 1 : 0)}/${st.total + 1}` : `${st.level} · Locked`,
+      items: [...st.items.map(it => row(it, st)).filter(Boolean), cpRow(st)] }));
+    if (electives.length) v.stageGroups.push({ fa: 'اختیاری', title: 'Electives', lockIcon: null, meta: 'Any time', items: electives.map(l => row({ kind: 'lesson', id: l.id }, { unlocked: true })).filter(Boolean) });
+    v.loop = [['Meet', 'Flashcards with native audio — the sound comes first'], ['Recognise', 'Pick the meaning, both directions, by eye and by ear'], ['Build', 'Arrange words into Persian order yourself'], ['Say', 'Shadow a native speaker and record yourself'], ['Use', 'Hold the conversation at the end of each stage']].map(([step, desc], i) => ({ step, desc, nFa: this.faNum(i + 1) }));
+    v.plan = SI.map(st => ({ nFa: this.faNum(st.n), level: st.level, name: st.name, weeks: st.weeks, goal: st.goal, cando: st.cando,
+      status: st.complete ? 'Complete' : st === cur ? 'In progress' : st.unlocked ? 'Open' : 'Locked', statusColor: st === cur ? 'var(--color-accent-700)' : 'var(--color-neutral-700)',
+      items: st.items.map(it => it.kind === 'lesson' ? (D.LESSONS.find(l => l.id === it.id) || {}).title : it.title),
+      cpTitle: st.checkpoint.title, cpDesc: st.checkpoint.desc, cpBorder: st.playableCp ? 'var(--color-accent)' : 'var(--color-divider)', cpCursor: st.playableCp ? 'pointer' : 'default',
+      cpIcon: st.cpDone ? I('check', 16, 2) : st.playableCp ? ic.chev : I('lock', 14), cpOpen: st.playableCp ? () => this.startConvo(st.checkpoint.id) : noop }));
 
-  // Wire back buttons
-  document.getElementById("back-from-lesson").onclick = () => {
-    if (currentTab === "learn") { showScreen("home-screen"); renderHome(); }
-    else { showScreen("explore-screen"); renderExplore(); }
-  };
-  document.getElementById("back-from-exercise").onclick = () => {
-    speechSynthesis.cancel();
-    openLesson(currentLesson.id);
-    showScreen("lesson-screen");
-  };
-  document.getElementById("back-from-article").onclick = () => {
-    destroyMaps();
-    if (articleReturnScreen === "explore-screen") {
-      showScreen("explore-screen");
-      renderExplore();
-    } else {
-      goHome();
+    v.chapterCount = lessons.length; v.chaptersDone = lessons.filter(l => D.ACTIVITIES.every(a => prog(l.id)[a.id])).length;
+
+    // lesson
+    if (view === 'lesson') {
+      const l = D.LESSONS.find(x => x.id === r.id); const note = D.NOTES[l.id];
+      const stg = D.STAGES.find(st => st.items.some(i => i.id === l.id));
+      v.L = { n: ln(l), where: stg ? `Stage ${stg.n} · ${stg.name}` : 'Elective', cando: D.CANDO[l.id], title: l.title, desc: l.description, glyph: l.glyph, count: l.words.length, noteT: note.t, noteB: note.b,
+        acts: D.ACTIVITIES.map(a => ({ ...a, icon: I(a.icon, 20), done: !!prog(l.id)[a.id], border: prog(l.id)[a.id] ? 'color-mix(in srgb, var(--color-accent) 55%, transparent)' : 'var(--color-divider)', start: () => this.start(a.id, l.id) })),
+        words: l.words.map(w => { const d = this.disp(w); const p = s.playing === w.key; const alt = !!w.written; const written = P.register === 'written';
+          return { ...d, play: () => this.play(w), btnBorder: p ? 'var(--color-accent)' : 'var(--color-divider)', btnBg: p ? 'var(--color-accent-100)' : 'transparent', hasAlt: alt, altLabel: written ? 'Spoken' : 'Written', altFa: written ? w.persian : w.written, altLat: written ? w.phonetic : w.writtenPhonetic }; }) };
+      v.noteOpen = s.noteOpen; v.noteRot = s.noteOpen ? '90deg' : '0deg'; v.toggleNote = () => this.setState({ noteOpen: !s.noteOpen });
     }
-  };
-  document.getElementById("btn-play-again").onclick = () => startActivity(currentActivity);
-  document.getElementById("btn-go-home").onclick = goHome;
-  document.getElementById("back-from-map").onclick = () => {
-    destroyMaps();
-    showScreen("article-screen");
-  };
-  document.getElementById("back-from-wordcollection").onclick = () => {
-    showScreen("profile-screen");
-    renderProfile();
-  };
-});
+    v.registerLabel = P.register === 'written' ? 'written' : 'spoken';
+
+    // exercise
+    if (view === 'exercise' && s.ex) {
+      const ex = s.ex, it = ex.items[ex.i], k = ex.kind;
+      const X = { pct: Math.round(ex.i / ex.items.length * 100) + '%', counter: `${ex.i + 1} / ${ex.items.length}`,
+        kindLabel: { flashcard: 'Flashcards', quiz: 'Recognition', listen: 'Listening', build: 'Sentence builder', speak: 'Speaking', review: 'Spaced review' }[k],
+        kindFa: { flashcard: 'کارت‌ها', quiz: 'شناخت', listen: 'شنیدن', build: 'جمله‌سازی', speak: 'گفتن', review: 'مرور' }[k],
+        isFlash: k === 'flashcard' || k === 'review', isChoice: k === 'quiz' || k === 'listen', isBuild: k === 'build', isSpeak: k === 'speak' };
+      if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
+      v.exitEx = () => { const lid = ex.lessonId; this.setState({ ex: null }); this.nav(lid ? { name: 'lesson', id: lid } : null); };
+      if (X.isFlash) {
+        X.rot = ex.flipped ? '180deg' : '0deg'; X.flip = () => this.exUpd({ flipped: !ex.flipped });
+        X.showBottomBar = true;
+        if (k === 'review') {
+          const rate = (lvl) => { const b = this.box(it.w); const nb = [0, 1, Math.max(2, Math.min(4, b + 1)), b >= 3 ? 4 : 3][lvl];
+            this.setState(st => ({ srs: { ...st.srs, [it.w.key]: { b: nb, t: Date.now() + INTERVALS[nb] } } })); this.next({ correct: ex.correct + (lvl > 0 ? 1 : 0), missed: lvl === 0 ? [...ex.missed, it.w.key] : ex.missed }); };
+          X.barBtns = ex.flipped ? [['Again', '1 min', 0], ['Hard', '1 day', 1], ['Good', '3 days', 2], ['Easy', '1 week', 3]].map(([label, sub, lvl]) => ({ label, sub, cls: lvl === 2 ? 'btn-primary' : 'btn-secondary', go: () => rate(lvl), disabled: false }))
+            : [{ label: 'Show answer', sub: '', cls: 'btn-primary', go: X.flip, disabled: false }];
+        } else {
+          X.barBtns = [{ label: 'Still learning', sub: '', cls: 'btn-secondary', go: () => this.next({ missed: [...ex.missed, it.w.key] }), disabled: false },
+                       { label: 'I know this', sub: '', cls: 'btn-primary', go: () => this.next({ correct: ex.correct + 1 }), disabled: false }];
+        }
+      }
+      if (X.isChoice) {
+        X.isListen = it.dir === 'listen'; X.showPromptWord = !X.isListen; X.promptIsFa = it.dir === 'fa2en'; X.promptIsEn = it.dir === 'en2fa';
+        X.prompt = X.isListen ? 'What did you hear?' : it.dir === 'fa2en' ? 'What does this mean?' : 'How do you say this in Persian?';
+        X.listenBg = s.playing === it.w.key ? 'var(--color-accent-100)' : 'transparent';
+        X.options = it.opts.map(o => { const d = this.disp(o); const isAns = o.key === it.w.key, isPick = ex.picked === o.key;
+          const st = !ex.status ? 'idle' : isAns ? 'right' : isPick ? 'wrong' : 'dim';
+          const faOpt = it.dir === 'en2fa';
+          return { ...d, showFa: faOpt && show.fa, showLat: faOpt && show.lat, showEn: !faOpt, pick: () => this.pick(o),
+            border: st === 'right' ? 'var(--color-accent)' : st === 'wrong' ? 'var(--color-text)' : 'var(--color-divider)',
+            bg: st === 'right' ? 'var(--color-accent-100)' : st === 'wrong' ? 'var(--color-neutral-200)' : 'transparent', op: st === 'dim' ? 0.45 : 1 }; });
+      }
+      if (X.isBuild) {
+        X.en = it.s.en;
+        X.built = ex.built.map((id, j) => { const t = it.bank[id]; return { ...t, tap: () => !ex.status && this.exUpd({ built: ex.built.filter((_, q) => q !== j) }) }; });
+        X.builtEmpty = ex.built.length === 0;
+        X.bank = it.bank.map(t => { const used = ex.built.includes(t.id); return { ...t, op: used ? 0 : 1, vis: used ? 'hidden' : 'visible', tap: () => !used && !ex.status && this.exUpd({ built: [...ex.built, t.id] }) }; });
+        X.showBottomBar = !ex.status;
+        const check = () => { const ok = ex.built.length === it.s.tiles.length && ex.built.every((id, j) => it.bank[id].ord === j);
+          this.exUpd({ status: ok ? 'right' : 'wrong', correct: ex.correct + (ok ? 1 : 0) }); };
+        X.barBtns = [{ label: 'Check', sub: '', cls: 'btn-primary', go: check, disabled: ex.built.length === 0 }];
+      }
+      if (X.isSpeak) {
+        X.recDone = ex.rec === 'done'; X.rec = () => this.record();
+        X.recIcon = ex.rec === 'rec' ? h('span', { style: { width: 22, height: 22, borderRadius: '50%', background: 'var(--color-accent)', animation: 'plblink 1s infinite' } }) : I('mic', 22);
+        X.recLabel = ex.rec === 'rec' ? 'Recording… tap to stop' : ex.rec === 'done' ? 'Record again' : '2 · Your turn';
+        X.recBorder = ex.rec === 'rec' ? 'var(--color-accent)' : 'var(--color-divider)'; X.recBg = ex.rec === 'rec' ? 'var(--color-accent-100)' : 'transparent';
+        X.playMine = () => { if (ex.recUrl) new Audio(ex.recUrl).play(); else this.play(it.w); };
+        X.selfRates = [['Needs work', 0], ['Close', 1], ['Nailed it', 1]].map(([label, c]) => ({ label, go: () => this.next({ correct: ex.correct + c }) }));
+      }
+      if (k === 'convo') {
+        const t = ex.sc.turns, youDone = ex.log.filter(m => m.who === 'you').length;
+        Object.assign(X, { isConvo: true, kindLabel: 'Conversation checkpoint', kindFa: 'گفتگو', pct: Math.round(ex.step / t.length * 100) + '%', counter: `${youDone} / ${ex.total}`,
+          title: ex.sc.title, setting: ex.sc.setting, showEn: ex.showEn, enLabel: ex.showEn ? 'Hide English' : 'Show English', toggleEn: () => this.exUpd({ showEn: !ex.showEn }),
+          log: ex.log.map((m, j) => { const you = m.who === 'you'; return { ...m, name: you ? 'You' : ex.sc.npc, align: you ? 'flex-end' : 'flex-start', ta: you ? 'right' : 'left', border: you ? 'var(--color-accent)' : 'var(--color-divider)', tip: you ? m.tip : null, play: () => this.play({ persian: m.fa, key: 'log' + j }) }; }),
+          wrongMsg: ex.wrongMsg, awaiting: !!(t[ex.step] && t[ex.step].who === 'you'), convoDone: !!ex.done, finishConvo: () => this.finish(ex),
+          choices: t[ex.step] && t[ex.step].who === 'you' ? t[ex.step].choices.map(c => { const used = ex.picked.includes(c.fa); return { ...c, pick: () => !used && this.choose(c), border: used ? 'var(--color-text)' : 'var(--color-divider)', op: used ? 0.45 : 1 }; }) : [] });
+      }
+      X.hasFeedback = !!ex.status;
+      if (ex.status) {
+        const right = ex.status === 'right';
+        X.fbColor = right ? 'var(--color-accent)' : 'var(--color-text)'; X.fbIcon = right ? I('check', 16, 2) : I('x', 16, 2);
+        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
+        else { X.fbTitle = right ? 'Afarin — well done' : 'Not quite'; X.fbFa = it.s.tiles.map(t => t[0]).join(' '); X.fbLat = it.s.tiles.map(t => t[1]).join(' '); X.fbEn = it.s.en; X.fbTip = it.s.tip; }
+        X.cont = () => this.next(); X.showBottomBar = false;
+      }
+      v.X = X;
+    }
+
+    // results
+    if (view === 'results' && s.result) {
+      const R = s.result, acc = Math.round(R.correct / R.total * 100);
+      const good = acc >= 80;
+      v.R = { kicker: R.kind === 'review' ? 'Review complete' : 'Activity complete', fa: good ? 'آفرین' : 'خسته نباشی', lat: good ? 'Aafarin' : 'Khaste nabaashi', en: good ? 'Well done.' : 'May you not be tired.',
+        stats: [[`+${R.xp}`, 'XP'], [acc + '%', 'Accuracy'], [s.streak, 'Day streak']].map(([v2, l], i) => ({ v: v2, l, bl: i ? '1px solid var(--color-divider)' : '0' })),
+        hasMissed: R.missed.length > 0, missed: R.missed.map(k => { const w = this.wordByKey(k); const d = this.disp(w); return { ...d, play: () => this.play(w) }; }),
+        primaryLabel: R.lessonId ? 'Back to chapter' : 'Done', primary: () => this.back(), again: () => this.start(R.kind, R.lessonId, R.lessonId ? null : this.shuffle(this.due()).slice(0, 10)) };
+      if (R.lessonId && R.kind !== 'review') v.R.again = () => this.start(R.kind, R.lessonId);
+      if (R.kind === 'convo') { v.R.kicker = 'Checkpoint complete'; v.R.again = () => this.startConvo(R.scId); v.R.primaryLabel = 'Back to your path'; }
+    }
+
+    // review
+    const L = this.learned();
+    const counts = [0, 0, 0, 0, 0]; L.forEach(w => counts[Math.min(4, this.box(w))]++);
+    const mx = Math.max(1, ...counts);
+    v.boxes = counts.map((c, i) => ({ count: c, h: Math.max(4, Math.round(c / mx * 84)) + 'px', label: ['Today', '1 day', '3 days', '1 week', '1 month'][i], bg: `color-mix(in srgb, var(--color-accent) ${12 + i * 10}%, transparent)` }));
+    v.dueMins = Math.max(1, Math.round(v.dueCount * 0.3));
+    v.mistakeList = s.mistakes.map(k => this.wordByKey(k)).filter(Boolean).map(w => ({ ...this.disp(w), lesson: w.lessonTitle, play: () => this.play(w) }));
+    v.hasMistakes = v.mistakeList.length > 0; v.noMistakes = !v.hasMistakes;
+    v.drillMistakes = () => this.start('review', null, s.mistakes.map(k => this.wordByKey(k)).filter(Boolean).slice(0, 10));
+
+    // script
+    const filt = s.letterFilter;
+    const FL = [['all', 'All 32'], ['persian', 'Persian-only'], ['nc', 'Non-connectors'], ['alike', 'Sound-alikes']];
+    v.letterFilters = FL.map(([id, label]) => ({ label, go: () => this.setState({ letterFilter: id }), border: filt === id ? 'var(--color-accent)' : 'var(--color-divider)', color: filt === id ? 'var(--color-accent-700)' : 'var(--color-text)' }));
+    v.letterFilterNote = { all: null, persian: 'Persian added four letters to the Arabic alphabet for sounds Arabic lacks: p, ch, zh and g.', nc: 'These seven letters never join to the letter after them — so a word can have gaps in the middle, like دوست (doost).', alike: 'Several letters share one sound. Spelling must be memorised word by word — but in speech you only need one.' }[filt];
+    v.letters = D.LETTERS.map((l, i) => ({ ...l, i })).filter(l => filt === 'all' || (filt === 'persian' && l.persianOnly) || (filt === 'nc' && !l.connects) || (filt === 'alike' && l.group))
+      .map(l => ({ ch: l.ch, name: l.name, persianOnly: l.persianOnly, border: 'var(--color-divider)', open: () => { this.setState({ scriptSeen: true }); this.nav({ name: 'letter', i: l.i }); } }));
+    if (view === 'letter') {
+      const i = r.i, l = D.LETTERS[i], prev = D.LETTERS[i - 1], nxt = D.LETTERS[i + 1];
+      v.LT = { n: i + 1, ch: l.ch, name: l.name, sound: l.sound, ex: l.ex, exLat: l.exLat, exEn: l.exEn,
+        forms: [['isolated', 'Alone'], ['initial', 'Start'], ['medial', 'Middle'], ['final', 'End']].map(([f, label], j) => ({ ch: l.forms[f], label, br: j ? '1px solid var(--color-divider)' : '0', color: !l.connects && (f === 'initial' || f === 'medial') ? 'var(--color-neutral-500)' : 'var(--color-text)' })),
+        connectNote: l.connects ? `${l.name} joins to the letters on both sides, so its shape changes in every position.` : `${l.name} is a non-connector: it joins the letter before it, but never the one after. Its start and middle forms look like its alone and end forms.`,
+        groupNote: l.group ? D.SOUND_GROUPS[l.group] : null,
+        play: () => this.play({ persian: l.ex, key: 'letter' + i }),
+        prev: () => prev && this.nav({ name: 'letter', i: i - 1 }), next: () => nxt && this.nav({ name: 'letter', i: i + 1 }),
+        prevName: prev ? prev.name : '', nextName: nxt ? nxt.name : '', isFirst: !prev, isLast: !nxt };
+    }
+
+    // explore
+    v.articles = D.ARTICLES.map(a => ({ ...a, open: () => this.nav({ name: 'article', id: a.id }) }));
+    if (view === 'article') {
+      const a = D.ARTICLES.find(x => x.id === r.id), full = (window.CULTURE_ARTICLES || []).find(x => x.id === r.id);
+      v.A = full ? { ...a, sections: [], rich: full.sections, noBody: false } : { ...a, sections: (a.sections || []).map(sec => ({ p: [], list: null, after: null, ...sec })), rich: [], noBody: !a.sections };
+    }
+    v.openMap = sec => this.setState({ mapSection: sec, route: { name: 'map', from: r } }, () => window.scrollTo(0, 0));
+    v.openHoliday = hol => this.setState({ sheet: 'holiday', holiday: hol });
+    if (view === 'map') v.M = { heading: s.mapSection.heading, note: s.mapSection.note, offline: !s.online };
+    v.offline = !s.online;
+
+    // profile
+    const fullDone = lessons.filter(l => D.ACTIVITIES.slice(0, 3).every(a => prog(l.id)[a.id])).length;
+    v.learnedCount = L.length;
+    v.pStats = [[s.xp, 'Total XP'], [Math.floor(s.xp / 100) + 1, 'Level'], [s.streak, 'Day streak'], [L.length, 'Words']].map(([val, l], i) => ({ v: val, l, bl: i ? '1px solid var(--color-divider)' : '0' }));
+    const seg = (key, opts) => opts.map(([val, label], j) => ({ label, go: () => this.setPref(key, val), bl: j ? '1px solid var(--color-divider)' : '0', shadow: P[key] === val ? 'inset 0 0 0 1px var(--color-accent)' : 'none', color: P[key] === val ? 'var(--color-accent-700)' : 'var(--color-text)' }));
+    v.prefs = [
+      { label: 'Script display', hint: 'Fade out transliteration as your reading improves', opts: seg('script', [['both', 'Persian + Latin'], ['persian', 'Persian only'], ['latin', 'Latin only']]) },
+      { label: 'Register', hint: 'Everyday Tehran speech, or the formal written language', opts: seg('register', [['spoken', 'Spoken'], ['written', 'Written']]) },
+      { label: 'Audio speed', hint: 'Applies to every recording', opts: seg('speed', [[1, 'Normal'], [0.75, 'Slower']]) },
+    ];
+    v.toggleMature = () => this.setPref('mature', !P.mature); v.matureBorder = P.mature ? 'var(--color-accent)' : 'var(--color-neutral-500)'; v.matureKnob = P.mature ? '23px' : '3px';
+    const unlocked = { first_step: Object.keys(s.progress).length > 0, on_fire: s.streak >= 3, dedicated: s.streak >= 7, rising_star: fullDone >= 3, scholar: fullDone >= lessons.length, centurion: s.xp >= 100, master: s.xp >= 400, word_collector: Object.values(s.progress).filter(p => p.flashcard).length >= 5 };
+    v.achievements = D.ACHIEVEMENTS.map(a => ({ ...a, op: unlocked[a.id] ? 1 : 0.55, border: unlocked[a.id] ? 'var(--color-accent)' : 'var(--color-divider)', icon: unlocked[a.id] ? I('check', 16, 2) : I('lock', 14) }));
+    v.openWords = () => this.nav({ name: 'words' }); v.openAuth = () => this.setState({ sheet: 'auth' }); v.openInstall = () => this.setState({ sheet: 'install' });
+    v.wordQuery = s.wordQuery; v.setWordQuery = e => this.setState({ wordQuery: e.target.value });
+    const q = s.wordQuery.trim().toLowerCase();
+    v.collection = L.filter(w => !q || w.english.toLowerCase().includes(q) || w.phonetic.toLowerCase().includes(q) || w.persian.includes(q)).map(w => ({ ...this.disp(w), lesson: w.lessonTitle, box: Math.min(4, this.box(w)) + 1, play: () => this.play(w) }));
+
+    // sheet
+    v.sheetOpen = !!s.sheet; v.sheetAuth = s.sheet === 'auth'; v.sheetInstall = s.sheet === 'install'; v.sheetSignOut = s.sheet === 'signout'; v.sheetHoliday = s.sheet === 'holiday';
+    v.sheetTitle = s.sheet === 'install' ? 'Install Persian Learnin' : s.sheet === 'signout' ? 'Sign out?' : s.sheet === 'holiday' ? s.holiday.name : s.authMode === 'signin' ? 'Welcome back' : 'Create an account';
+    v.H = s.sheet === 'holiday' ? s.holiday.detail : null;
+    v.closeSheet = () => this.setState({ sheet: null, authMsg: null });
+    v.isGuest = !s.user; v.userEmail = s.user ? s.user.email : ''; v.openSignOut = () => this.setState({ sheet: 'signout' }); v.doSignOut = () => this.signOut();
+    v.authEmail = s.authEmail; v.authPassword = s.authPassword; v.authBusy = s.authBusy || !s.online;
+    v.authMsg = s.authMsg || (s.online ? null : "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.");
+    v.authMsgRule = s.authErr || !s.online ? 'var(--color-text)' : 'var(--color-accent)';
+    v.setAuthEmail = e => this.setState({ authEmail: e.target.value }); v.setAuthPassword = e => this.setState({ authPassword: e.target.value });
+    v.authPwAuto = s.authMode === 'signin' ? 'current-password' : 'new-password'; v.submitAuth = e => this.submitAuth(e); v.stop = e => e.stopPropagation();
+    v.authTabs = [['signin', 'Sign in'], ['signup', 'Sign up']].map(([id, label], j) => ({ label, go: () => this.setState({ authMode: id, authMsg: null }), bl: j ? '1px solid var(--color-divider)' : '0', shadow: s.authMode === id ? 'inset 0 0 0 1px var(--color-accent)' : 'none', color: s.authMode === id ? 'var(--color-accent-700)' : 'var(--color-text)' }));
+    v.authCta = s.authBusy ? 'One moment…' : s.authMode === 'signin' ? 'Sign in' : 'Create account';
+    v.doInstall = () => { if (this._deferred) this._deferred.prompt(); this.setState({ sheet: null }); };
+    return v;
+  }
+
+  render() { return view(this.renderVals()); }
+}
+
+render(h(App, {}), document.getElementById('app'));
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
