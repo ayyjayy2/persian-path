@@ -1,0 +1,837 @@
+// Screen markup, converted from the v2 design export (Persian Learnin.dc.html).
+// `v` is the view model built by App.renderVals() in app.js.
+import { html } from "./vendor/preact-htm.js";
+
+export function view(v) {
+  return html`
+<div style="min-height:100vh;display:flex;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+
+${(v.showRail) ? html`
+<aside style="width:248px;flex:none;position:sticky;top:0;height:100vh;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;padding:28px 20px;gap:28px;box-sizing:border-box">
+  <div style="display:flex;flex-direction:column;gap:2px">
+    <span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;color:var(--color-accent-700);direction:rtl;text-align:left;line-height:1.3">فارسی</span>
+    <span style="font-family:var(--font-heading);font-size:24px;font-weight:600;letter-spacing:-0.01em">Persian Learnin</span>
+  </div>
+  <nav style="display:flex;flex-direction:column;gap:2px">
+    ${(v.tabs || []).map((t) => html`
+      <button onClick=${t.go} style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:0;border-left:2px solid ${t.rail};background:${t.railBg};color:${t.color};cursor:pointer;text-align:left;font-family:var(--font-heading);font-size:18px;font-weight:600;border-radius:0 var(--radius-md) var(--radius-md) 0" class="hv0">${t.icon}<span>${t.label}</span></button>
+    `)}
+  </nav>
+  <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--color-divider);padding-top:18px;font-size:13px">
+    <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-700)">Streak</span><span style="font-feature-settings:'tnum'">${v.streak} ${v.streak === 1 ? 'day' : 'days'}</span></div>
+    <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-700)">Total XP</span><span style="font-feature-settings:'tnum'">${v.xp}</span></div>
+  </div>
+</aside>
+` : null}
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;padding-bottom:${v.bottomPad}">
+
+${(v.showAppBar) ? html`
+<header style="position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--color-bg) 92%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--color-divider);padding:12px 20px;padding-top:max(12px, env(safe-area-inset-top))">
+  <div style="max-width:680px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;direction:rtl">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${v.appBarFa}</span>
+      <span style="font-family:var(--font-heading);font-size:22px;font-weight:600">${v.appBarTitle}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;font-size:13px;font-feature-settings:'tnum';direction:ltr">
+      <span style="display:flex;align-items:center;gap:5px;color:var(--color-accent-700)">${v.ic.flame}${v.streak}</span>
+      <span style="display:flex;align-items:center;gap:5px;color:var(--color-neutral-800)">${v.ic.zap}${v.xp}</span>
+    </div>
+  </div>
+</header>
+` : null}
+
+<main style="flex:1;width:100%;max-width:680px;margin:0 auto;box-sizing:border-box;padding:${v.mainPad}">
+
+
+${(v.is.learn) ? html`
+<div style="display:flex;flex-direction:column;gap:28px;animation:plfade .25s ease">
+  <section style="display:flex;flex-direction:column;gap:6px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.dateEn}</span>
+      <span style="font-family:'Noto Naskh Arabic',serif;font-size:14px;color:var(--color-neutral-700);direction:rtl">${v.dateFa}</span>
+    </div>
+    <h1 style="font-size:40px;font-weight:400;margin:4px 0 0;line-height:1.05">${v.greeting}</h1>
+    <p style="margin:0;color:var(--color-neutral-700);font-size:14px">${v.greetingSub}</p>
+  </section>
+
+  <section style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;direction:rtl">
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">مسیر روانی</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Path to fluency</span></span>
+      <button class="btn btn-ghost" onClick=${v.openPlan} style="min-height:40px;direction:ltr">Full plan</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;direction:rtl">
+      ${(v.track || []).map((t) => html`
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+          <div style="width:100%;height:3px;background:${t.bar}"></div>
+          <span style="font-size:10px;color:${t.color};direction:ltr;font-feature-settings:'tnum'">${t.level}</span>
+        </div>
+      `)}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);font-feature-settings:'tnum'">Stage ${v.path.n} of 5 · ${v.path.level} · ${v.path.weeks}</span>
+      <span style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;color:var(--color-accent-700)">${v.path.fa}</span><span style="font-family:var(--font-heading);font-size:28px;font-weight:400;line-height:1.1">${v.path.name}</span></span>
+      <p style="margin:0;font-size:13px;line-height:1.55;color:var(--color-neutral-800)">${v.path.goal}</p>
+    </div>
+    <div style="display:flex;flex-direction:column;border-top:1px solid var(--color-divider)">
+      <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-neutral-700);padding:12px 0 2px">By the end of this stage you can</span>
+      ${(v.path.cando || []).map((c) => html`
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-divider)">
+          <span style="width:20px;height:20px;border-radius:50%;border:1px solid ${c.border};color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;flex:none">${c.icon}</span>
+          <span style="font-size:14px;color:${c.color}">${c.text}</span>
+        </div>
+      `)}
+    </div>
+  </section>
+
+  <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;direction:rtl">
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">هدف روزانه</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Daily goal</span></span>
+      <span style="font-size:13px;font-feature-settings:'tnum';color:var(--color-neutral-700);direction:ltr">${v.todayXp} / ${v.goal} XP</span>
+    </div>
+    <div style="height:2px;background:var(--color-divider);position:relative"><div style="position:absolute;left:0;top:-1px;height:4px;background:var(--color-accent);width:${v.goalPct}"></div></div>
+    <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+      ${(v.week || []).map((d) => html`
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="width:34px;height:34px;border-radius:50%;border:1px solid ${d.border};background:${d.bg};display:flex;align-items:center;justify-content:center;font-family:'Noto Naskh Arabic',serif;font-size:15px;color:${d.color}">${d.fa}</div>
+          <span style="font-size:10px;color:var(--color-neutral-600)">${d.en}</span>
+        </div>
+      `)}
+    </div>
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);font-style:italic">The Persian week begins on Saturday — shanbe.</p>
+  </section>
+
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+    <div style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:8px">
+      <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">مرور</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Spaced review</span></span>
+      <div style="display:flex;align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-size:44px;line-height:1;font-feature-settings:'tnum'">${v.dueCount}</span><span style="font-size:14px">words due today</span></div>
+      <p style="margin:0;font-size:13px;color:var(--color-neutral-700)">Short, timed reviews move words into long-term memory.</p>
+      <button class="btn btn-primary" onClick=${v.startReview} style="align-self:flex-start;margin-top:4px;min-height:44px;padding-inline:20px">Begin review</button>
+    </div>
+    <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:8px;cursor:pointer" onClick=${v.cont.open} class="hv1">
+      <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">ادامه</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);direction:ltr">Continue · Chapter ${v.cont.n}</span></span>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;direction:rtl">
+        <span style="font-family:var(--font-heading);font-size:24px;font-weight:600;line-height:1.1">${v.cont.title}</span>
+        <span style="font-family:'Noto Naskh Arabic',serif;font-size:24px;color:var(--color-accent-700)">${v.cont.glyph}</span>
+      </div>
+      <p style="margin:0;font-size:13px;color:var(--color-neutral-700)">Next: ${v.cont.next}</p>
+      <div style="height:1px;background:var(--color-divider);margin-top:auto;position:relative"><div style="position:absolute;left:0;top:-1px;height:3px;background:var(--color-accent);width:${v.cont.pct}"></div></div>
+    </div>
+  </section>
+
+  <section style="border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:22px 0;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;direction:rtl">
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">عبارت روز</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Phrase of the day</span></span>
+      <button onClick=${v.wod.play} aria-label="Play" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--color-accent);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer" class="hv2">${v.ic.vol}</button>
+    </div>
+    ${(v.show.fa) ? html`<div style="font-family:'Noto Naskh Arabic',serif;font-size:40px;direction:rtl;text-align:right;line-height:1.4">${v.wod.fa}</div>` : null}
+    ${(v.show.lat) ? html`<div style="font-style:italic;font-size:15px;color:var(--color-neutral-700);text-align:right">${v.wod.lat}</div>` : null}
+    <div style="font-family:var(--font-heading);font-size:22px;font-weight:600">${v.wod.en}</div>
+    <p style="margin:0;font-size:14px;line-height:1.6;text-align:justify;hyphens:auto;color:var(--color-neutral-800)">Say it to anyone at the end of their work — a shopkeeper, a cook, a colleague. It acknowledges effort, not result. The reply is <em>salaamat baashi</em>, “may you be healthy.”</p>
+  </section>
+
+  <section style="display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;direction:rtl">
+      <span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">فهرست</span><h2 style="font-size:28px;margin:0">Contents</h2></span>
+      <span style="font-size:12px;color:var(--color-neutral-700);font-feature-settings:'tnum';direction:ltr">${v.chaptersDone} of ${v.chapterCount} complete</span>
+    </div>
+    ${(v.stageGroups || []).map((g) => html`
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:24px 0 8px;border-bottom:1px solid var(--color-text);direction:rtl">
+        <span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">${g.fa}</span><span style="font-family:var(--font-heading);font-size:21px;font-weight:600">${g.title}</span></span>
+        <span style="font-size:11px;color:var(--color-neutral-700);direction:ltr;font-feature-settings:'tnum';display:flex;align-items:center;gap:6px">${g.lockIcon}${g.meta}</span>
+      </div>
+      ${(g.items || []).map((c) => html`
+        <button onClick=${c.open} style="display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 4px;border:0;border-bottom:1px solid var(--color-divider);background:transparent;text-align:left;cursor:${c.cursor};min-height:64px;opacity:${c.op}" class="hv3">
+          <span style="display:flex;flex-direction:column;align-items:center;line-height:1">
+            ${(c.isLesson) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${c.nFa}</span><span style="font-size:10px;color:var(--color-neutral-600);font-feature-settings:'tnum';margin-top:2px">${c.n}</span>` : null}
+            ${(c.isOther) ? html`<span style="width:32px;height:32px;border:1px solid ${c.iconBorder};border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--color-accent-700)">${c.icon}</span>` : null}
+          </span>
+          <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+            ${(c.kicker) ? html`<span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${c.kicker}</span>` : null}
+            <span style="font-family:var(--font-heading);font-size:20px;font-weight:600;line-height:1.15">${c.title}</span>
+            <span style="font-size:12px;color:var(--color-neutral-700)">${c.desc}</span>
+            ${(c.isLesson) ? html`<span style="display:flex;gap:4px;margin-top:4px">${(c.marks || []).map((m) => html`<span style="width:18px;height:3px;background:${m.bg}"></span>`)}</span>` : null}
+          </span>
+          <span style="display:flex;align-items:center;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-neutral-700)">${c.glyph}</span><span style="color:${c.endColor};display:flex">${c.endIcon}</span></span>
+        </button>
+      `)}
+    `)}
+  </section>
+</div>
+` : null}
+
+
+${(v.is.lesson) ? html`
+<div style="display:flex;flex-direction:column;gap:26px;animation:plfade .25s ease">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:var(--radius-md)" class="hv4">${v.ic.back}</button>
+    <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);font-feature-settings:'tnum'">${v.L.where} · ${v.L.count} words</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid var(--color-divider);padding-bottom:18px">
+    <div><h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">${v.L.title}</h1><p style="margin:6px 0 0;color:var(--color-neutral-700);font-size:14px">${v.L.desc}</p><p style="margin:12px 0 0;font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">You'll be able to</span><em>${v.L.cando}</em></p></div>
+    <span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;color:var(--color-accent-700);line-height:1.2">${v.L.glyph}</span>
+  </div>
+
+  <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md)">
+    <button onClick=${v.toggleNote} style="width:100%;display:flex;align-items:center;gap:10px;padding:14px 16px;border:0;background:transparent;cursor:pointer;text-align:left;min-height:48px">
+      <span style="color:var(--color-accent-700)">${v.ic.bulb}</span>
+      <span style="flex:1;display:flex;flex-direction:column"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Teacher's note</span><span style="font-family:var(--font-heading);font-size:18px;font-weight:600">${v.L.noteT}</span></span>
+      <span style="color:var(--color-neutral-600);transform:rotate(${v.noteRot});transition:transform .2s">${v.ic.chev}</span>
+    </button>
+    ${(v.noteOpen) ? html`<p style="margin:0;padding:0 16px 16px 46px;font-size:14px;line-height:1.65;text-align:justify;hyphens:auto;color:var(--color-neutral-800)">${v.L.noteB}</p>` : null}
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">تمرین</span><h2 style="font-size:24px;margin:0">Practice</h2></div>
+    ${(v.L.acts || []).map((a) => html`
+      <button onClick=${a.start} style="display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border:1px solid ${a.border};border-radius:var(--radius-md);background:transparent;cursor:pointer;text-align:left;min-height:68px" class="hv5">
+        <span style="width:44px;height:44px;border:1px solid var(--color-divider);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--color-accent-700)">${a.icon}</span>
+        <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+          <span style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">${a.title}</span>${(a.isNew) ? html`<span class="tag tag-outline" style="font-size:10px;padding:1px 6px;border:1px solid var(--color-accent);color:var(--color-accent-700);border-radius:var(--radius-sm);letter-spacing:0.06em;text-transform:uppercase">New</span>` : null}</span>
+          <span style="font-size:12px;color:var(--color-neutral-700)">${a.desc}</span>
+        </span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:11px;color:var(--color-neutral-700);font-feature-settings:'tnum'">
+          ${(a.done) ? html`<span style="color:var(--color-accent-700);display:flex">${v.ic.check}</span>` : null}
+          <span>${a.mins} min</span>
+        </span>
+      </button>
+    `)}
+  </section>
+
+  <section style="display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;direction:rtl"><span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">واژه‌ها</span><h2 style="font-size:24px;margin:0">Vocabulary</h2></span><span style="font-size:12px;color:var(--color-neutral-700);direction:ltr">Register: ${v.registerLabel}</span></div>
+    ${(v.L.words || []).map((w) => html`
+      <div style="display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
+        <button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid ${w.btnBorder};background:${w.btnBg};color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
+        <span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px">${w.en}</span>${(w.hasAlt) ? html`<span style="font-size:11px;color:var(--color-neutral-600)">${w.altLabel}: <span style="font-family:'Noto Naskh Arabic',serif">${w.altFa}</span> · ${w.altLat}</span>` : null}</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end">
+          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;line-height:1.4">${w.fa}</span>` : null}
+          ${(v.show.lat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}
+        </span>
+      </div>
+    `)}
+  </section>
+</div>
+` : null}
+
+
+${(v.is.exercise) ? html`
+<div style="display:flex;flex-direction:column;gap:22px;min-height:calc(100vh - 48px);padding-bottom:140px;box-sizing:border-box">
+  <div style="display:flex;align-items:center;gap:14px;direction:rtl">
+    <button onClick=${v.exitEx} aria-label="Close" style="width:44px;height:44px;margin-right:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:var(--radius-md)" class="hv6">${v.ic.x}</button>
+    <div style="flex:1;height:1px;background:var(--color-divider);position:relative"><div style="position:absolute;right:0;top:-1px;height:3px;background:var(--color-accent);width:${v.X.pct};transition:width .35s ease"></div></div>
+    <span style="font-size:12px;font-feature-settings:'tnum';color:var(--color-neutral-700);min-width:44px;text-align:left;direction:ltr">${v.X.counter}</span>
+  </div>
+  <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">${v.X.kindFa}</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.X.kindLabel}</span></span>
+
+  ${(v.X.isFlash) ? html`
+  <div style="display:flex;flex-direction:column;gap:18px;align-items:center">
+    <div onClick=${v.X.flip} style="width:100%;max-width:460px;height:320px;perspective:1200px;cursor:pointer">
+      <div style="position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);transform:rotateY(${v.X.rot})">
+        <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--color-divider);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px">
+          <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-neutral-600)">Persian</span>
+          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:52px;direction:rtl;line-height:1.35;text-align:center">${v.X.fa}</span>` : null}
+          ${(v.show.lat) ? html`<span style="font-style:italic;font-size:17px;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
+          <span style="font-size:12px;color:var(--color-neutral-600);margin-top:8px">Tap to reveal</span>
+        </div>
+        <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg);border:1px solid var(--color-accent);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px;text-align:center">
+          <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700)">English</span>
+          <span style="font-family:var(--font-heading);font-size:32px;font-weight:600;line-height:1.1">${v.X.en}</span>
+          <span style="width:40px;height:1px;background:var(--color-divider);margin:6px 0"></span>
+          <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;color:var(--color-neutral-800)">${v.X.example}</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onClick=${v.X.play} style="min-height:44px;gap:8px">${v.ic.volSm} Listen</button>
+      <button class="btn btn-secondary" onClick=${v.X.playSlow} style="min-height:44px">Slow · 0.7×</button>
+    </div>
+  </div>
+  ` : null}
+
+  ${(v.X.isChoice) ? html`
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <h2 style="font-size:26px;margin:0">${v.X.prompt}</h2>
+    ${(v.X.isListen) ? html`
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px 0">
+        <button onClick=${v.X.play} aria-label="Play" style="width:120px;height:120px;border-radius:50%;border:1px solid var(--color-accent);outline:6px solid var(--color-surface);background:${v.X.listenBg};color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer" class="hv7">${v.ic.volLg}</button>
+        <button class="btn btn-ghost" onClick=${v.X.playSlow} style="min-height:44px">Play slowly</button>
+      </div>
+    ` : null}
+    ${(v.X.showPromptWord) ? html`
+      <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:24px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative">
+        ${(v.X.promptIsFa) ? html`
+          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}</span>` : null}
+          ${(v.show.lat) ? html`<span style="font-style:italic;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
+          <button onClick=${v.X.play} aria-label="Play" style="position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
+        ` : null}
+        ${(v.X.promptIsEn) ? html`<span style="font-family:var(--font-heading);font-size:32px;font-weight:600;text-align:center;line-height:1.15">${v.X.en}</span>` : null}
+      </div>
+    ` : null}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+      ${(v.X.options || []).map((o) => html`
+        <button onClick=${o.pick} style="min-height:64px;padding:12px 14px;border:1px solid ${o.border};border-radius:var(--radius-md);background:${o.bg};opacity:${o.op};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;transition:background .15s,border-color .15s" class="hv8">
+          ${(o.showFa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;line-height:1.35">${o.fa}</span>` : null}
+          ${(o.showLat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${o.lat}</span>` : null}
+          ${(o.showEn) ? html`<span style="font-size:15px">${o.en}</span>` : null}
+        </button>
+      `)}
+    </div>
+  </div>
+  ` : null}
+
+  ${(v.X.isBuild) ? html`
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <h2 style="font-size:26px;margin:0">Translate into Persian</h2>
+    <div style="font-family:var(--font-heading);font-size:28px;font-weight:600">“${v.X.en}”</div>
+    <div style="min-height:76px;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:12px 0;display:flex;flex-wrap:wrap;gap:8px;direction:rtl;align-items:center">
+      ${(v.X.built || []).map((t) => html`
+        <button onClick=${t.tap} style="direction:rtl;min-height:52px;padding:6px 14px;border:1px solid var(--color-accent);border-radius:var(--radius-md);background:var(--color-accent-100);cursor:pointer;display:flex;flex-direction:column;align-items:center;animation:plup .18s ease"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.3">${t.fa}</span>${(v.show.lat) ? html`<span style="font-size:11px;font-style:italic;color:var(--color-neutral-700);direction:ltr">${t.lat}</span>` : null}</button>
+      `)}
+      ${(v.X.builtEmpty) ? html`<span style="font-size:13px;color:var(--color-neutral-600);direction:ltr;width:100%;text-align:right">Tap words below — they fill in right to left →</span>` : null}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;direction:rtl">
+      ${(v.X.bank || []).map((t) => html`
+        <button onClick=${t.tap} style="min-height:52px;padding:6px 14px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;opacity:${t.op};visibility:${t.vis}" class="hv9"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.3">${t.fa}</span>${(v.show.lat) ? html`<span style="font-size:11px;font-style:italic;color:var(--color-neutral-700);direction:ltr">${t.lat}</span>` : null}</button>
+      `)}
+    </div>
+  </div>
+  ` : null}
+
+  ${(v.X.isConvo) ? html`
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div><h2 style="font-size:28px;margin:0">${v.X.title}</h2><p style="margin:4px 0 0;font-size:13px;font-style:italic;color:var(--color-neutral-700)">${v.X.setting}</p></div>
+      <button class="btn btn-secondary" onClick=${v.X.toggleEn} style="min-height:40px;flex:none;font-size:13px">${v.X.enLabel}</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--color-divider);padding-top:16px">
+      ${(v.X.log || []).map((m) => html`
+        <div style="display:flex;flex-direction:column;align-items:${m.align};gap:4px;animation:plup .2s ease">
+          <span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-neutral-600)">${m.name}</span>
+          <button onClick=${m.play} style="max-width:85%;border:1px solid ${m.border};border-radius:var(--radius-lg);padding:10px 14px;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:${m.align};gap:2px;text-align:${m.ta}" class="hv10">
+            ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;line-height:1.45">${m.fa}</span>` : null}
+            ${(v.show.lat) ? html`<span style="font-size:13px;font-style:italic;color:var(--color-neutral-700)">${m.lat}</span>` : null}
+            ${(v.X.showEn) ? html`<span style="font-size:13px">${m.en}</span>` : null}
+          </button>
+          ${(m.tip) ? html`<span style="max-width:85%;font-size:12px;line-height:1.5;color:var(--color-neutral-800);display:flex;gap:6px;text-align:left"><span style="color:var(--color-accent-700);flex:none">${v.ic.bulbSm}</span>${m.tip}</span>` : null}
+        </div>
+      `)}
+    </div>
+    ${(v.X.wrongMsg) ? html`<p style="margin:0;font-size:13px;line-height:1.55;display:flex;gap:8px;border-top:1px solid var(--color-text);padding-top:10px;animation:plup .2s ease"><span style="color:var(--color-accent-700);flex:none">${v.ic.bulbSm}</span><span><em>Not quite.</em> ${v.X.wrongMsg}</span></p>` : null}
+    ${(v.X.awaiting) ? html`
+      <div style="display:flex;flex-direction:column;gap:8px;padding-top:6px">
+        <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Your reply</span>
+        ${(v.X.choices || []).map((o) => html`
+          <button onClick=${o.pick} style="min-height:56px;padding:10px 14px;border:1px solid ${o.border};opacity:${o.op};border-radius:var(--radius-md);background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right" class="hv11">
+            ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;line-height:1.45">${o.fa}</span>` : null}
+            ${(v.show.lat) ? html`<span style="font-size:13px;font-style:italic;color:var(--color-neutral-700)">${o.lat}</span>` : null}
+            ${(v.X.showEn) ? html`<span style="font-size:13px">${o.en}</span>` : null}
+          </button>
+        `)}
+      </div>
+    ` : null}
+    ${(v.X.convoDone) ? html`<button class="btn btn-primary" onClick=${v.X.finishConvo} style="min-height:50px;font-size:16px;margin-top:8px">Finish conversation</button>` : null}
+  </div>
+  ` : null}
+
+  ${(v.X.isSpeak) ? html`
+  <div style="display:flex;flex-direction:column;gap:20px;align-items:center;text-align:center">
+    <h2 style="font-size:26px;margin:0;align-self:flex-start">Listen, then say it aloud</h2>
+    <div style="width:100%;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:24px;display:flex;flex-direction:column;align-items:center;gap:6px">
+      ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}</span>` : null}
+      ${(v.show.lat) ? html`<span style="font-style:italic;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
+      <span style="font-size:14px;margin-top:4px">${v.X.en}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:420px">
+      <button onClick=${v.X.play} style="min-height:96px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--color-accent-700)" class="hv12">${v.ic.vol}<span style="font-size:13px;color:var(--color-text)">1 · Native speaker</span></button>
+      <button onClick=${v.X.rec} style="min-height:96px;border:1px solid ${v.X.recBorder};border-radius:var(--radius-md);background:${v.X.recBg};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--color-accent-700)" class="hv13">${v.X.recIcon}<span style="font-size:13px;color:var(--color-text)">${v.X.recLabel}</span></button>
+    </div>
+    ${(v.X.recDone) ? html`
+      <div style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px;animation:plup .2s ease">
+        <button class="btn btn-secondary" onClick=${v.X.playMine} style="min-height:44px;gap:8px">${v.ic.play} Play my recording</button>
+        <span style="font-size:13px;color:var(--color-neutral-700)">How close was it?</span>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          ${(v.X.selfRates || []).map((r) => html`<button class="btn btn-secondary" onClick=${r.go} style="min-height:48px">${r.label}</button>`)}
+        </div>
+      </div>
+    ` : null}
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);max-width:420px;font-style:italic">Shadowing — copying a native speaker's rhythm immediately after them — trains your mouth and your ear at once.</p>
+  </div>
+  ` : null}
+
+  ${(v.X.showBottomBar) ? html`
+  <div style="position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--color-bg);border-top:1px solid var(--color-divider);padding:14px 20px;padding-bottom:max(14px, env(safe-area-inset-bottom))">
+    <div style="max-width:680px;margin:0 auto;display:flex;gap:10px;padding-left:${v.railOffset}">
+      ${(v.X.barBtns || []).map((b) => html`
+        <button class="btn ${b.cls}" onClick=${b.go} disabled=${b.disabled} style="flex:1;min-height:50px;font-size:16px;display:flex;flex-direction:column;gap:0"><span>${b.label}</span>${(b.sub) ? html`<span style="font-family:var(--font-body);font-size:10px;font-weight:400;color:var(--color-neutral-600);display:flex;align-items:center;gap:3px">${v.ic.refresh}${b.sub}</span>` : null}</button>
+      `)}
+    </div>
+  </div>
+  ` : null}
+
+  ${(v.X.hasFeedback) ? html`
+  <div style="position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--color-bg);border-top:2px solid ${v.X.fbColor};box-shadow:var(--shadow-lg);padding:18px 20px;padding-bottom:max(18px, env(safe-area-inset-bottom));animation:plup .22s ease">
+    <div style="max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:10px;padding-left:${v.railOffset}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="width:30px;height:30px;border-radius:50%;border:1px solid ${v.X.fbColor};color:${v.X.fbColor};display:flex;align-items:center;justify-content:center">${v.X.fbIcon}</span>
+        <span style="font-family:var(--font-heading);font-size:24px;font-weight:600">${v.X.fbTitle}</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+        ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl">${v.X.fbFa}</span>` : null}
+        ${(v.show.lat) ? html`<span style="font-style:italic;font-size:14px;color:var(--color-neutral-700)">${v.X.fbLat}</span>` : null}
+        <span style="font-size:14px">— ${v.X.fbEn}</span>
+      </div>
+      ${(v.X.fbTip) ? html`<p style="margin:0;font-size:13px;line-height:1.55;color:var(--color-neutral-800);display:flex;gap:8px"><span style="color:var(--color-accent-700);flex:none">${v.ic.bulbSm}</span><span>${v.X.fbTip}</span></p>` : null}
+      <button class="btn btn-primary" onClick=${v.X.cont} style="min-height:50px;font-size:16px;margin-top:4px">Continue</button>
+    </div>
+  </div>
+  ` : null}
+</div>
+` : null}
+
+
+${(v.is.path) ? html`
+<div style="display:flex;flex-direction:column;gap:24px;animation:plfade .25s ease">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
+    <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">برنامه</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">The plan</span></span>
+  </div>
+  <header style="display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--color-divider);padding-bottom:18px">
+    <h1 style="font-size:42px;font-weight:400;margin:0;line-height:1.05">From zero to fluent</h1>
+    <p style="margin:0;font-size:15px;line-height:1.65;text-align:justify;hyphens:auto">Five stages take you from your first letter to real conversations with native speakers. Each stage ends with a conversation checkpoint — a short, unscripted-feeling exchange that tests whether you can actually use what you've learned.</p>
+  </header>
+  <section style="display:flex;flex-direction:column;gap:6px">
+    <h3 style="font-size:21px;margin:0">How every chapter works</h3>
+    ${(v.loop || []).map((s) => html`
+      <div style="display:grid;grid-template-columns:28px 110px minmax(0,1fr);gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--color-divider)">
+        <span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">${s.nFa}</span>
+        <span style="font-family:var(--font-heading);font-size:18px;font-weight:600">${s.step}</span>
+        <span style="font-size:13px;color:var(--color-neutral-800)">${s.desc}</span>
+      </div>
+    `)}
+  </section>
+  ${(v.plan || []).map((p) => html`
+    <section style="display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;border-top:1px solid var(--color-text);padding-top:18px">
+      <span style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:32px;line-height:1.2;color:var(--color-accent-700)">${p.nFa}</span><span style="font-size:10px;color:var(--color-neutral-700);font-feature-settings:'tnum';text-align:center">${p.level}</span></span>
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+        <span style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-family:var(--font-heading);font-size:26px;font-weight:600;line-height:1.1">${p.name}</span><span style="font-size:11px;color:${p.statusColor};font-feature-settings:'tnum'">${p.weeks} · ${p.status}</span></span>
+        <p style="margin:0;font-size:14px;line-height:1.6;text-align:justify;hyphens:auto">${p.goal}</p>
+        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:13px;line-height:1.5;color:var(--color-neutral-800)">${(p.cando || []).map((c) => html`<li>${c}</li>`)}</ul>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${(p.items || []).map((i) => html`<span style="font-size:11px;border:1px solid var(--color-divider);border-radius:999px;padding:3px 10px">${i}</span>`)}</div>
+        <button onClick=${p.cpOpen} style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid ${p.cpBorder};border-radius:var(--radius-md);background:transparent;cursor:${p.cpCursor};text-align:left;min-height:56px" class="hv14">
+          <span style="color:var(--color-accent-700);display:flex">${v.ic.chat}</span>
+          <span style="flex:1;display:flex;flex-direction:column"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Checkpoint · conversation</span><span style="font-family:var(--font-heading);font-size:18px;font-weight:600">${p.cpTitle}</span><span style="font-size:12px;color:var(--color-neutral-700)">${p.cpDesc}</span></span>
+          <span style="color:var(--color-neutral-600);display:flex">${p.cpIcon}</span>
+        </button>
+      </div>
+    </section>
+  `)}
+</div>
+` : null}
+
+
+${(v.is.results) ? html`
+<div style="display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;padding-top:32px;animation:plfade .3s ease">
+  <span style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700)">${v.R.kicker}</span>
+  <span style="font-family:'Noto Naskh Arabic',serif;font-size:76px;line-height:1.3;color:var(--color-accent-700)">${v.R.fa}</span>
+  <div style="display:flex;flex-direction:column;gap:4px"><span style="font-style:italic;color:var(--color-neutral-700)">${v.R.lat}</span><h1 style="font-size:36px;font-weight:400;margin:0">${v.R.en}</h1></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);width:100%;max-width:420px;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
+    ${(v.R.stats || []).map((s) => html`
+      <div style="padding:16px 8px;display:flex;flex-direction:column;gap:2px;border-left:${s.bl}"><span style="font-family:var(--font-heading);font-size:32px;font-feature-settings:'tnum'">${s.v}</span><span style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-neutral-700)">${s.l}</span></div>
+    `)}
+  </div>
+  ${(v.R.hasMissed) ? html`
+  <div style="width:100%;max-width:420px;text-align:left;display:flex;flex-direction:column">
+    <h3 style="font-size:20px;margin:0 0 4px">Words to revisit</h3>
+    ${(v.R.missed || []).map((w) => html`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider);gap:12px">
+        <span style="font-size:14px">${w.en}</span>
+        <span style="display:flex;align-items:center;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px">${w.fa}</span><button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button></span>
+      </div>
+    `)}
+    <p style="margin:8px 0 0;font-size:12px;color:var(--color-neutral-700)">Added to your mistake notebook and your next review.</p>
+  </div>
+  ` : null}
+  <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px">
+    <button class="btn btn-primary" onClick=${v.R.primary} style="min-height:50px;font-size:16px">${v.R.primaryLabel}</button>
+    <button class="btn btn-secondary" onClick=${v.R.again} style="min-height:50px;font-size:16px">Practice again</button>
+  </div>
+</div>
+` : null}
+
+
+${(v.is.review) ? html`
+<div style="display:flex;flex-direction:column;gap:26px;animation:plfade .25s ease">
+  <section style="display:flex;flex-direction:column;gap:6px">
+    <h1 style="font-size:40px;font-weight:400;margin:0">Review</h1>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-700);text-align:justify;hyphens:auto">Each word lives in one of five boxes. Remember it and it moves right — you'll see it less often. Forget it and it goes back to the start.</p>
+  </section>
+  <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:end;height:120px">
+      ${(v.boxes || []).map((b) => html`
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end">
+          <span style="font-size:12px;font-feature-settings:'tnum'">${b.count}</span>
+          <div style="width:100%;height:${b.h};border:1px solid var(--color-accent);border-bottom:0;background:${b.bg}"></div>
+        </div>
+      `)}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;border-top:1px solid var(--color-text);padding-top:6px">
+      ${(v.boxes || []).map((b) => html`<span style="font-size:10px;text-align:center;color:var(--color-neutral-700)">${b.label}</span>`)}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--color-divider);padding-top:14px">
+      <span style="font-size:14px"><span style="font-family:var(--font-heading);font-size:26px;font-feature-settings:'tnum'">${v.dueCount}</span> due now · about ${v.dueMins} min</span>
+      <button class="btn btn-primary" onClick=${v.startReview} style="min-height:44px;padding-inline:20px">Begin review</button>
+    </div>
+  </section>
+  <section style="display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;direction:rtl"><span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">دفتر اشتباه‌ها</span><h2 style="font-size:24px;margin:0">Mistake notebook</h2></span>${(v.hasMistakes) ? html`<button class="btn btn-ghost" onClick=${v.drillMistakes} style="min-height:44px">Drill these</button>` : null}</div>
+    ${(v.noMistakes) ? html`<p style="margin:8px 0 0;font-size:14px;color:var(--color-neutral-700);font-style:italic">Words you miss in practice will collect here.</p>` : null}
+    ${(v.mistakeList || []).map((w) => html`
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
+        <span style="display:flex;flex-direction:column"><span style="font-size:14px">${w.en}</span><span style="font-size:11px;color:var(--color-neutral-600)">${w.lesson}</span></span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end">${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.4">${w.fa}</span>` : null}${(v.show.lat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}</span>
+        <button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
+      </div>
+    `)}
+  </section>
+</div>
+` : null}
+
+
+${(v.is.script) ? html`
+<div style="display:flex;flex-direction:column;gap:22px;animation:plfade .25s ease">
+  <section style="display:flex;flex-direction:column;gap:6px">
+    <h1 style="font-size:40px;font-weight:400;margin:0">The alphabet</h1>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-700);text-align:justify;hyphens:auto">Thirty-two letters, written right to left. Most letters change shape depending on where they sit in a word — learn the four forms and reading opens up.</p>
+  </section>
+  <div style="display:flex;gap:6px;overflow-x:auto;margin:0 -20px;padding:0 20px 4px">
+    ${(v.letterFilters || []).map((f) => html`
+      <button onClick=${f.go} style="flex:none;min-height:40px;padding:6px 14px;border:1px solid ${f.border};color:${f.color};background:transparent;border-radius:999px;cursor:pointer;font-size:13px;white-space:nowrap">${f.label}</button>
+    `)}
+  </div>
+  ${(v.letterFilterNote) ? html`<p style="margin:0;font-size:13px;line-height:1.55;font-style:italic;color:var(--color-neutral-800);border-left:0;border-top:1px solid var(--color-divider);padding-top:10px">${v.letterFilterNote}</p>` : null}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;direction:rtl">
+    ${(v.letters || []).map((l) => html`
+      <button onClick=${l.open} style="aspect-ratio:1/1.1;border:1px solid ${l.border};border-radius:var(--radius-md);background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;position:relative" class="hv15">
+        <span style="font-family:'Noto Naskh Arabic',serif;font-size:32px;line-height:1.4">${l.ch}</span>
+        <span style="font-size:11px;color:var(--color-neutral-700);direction:ltr">${l.name}</span>
+        ${(l.persianOnly) ? html`<span style="position:absolute;top:6px;left:6px;width:5px;height:5px;border-radius:50%;background:var(--color-accent)"></span>` : null}
+      </button>
+    `)}
+  </div>
+  <p style="margin:0;font-size:12px;color:var(--color-neutral-700);display:flex;align-items:center;gap:8px"><span style="width:5px;height:5px;border-radius:50%;background:var(--color-accent)"></span>Letters Persian added to the Arabic alphabet</p>
+</div>
+` : null}
+
+${(v.is.letter) ? html`
+<div style="display:flex;flex-direction:column;gap:24px;animation:plfade .25s ease">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
+    <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);font-feature-settings:'tnum'">Letter ${v.LT.n} of 32</span>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:4px;border-bottom:1px solid var(--color-divider);padding-bottom:20px">
+    <span style="font-family:'Noto Naskh Arabic',serif;font-size:120px;line-height:1.3">${v.LT.ch}</span>
+    <h1 style="font-size:34px;font-weight:400;margin:0">${v.LT.name}</h1>
+    <span style="font-size:14px;color:var(--color-neutral-700)">Sounds like <em>${v.LT.sound}</em></span>
+  </div>
+  <section style="display:flex;flex-direction:column;gap:10px">
+    <h3 style="font-size:20px;margin:0">Four forms</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--color-divider);border-radius:var(--radius-md);direction:rtl">
+      ${(v.LT.forms || []).map((f) => html`
+        <div style="display:flex;flex-direction:column;align-items:center;padding:14px 4px;border-right:${f.br}">
+          <span style="font-family:'Noto Naskh Arabic',serif;font-size:40px;line-height:1.5;color:${f.color}">${f.ch}</span>
+          <span style="font-size:11px;color:var(--color-neutral-700);direction:ltr">${f.label}</span>
+        </div>
+      `)}
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.55;color:var(--color-neutral-800)">${v.LT.connectNote}</p>
+  </section>
+  <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:16px;display:flex;align-items:center;gap:14px">
+    <button onClick=${v.LT.play} aria-label="Play" style="width:44px;height:44px;flex:none;border-radius:50%;border:1px solid var(--color-accent);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
+    <span style="flex:1;display:flex;flex-direction:column"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">In a word</span><span style="font-size:14px"><em>${v.LT.exLat}</em> — ${v.LT.exEn}</span></span>
+    <span style="font-family:'Noto Naskh Arabic',serif;font-size:32px">${v.LT.ex}</span>
+  </section>
+  ${(v.LT.groupNote) ? html`<p style="margin:0;font-size:13px;line-height:1.55;font-style:italic;color:var(--color-neutral-800);display:flex;gap:8px"><span style="color:var(--color-accent-700);flex:none;font-style:normal">${v.ic.bulbSm}</span>${v.LT.groupNote}</p>` : null}
+  <div style="display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--color-divider);padding-top:16px">
+    <button class="btn btn-secondary" onClick=${v.LT.prev} disabled=${v.LT.isFirst} style="min-height:44px">← ${v.LT.prevName}</button>
+    <button class="btn btn-secondary" onClick=${v.LT.next} disabled=${v.LT.isLast} style="min-height:44px">${v.LT.nextName} →</button>
+  </div>
+</div>
+` : null}
+
+
+${(v.is.explore) ? html`
+<div style="display:flex;flex-direction:column;gap:18px;animation:plfade .25s ease">
+  <section style="display:flex;flex-direction:column;gap:6px">
+    <h1 style="font-size:40px;font-weight:400;margin:0">Explore</h1>
+    <p style="margin:0;font-size:14px;color:var(--color-neutral-700)">History, geography, and culture — the world behind the words.</p>
+  </section>
+  ${(v.articles || []).map((a) => html`
+    <button onClick=${a.open} style="display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:16px;align-items:center;padding:18px 0;border:0;border-top:1px solid var(--color-divider);background:transparent;text-align:left;cursor:pointer" class="hv16">
+      <span style="display:flex;flex-direction:column;gap:5px;min-width:0">
+        <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${a.category} · ${a.readTime}</span>
+        <span style="font-family:var(--font-heading);font-size:23px;font-weight:600;line-height:1.15">${a.title}</span>
+        <span style="font-size:13px;line-height:1.5;color:var(--color-neutral-700)">${a.preview}</span>
+      </span>
+      <span style="height:72px;border:1px solid var(--color-divider);outline:4px solid var(--color-surface);outline-offset:-5px;display:flex;align-items:center;justify-content:center;font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${a.fa}</span>
+    </button>
+  `)}
+</div>
+` : null}
+
+${(v.is.article) ? html`
+<article style="display:flex;flex-direction:column;gap:18px;animation:plfade .25s ease">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
+    <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.A.category} · ${v.A.readTime}</span>
+  </div>
+  <header style="display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--color-divider);padding-bottom:18px">
+    <span style="font-family:'Noto Naskh Arabic',serif;font-size:28px;color:var(--color-accent-700)">${v.A.fa}</span>
+    <h1 style="font-size:42px;font-weight:400;margin:0;line-height:1.05">${v.A.title}</h1>
+    <p style="margin:0;font-style:italic;color:var(--color-neutral-700)">${v.A.subtitle}</p>
+  </header>
+  ${(v.A.noBody) ? html`<p style="margin:0;font-size:15px;line-height:1.7;text-align:justify">${v.A.preview}</p>` : null}
+  ${(v.A.sections || []).map((s) => html`
+    <section style="display:flex;flex-direction:column;gap:8px">
+      <h3 style="font-size:23px;margin:8px 0 0">${s.h}</h3>
+      ${(s.p || []).map((para) => html`<p style="margin:0;font-size:15px;line-height:1.7;text-align:justify;hyphens:auto">${para}</p>`)}
+      ${(s.list) ? html`<ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:15px;line-height:1.6">${(s.list || []).map((li) => html`<li>${li}</li>`)}</ul>` : null}
+      ${(s.after) ? html`<p style="margin:0;font-size:15px;line-height:1.7;text-align:justify;hyphens:auto">${s.after}</p>` : null}
+    </section>
+  `)}
+  ${(v.A.rich || []).map((s) => richSection(s, v))}
+</article>
+` : null}
+
+${(v.is.map) ? html`
+<div style="display:flex;flex-direction:column;gap:14px;animation:plfade .25s ease">
+  <div style="display:flex;align-items:center;gap:8px">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
+    <h1 style="font-size:30px;font-weight:400;margin:0;line-height:1.1">${v.M.heading}</h1>
+  </div>
+  <div id="pl-map" class="plate" style="height:min(70vh,560px);width:100%"></div>
+  ${(v.M.note) ? html`<p class="rich" style="margin:0;font-size:13px;line-height:1.55;font-style:italic;color:var(--color-neutral-800)" dangerouslySetInnerHTML=${{ __html: v.M.note }}></p>` : null}
+</div>
+` : null}
+
+
+${(v.is.profile) ? html`
+<div style="display:flex;flex-direction:column;gap:26px;animation:plfade .25s ease">
+  ${(v.isGuest) ? html`
+  <section style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+    <span style="display:flex;flex-direction:column"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Save progress across devices</span><span style="font-size:12px;color:var(--color-neutral-700)">You're currently in guest mode</span></span>
+    <button class="btn btn-primary" onClick=${v.openAuth} style="min-height:44px;padding-inline:20px">Sign in</button>
+  </section>
+  ` : html`
+  <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+    <span style="display:flex;flex-direction:column;min-width:0"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Signed in</span><span style="font-size:12px;color:var(--color-neutral-700);overflow-wrap:anywhere">${v.userEmail} · progress syncs to your account</span></span>
+    <button class="btn btn-secondary" onClick=${v.openSignOut} style="min-height:44px;padding-inline:20px">Sign out</button>
+  </section>
+  `}
+  <section style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
+    ${(v.pStats || []).map((s) => html`
+      <div style="padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;border-left:${s.bl}"><span style="font-family:var(--font-heading);font-size:28px;font-feature-settings:'tnum'">${s.v}</span><span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-neutral-700);text-align:center">${s.l}</span></div>
+    `)}
+  </section>
+  <section style="display:flex;flex-direction:column;gap:0">
+    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl;margin-bottom:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">تنظیمات</span><h2 style="font-size:24px;margin:0">Learning preferences</h2></div>
+    ${(v.prefs || []).map((p) => html`
+      <div style="display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:1px solid var(--color-divider)">
+        <span style="display:flex;flex-direction:column"><span style="font-size:14px">${p.label}</span><span style="font-size:12px;color:var(--color-neutral-700)">${p.hint}</span></span>
+        <div style="display:flex;border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden;align-self:flex-start">
+          ${(p.opts || []).map((o) => html`<button onClick=${o.go} style="min-height:40px;padding:6px 14px;border:0;border-left:${o.bl};background:transparent;box-shadow:${o.shadow};color:${o.color};cursor:pointer;font-size:13px">${o.label}</button>`)}
+        </div>
+      </div>
+    `)}
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--color-divider)">
+      <span style="display:flex;flex-direction:column"><span style="font-size:14px">Show mature chapter</span><span style="font-size:12px;color:var(--color-neutral-700)">Slang & adult words</span></span>
+      <button onClick=${v.toggleMature} role="switch" aria-label="Show mature chapter" style="width:48px;height:28px;border-radius:999px;border:1px solid ${v.matureBorder};background:transparent;position:relative;cursor:pointer;flex:none"><span style="position:absolute;top:3px;left:${v.matureKnob};width:20px;height:20px;border-radius:50%;background:${v.matureBorder};transition:left .15s"></span></button>
+    </div>
+  </section>
+  <section style="display:flex;flex-direction:column">
+    <button onClick=${v.openWords} style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border:0;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);background:transparent;cursor:pointer;text-align:left;min-height:60px">
+      <span style="display:flex;align-items:center;gap:12px"><span style="color:var(--color-accent-700)">${v.ic.book}</span><span style="display:flex;flex-direction:column"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Word collection</span><span style="font-size:12px;color:var(--color-neutral-700)">${v.learnedCount} words learned</span></span></span>
+      <span style="color:var(--color-neutral-500)">${v.ic.chev}</span>
+    </button>
+    <button onClick=${v.openInstall} style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border:0;border-bottom:1px solid var(--color-divider);background:transparent;cursor:pointer;text-align:left;min-height:60px">
+      <span style="display:flex;align-items:center;gap:12px"><span style="color:var(--color-accent-700)">${v.ic.download}</span><span style="display:flex;flex-direction:column"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Install the app</span><span style="font-size:12px;color:var(--color-neutral-700)">Works offline, with lessons and audio cached</span></span></span>
+      <span style="color:var(--color-neutral-500)">${v.ic.chev}</span>
+    </button>
+  </section>
+  <section style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">دستاوردها</span><h2 style="font-size:24px;margin:0">Achievements</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">
+      ${(v.achievements || []).map((a) => html`
+        <div style="border:1px solid ${a.border};border-radius:var(--radius-md);padding:12px;display:flex;flex-direction:column;gap:4px;opacity:${a.op}">
+          <span style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:var(--font-heading);font-size:17px;font-weight:600">${a.title}</span><span style="color:var(--color-accent-700);display:flex">${a.icon}</span></span>
+          <span style="font-size:11px;line-height:1.4;color:var(--color-neutral-700)">${a.desc}</span>
+        </div>
+      `)}
+    </div>
+  </section>
+</div>
+` : null}
+
+${(v.is.words) ? html`
+<div style="display:flex;flex-direction:column;gap:16px;animation:plfade .25s ease">
+  <div style="display:flex;align-items:center;gap:8px">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
+    <h1 style="font-size:32px;font-weight:400;margin:0">Word collection</h1>
+  </div>
+  <input class="input" placeholder="Search in English or Persian" value=${v.wordQuery} onInput=${v.setWordQuery} style="min-height:44px;font-size:15px" />
+  <div style="display:flex;flex-direction:column">
+    ${(v.collection || []).map((w) => html`
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
+        <span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px">${w.en}</span><span style="font-size:11px;color:var(--color-neutral-600)">${w.lesson} · box ${w.box}</span></span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end">${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.4">${w.fa}</span>` : null}${(v.show.lat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}</span>
+        <button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
+      </div>
+    `)}
+  </div>
+</div>
+` : null}
+
+</main>
+</div>
+
+${(v.showBottomTabs) ? html`
+<nav style="position:fixed;left:0;right:0;bottom:0;z-index:25;background:color-mix(in srgb, var(--color-bg) 94%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--color-divider);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom)">
+  ${(v.tabs || []).map((t) => html`
+    <button onClick=${t.go} style="min-height:60px;border:0;border-top:2px solid ${t.rail};margin-top:-1px;background:transparent;color:${t.color};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer">${t.icon}<span style="font-size:11px">${t.label}</span></button>
+  `)}
+</nav>
+` : null}
+
+${(v.sheetOpen) ? html`
+<div onClick=${v.closeSheet} style="position:fixed;inset:0;z-index:60;background:color-mix(in srgb, var(--color-neutral-900) 40%, transparent);display:flex;align-items:flex-end;justify-content:center;animation:plfade .2s ease">
+  <div onClick=${v.stop} style="width:100%;max-width:480px;background:var(--color-bg);border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:var(--shadow-lg);padding:22px 22px;padding-bottom:max(22px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;animation:plup .25s ease">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-size:28px;margin:0">${v.sheetTitle}</h2>
+      <button onClick=${v.closeSheet} aria-label="Close" style="width:44px;height:44px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-right:-10px">${v.ic.x}</button>
+    </div>
+    ${(v.sheetAuth) ? html`
+      <div style="display:flex;border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden">
+        ${(v.authTabs || []).map((o) => html`<button onClick=${o.go} style="flex:1;min-height:42px;border:0;border-left:${o.bl};background:transparent;box-shadow:${o.shadow};color:${o.color};cursor:pointer;font-size:14px">${o.label}</button>`)}
+      </div>
+      <form onSubmit=${v.submitAuth} style="display:flex;flex-direction:column;gap:14px">
+        <div class="field"><label for="auth-email">Email address</label><input id="auth-email" class="input" type="email" autocomplete="email" required value=${v.authEmail} onInput=${v.setAuthEmail} style="min-height:44px" /></div>
+        <div class="field"><label for="auth-password">Password</label><input id="auth-password" class="input" type="password" autocomplete=${v.authPwAuto} required minlength="6" placeholder="At least 6 characters" value=${v.authPassword} onInput=${v.setAuthPassword} style="min-height:44px" /></div>
+        ${(v.authMsg) ? html`<p role="status" style="margin:0;font-size:13px;line-height:1.5;border-top:1px solid ${v.authMsgRule};padding-top:8px">${v.authMsg}</p>` : null}
+        <button type="submit" class="btn btn-primary" disabled=${v.authBusy} style="min-height:50px;font-size:16px">${v.authCta}</button>
+      </form>
+      <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-align:center">Your local progress will sync to your account on sign in.</p>
+    ` : null}
+    ${(v.sheetSignOut) ? html`
+      <p style="margin:0;font-size:14px;line-height:1.6">Your progress is saved to your account. This device will go back to guest mode.</p>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-secondary" onClick=${v.closeSheet} style="flex:1;min-height:50px;font-size:16px">Cancel</button>
+        <button class="btn btn-primary" onClick=${v.doSignOut} style="flex:1;min-height:50px;font-size:16px">Sign out</button>
+      </div>
+    ` : null}
+    ${(v.sheetHoliday) ? html`
+      <div style="display:flex;flex-direction:column;gap:16px;max-height:70vh;overflow-y:auto;margin-right:-8px;padding-right:8px">
+        ${(v.H.sections || []).map((s) => html`
+          <section style="display:flex;flex-direction:column;gap:8px">
+            ${(s.heading) ? html`<h3 style="font-size:21px;margin:0">${s.heading}</h3>` : null}
+            ${(s.images || []).map((img) => html`<figure style="margin:0;display:flex;flex-direction:column;gap:4px"><img class="plate" src=${img.url} alt=${img.caption} loading="lazy" style="width:100%;max-height:260px;object-fit:cover" /><figcaption style="font-size:11px;font-style:italic;color:var(--color-neutral-700)">${img.caption}</figcaption></figure>`)}
+            ${(s.body) ? html`<div class="rich" dangerouslySetInnerHTML=${{ __html: s.body }}></div>` : null}
+          </section>
+        `)}
+      </div>
+    ` : null}
+    ${(v.sheetInstall) ? html`
+      <p style="margin:0;font-size:14px;line-height:1.6">Add Persian Learnin to your home screen to practice offline — lessons, audio and your review schedule are kept on the device.</p>
+      <ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:var(--color-neutral-800)"><li>On iPhone: tap Share, then “Add to Home Screen”.</li><li>On Android or desktop Chrome: use “Install app” below or the browser menu.</li></ol>
+      <button class="btn btn-primary" onClick=${v.doInstall} style="min-height:50px;font-size:16px;gap:8px">${v.ic.download} Install app</button>
+    ` : null}
+  </div>
+</div>
+` : null}
+
+</div>
+`;
+}
+
+// Culture articles (culture.js) carry richer section types than the design's plain sections.
+const kicker = 'font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)';
+const cardTitle = 'font-family:var(--font-heading);font-size:19px;font-weight:600;line-height:1.2';
+const small = 'font-size:13px;line-height:1.55;color:var(--color-neutral-800)';
+const rich = (s, style = '') => html`<div class="rich" style=${style} dangerouslySetInnerHTML=${{ __html: s }}></div>`;
+
+function richSection(s, v) {
+  const t = s.type || 'text';
+  let body = null;
+  if (t === 'text') body = rich(s.body);
+  else if (t === 'timeline') body = html`
+    <ol style="list-style:none;margin:0;padding:0;border-left:1px solid var(--color-accent);margin-left:5px">
+      ${s.items.map((it) => html`
+        <li style="position:relative;padding:0 0 18px 20px">
+          <span style="position:absolute;left:-5px;top:6px;width:9px;height:9px;border-radius:50%;border:1px solid var(--color-accent);background:var(--color-bg)"></span>
+          <span style="${kicker};font-feature-settings:'tnum'">${it.date}</span>
+          <div style=${cardTitle}>${it.era}</div>
+          ${rich(it.body, small)}
+        </li>`)}
+    </ol>`;
+  else if (t === 'people') body = html`
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+      ${s.people.map((p) => html`
+        <div class="card" style="display:flex;flex-direction:column;gap:4px;padding:14px">
+          <span style="${kicker};font-feature-settings:'tnum'">${p.dates}</span>
+          <span style=${cardTitle}>${p.name}</span>
+          <span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${p.role}</span>
+          ${rich(p.note, small)}
+        </div>`)}
+    </div>`;
+  else if (t === 'geo-facts') body = html`
+    <dl style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin:0;border-top:1px solid var(--color-divider)">
+      ${s.facts.map((f) => html`
+        <div style="padding:10px 0;border-bottom:1px solid var(--color-divider)">
+          <dt style=${kicker}>${f.label}</dt>
+          <dd style="margin:2px 0 0;font-family:var(--font-heading);font-size:19px;font-weight:600">${f.value}</dd>
+        </div>`)}
+    </dl>`;
+  else if (t === 'cities') body = html`
+    <div style="display:flex;flex-direction:column">
+      ${s.cities.map((c) => html`
+        <div style="padding:10px 0;border-bottom:1px solid var(--color-divider)">
+          <div style=${cardTitle}>${c.name}</div>
+          ${rich(c.note, small)}
+        </div>`)}
+      ${s.body ? rich(s.body, 'margin-top:12px') : null}
+    </div>`;
+  else if (t === 'holiday-cards') body = html`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${s.holidays.map((h) => html`
+        <div class="card" style="display:flex;flex-direction:column;gap:6px;padding:14px 16px">
+          <span style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <span style="display:flex;align-items:baseline;gap:10px"><span style=${cardTitle}>${h.name}</span><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">${h.persian}</span></span>
+            ${h.badge ? html`<span class="tag tag-outline">${h.badge}</span>` : null}
+          </span>
+          <span style=${kicker}>${h.timing}</span>
+          ${rich(h.desc, small)}
+          ${h.detail ? html`<button class="btn btn-ghost" onClick=${() => v.openHoliday(h)} style="align-self:flex-start;min-height:40px;gap:4px;padding-inline:0">Read more ${v.ic.chev}</button>` : null}
+        </div>`)}
+    </div>`;
+  else if (t === 'flags') body = html`
+    <div style="display:flex;flex-direction:column;gap:18px">
+      ${s.flags.map((f) => html`
+        <figure style="margin:0;display:grid;grid-template-columns:minmax(0,140px) minmax(0,1fr);gap:16px;align-items:start">
+          <img class="plate" src=${f.image} alt=${f.name} loading="lazy" style="width:100%;aspect-ratio:7/4;object-fit:${f.crop ? 'cover' : 'contain'};background:var(--color-surface)" />
+          <figcaption style="display:flex;flex-direction:column;gap:3px">
+            <span style="${kicker};font-feature-settings:'tnum'">${f.era} · ${f.badge}</span>
+            <span style=${cardTitle}>${f.name}</span>
+            ${rich(f.desc, small)}
+          </figcaption>
+        </figure>`)}
+    </div>`;
+  else if (t === 'map') body = html`
+    <button onClick=${() => v.openMap(s)} class="hv-map" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:transparent;cursor:pointer;text-align:left;min-height:60px">
+      <span style="display:flex;align-items:center;gap:12px"><span style="color:var(--color-accent-700)">${v.ic.compass}</span><span style="display:flex;flex-direction:column"><span style=${cardTitle}>${s.heading}</span><span style="font-size:12px;color:var(--color-neutral-700)">Open the interactive map</span></span></span>
+      <span style="color:var(--color-neutral-500)">${v.ic.chev}</span>
+    </button>`;
+  return html`
+    <section style="display:flex;flex-direction:column;gap:10px">
+      ${t !== 'map' ? html`<h3 style="font-size:23px;margin:8px 0 0">${s.heading}</h3>` : null}
+      ${body}
+    </section>`;
+}

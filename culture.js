@@ -646,3 +646,4 @@ Ashura is not a joyful celebration but a day of deep spiritual and emotional sig
     ]
   }
 ];
+window.CULTURE_ARTICLES = ARTICLES;
