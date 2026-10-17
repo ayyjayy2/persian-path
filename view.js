@@ -110,7 +110,7 @@ ${(v.is.learn) ? html`
       <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">مرور</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Spaced review</span></span>
       <div style="display:flex;align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-size:44px;line-height:1;font-feature-settings:'tnum'">${v.dueCount}</span><span style="font-size:14px">words due today</span></div>
       <p style="margin:0;font-size:13px;color:var(--color-neutral-700)">Short, timed reviews move words into long-term memory.</p>
-      <button class="btn btn-primary" onClick=${v.startReview} style="align-self:flex-start;margin-top:4px;min-height:44px;padding-inline:20px">Begin review</button>
+      <button class="btn btn-primary" onClick=${v.startReview} style="align-self:flex-start;margin-top:4px;min-height:44px;padding-inline:20px">${v.reviewCta}</button>
     </div>
     <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:8px;cursor:pointer" onClick=${v.cont.open} class="hv1">
       <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">ادامه</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);direction:ltr">Continue · Chapter ${v.cont.n}</span></span>
@@ -484,7 +484,7 @@ ${(v.is.review) ? html`
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--color-divider);padding-top:14px">
       <span style="font-size:14px"><span style="font-family:var(--font-heading);font-size:26px;font-feature-settings:'tnum'">${v.dueCount}</span> due now · about ${v.dueMins} min</span>
-      <button class="btn btn-primary" onClick=${v.startReview} style="min-height:44px;padding-inline:20px">Begin review</button>
+      <button class="btn btn-primary" onClick=${v.startReview} style="min-height:44px;padding-inline:20px">${v.reviewCta}</button>
     </div>
   </section>
   <section style="display:flex;flex-direction:column">

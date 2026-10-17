@@ -265,6 +265,15 @@ class App extends Component {
   }
 
   // ---------- exercises ----------
+  // Nothing due: review the words that come due soonest rather than an empty session.
+  // Nothing learned yet: there is nothing to review, so go to the lessons.
+  startReview() {
+    const d = this.due();
+    if (d.length) return this.start('review', null, this.shuffle(d).slice(0, 10));
+    const srs = this.state.srs, soon = this.learned().sort((a, b) => (srs[a.key] ? srs[a.key].t : 0) - (srs[b.key] ? srs[b.key].t : 0));
+    if (soon.length) return this.start('review', null, this.shuffle(soon.slice(0, 10)));
+    this.go('learn');
+  }
   start(kind, lessonId, wordsOverride) {
     const D = this.D;
     const lesson = lessonId && D.LESSONS.find(l => l.id === lessonId);
@@ -277,6 +286,7 @@ class App extends Component {
     else if (kind === 'build') items = D.SENTENCES.map(s => ({ s, bank: this.shuffle([...s.tiles.map((t, i) => ({ fa: t[0], lat: t[1], ord: i })), ...s.extra.map(t => ({ fa: t[0], lat: t[1], ord: -1 }))]).map((t, id) => ({ ...t, id })) }));
     else if (kind === 'speak') items = pool.slice(0, 5).map(w => ({ w }));
     else items = pool.map(w => ({ w }));
+    if (!items.length) return; // an exercise with no items has nothing to show
     this.setState({ ex: { kind, lessonId, items, i: 0, status: null, picked: null, correct: 0, flipped: false, built: [], rec: 'idle', missed: [] }, route: { name: 'exercise' } });
     window.scrollTo(0, 0);
     const first = items[0];
@@ -350,7 +360,7 @@ class App extends Component {
       appBarTitle: titles[s.tab][0], appBarFa: titles[s.tab][1], streak: s.streak, xp: s.xp,
       bottomPad: showBottomTabs ? 'calc(64px + env(safe-area-inset-bottom))' : '0px',
       mainPad: wide ? '40px 40px 64px' : (r ? '12px 20px 40px' : '22px 20px 40px'),
-      railOffset: '0px', back: () => this.back(), dueCount: this.due().length, startReview: () => { const d = this.due(); this.start('review', null, this.shuffle(d).slice(0, 10)); } };
+      railOffset: '0px', back: () => this.back(), dueCount: this.due().length, startReview: () => this.startReview(), reviewCta: this.due().length ? 'Begin review' : this.learned().length ? 'Review ahead' : 'Start a lesson' };
 
     // learn
     const now = new Date();
