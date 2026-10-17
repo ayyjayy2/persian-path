@@ -141,7 +141,7 @@ export const STAGES = [
     cando: ["Speak about the future and give reasons", "Navigate ta'arof as a guest and a host", "Haggle and handle money", "Understand native speech at natural speed"],
     items: [{ kind: "grammar", title: "Future & subjunctive", desc: "mikhaam beram — I want to go" }, { kind: "conversation", title: "Dinner at an Iranian home", desc: "Ta'arof, compliments and seconds" }, { kind: "conversation", title: "At the bazaar", desc: "Ask prices and haggle politely" }, { kind: "skill", title: "Listening at full speed", desc: "Real street interviews, slowed then natural" }, { kind: "grammar", title: "Formal vs. colloquial", desc: "Read written Persian, speak Tehrani" }],
     checkpoint: { id: "family-visit", title: "Meeting the family", desc: "A full visit, start to goodbye" } },
-  { id: "s5", n: 5, name: "Fluency", fa: "روانی", level: "B2–C1", weeks: "Month 10 onward",
+  { id: "s5", n: 5, name: "Fluency", fa: "تسلط", level: "B2–C1", weeks: "Month 10 onward",
     goal: "Follow films, express opinions, and enjoy Persian on its own terms.",
     cando: ["Follow an Iranian film without subtitles", "Argue a point and disagree politely", "Use common idioms naturally", "Read and recite a couplet of Hafez"],
     items: [{ kind: "skill", title: "Idioms & proverbs", desc: "Speak like a native, not a textbook" }, { kind: "skill", title: "Film & podcast club", desc: "Weekly native audio with transcripts" }, { kind: "skill", title: "Opinions & debate", desc: "Agree, disagree, persuade" }, { kind: "skill", title: "Poetry: Hafez & Rumi", desc: "Read the classics aloud" }],

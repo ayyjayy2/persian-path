@@ -57,7 +57,7 @@ ${(v.is.learn) ? html`
 
   <section style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;direction:rtl">
-      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">مسیر روانی</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Path to fluency</span></span>
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">مسیر تسلط</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Path to fluency</span></span>
       <button class="btn btn-ghost" onClick=${v.openPlan} style="min-height:40px;direction:ltr">Full plan</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;direction:rtl">
@@ -89,8 +89,8 @@ ${(v.is.learn) ? html`
       <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">هدف روزانه</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Daily goal</span></span>
       <span style="font-size:13px;font-feature-settings:'tnum';color:var(--color-neutral-700);direction:ltr">${v.todayXp} / ${v.goal} XP</span>
     </div>
-    <div style="height:2px;background:var(--color-divider);position:relative"><div style="position:absolute;left:0;top:-1px;height:4px;background:var(--color-accent);width:${v.goalPct}"></div></div>
-    <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+    <div style="height:2px;background:var(--color-divider);position:relative"><div style="position:absolute;right:0;top:-1px;height:4px;background:var(--color-accent);width:${v.goalPct}"></div></div>
+    <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;direction:rtl">
       ${(v.week || []).map((d) => html`
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="width:34px;height:34px;border-radius:50%;border:1px solid ${d.border};background:${d.bg};display:flex;align-items:center;justify-content:center;font-family:'Noto Naskh Arabic',serif;font-size:15px;color:${d.color}">${d.fa}</div>
