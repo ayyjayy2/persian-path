@@ -98,6 +98,10 @@ ${(v.is.learn) ? html`
         </div>
       `)}
     </div>
+    <div aria-hidden="true" style="display:flex;align-items:center;margin:-4px 7% 0;color:var(--color-neutral-400)">
+      <svg width="6" height="9" viewBox="0 0 6 9" style="flex:none;margin-right:-1px"><path d="M5.5 .5 1 4.5l4.5 4" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      <div style="flex:1;height:1px;background:currentColor"></div>
+    </div>
     <p style="margin:0;font-size:12px;color:var(--color-neutral-700);font-style:italic">The Persian week begins on Saturday — shanbe.</p>
   </section>
 
