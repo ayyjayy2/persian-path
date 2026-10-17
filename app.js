@@ -40,7 +40,7 @@ class App extends Component {
   state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
     xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
     progress: {}, srs: {}, mistakes: [], prefs: {}, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
-    online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, holiday: null, mapSection: null };
+    online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
 
   componentDidMount() {
     this.D = D;
@@ -117,6 +117,28 @@ class App extends Component {
     // Back to a clean guest profile on this device
     this._lastSaved = null;
     this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], scriptSeen: false, tab: 'learn', route: null });
+  }
+
+  // ---------- refresh ----------
+  // Home screen apps have no reload button: fetch the newest service worker and files, then reload.
+  async refreshApp() {
+    if (!navigator.onLine) return this.setState({ refreshNote: "You're offline — connect to get the latest version" });
+    this.setState({ refreshing: true, refreshNote: null });
+    try {
+      const reg = 'serviceWorker' in navigator && await navigator.serviceWorker.getRegistration();
+      if (reg) {
+        await reg.update();
+        const sw = reg.installing || reg.waiting;
+        // A new version downloads every lesson and recording first; wait for it (up to a minute)
+        if (sw) await new Promise(res => {
+          const done = () => sw.state === 'activated' || sw.state === 'redundant';
+          if (done()) return res();
+          sw.addEventListener('statechange', () => done() && res());
+          setTimeout(res, 60e3);
+        });
+      }
+    } catch (e) {}
+    location.reload();
   }
 
   // ---------- maps ----------
@@ -305,7 +327,7 @@ class App extends Component {
   renderVals() {
     const s = this.state;
     const I = (n, z, w) => this.icon(n, z, w);
-    const ic = { back: I('back', 22), x: I('x', 22), check: I('check', 18, 2), chev: I('chev', 18), flame: I('flame', 16), zap: I('zap', 16), vol: I('vol', 22), volSm: I('vol', 18), volLg: I('vol', 44, 1.3), bulb: I('bulb', 20), bulbSm: I('bulb', 16), compass: I('compass', 22), play: I('play', 16), book: I('book', 22), download: I('download', 20), refresh: I('review', 10, 2), chat: I('chat', 20) };
+    const ic = { back: I('back', 22), x: I('x', 22), check: I('check', 18, 2), chev: I('chev', 18), flame: I('flame', 16), zap: I('zap', 16), vol: I('vol', 22), volSm: I('vol', 18), volLg: I('vol', 44, 1.3), bulb: I('bulb', 20), bulbSm: I('bulb', 16), refreshLg: I('review', 22), compass: I('compass', 22), play: I('play', 16), book: I('book', 22), download: I('download', 20), refresh: I('review', 10, 2), chat: I('chat', 20) };
     const mode = this.props.forceLayout || 'auto';
     const wide = mode === 'desktop' || (mode === 'auto' && s.w >= 900);
     const base = { ic, is: {}, show: { fa: true, lat: true }, tabs: [], showRail: false, showBottomTabs: false, showAppBar: false, wide };
@@ -546,6 +568,8 @@ class App extends Component {
     v.toggleMature = () => this.setPref('mature', !P.mature); v.matureBorder = P.mature ? 'var(--color-accent)' : 'var(--color-neutral-500)'; v.matureKnob = P.mature ? '23px' : '3px';
     const unlocked = { first_step: Object.keys(s.progress).length > 0, on_fire: s.streak >= 3, dedicated: s.streak >= 7, rising_star: fullDone >= 3, scholar: fullDone >= lessons.length, centurion: s.xp >= 100, master: s.xp >= 400, word_collector: Object.values(s.progress).filter(p => p.flashcard).length >= 5 };
     v.achievements = D.ACHIEVEMENTS.map(a => ({ ...a, op: unlocked[a.id] ? 1 : 0.55, border: unlocked[a.id] ? 'var(--color-accent)' : 'var(--color-divider)', icon: unlocked[a.id] ? I('check', 16, 2) : I('lock', 14) }));
+    v.refreshApp = () => this.refreshApp(); v.refreshing = s.refreshing; v.refreshSpin = s.refreshing ? 'plspin 1s linear infinite' : 'none';
+    v.refreshMsg = s.refreshing ? 'Checking for updates…' : s.refreshNote || 'Load the latest version';
     v.openWords = () => this.nav({ name: 'words' }); v.openAuth = () => this.setState({ sheet: 'auth' }); v.openInstall = () => this.setState({ sheet: 'install' });
     v.wordQuery = s.wordQuery; v.setWordQuery = e => this.setState({ wordQuery: e.target.value });
     const q = s.wordQuery.trim().toLowerCase();
