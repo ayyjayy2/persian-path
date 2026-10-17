@@ -265,6 +265,16 @@ class App extends Component {
   }
 
   // ---------- exercises ----------
+  // The review button is disabled when nothing is due; the note under it points to the next lesson.
+  startReview() {
+    const d = this.due();
+    if (d.length) this.start('review', null, this.shuffle(d).slice(0, 10));
+  }
+  openNextLesson() {
+    const p = this.state.progress, ls = this.lessons();
+    const l = ls.find(l => this.D.ACTIVITIES.some(a => !(p[l.id] || {})[a.id])) || ls[0];
+    this.setState({ tab: 'learn', route: { name: 'lesson', id: l.id } }); window.scrollTo(0, 0);
+  }
   start(kind, lessonId, wordsOverride) {
     const D = this.D;
     const lesson = lessonId && D.LESSONS.find(l => l.id === lessonId);
@@ -277,6 +287,7 @@ class App extends Component {
     else if (kind === 'build') items = D.SENTENCES.map(s => ({ s, bank: this.shuffle([...s.tiles.map((t, i) => ({ fa: t[0], lat: t[1], ord: i })), ...s.extra.map(t => ({ fa: t[0], lat: t[1], ord: -1 }))]).map((t, id) => ({ ...t, id })) }));
     else if (kind === 'speak') items = pool.slice(0, 5).map(w => ({ w }));
     else items = pool.map(w => ({ w }));
+    if (!items.length) return; // an exercise with no items has nothing to show
     this.setState({ ex: { kind, lessonId, items, i: 0, status: null, picked: null, correct: 0, flipped: false, built: [], rec: 'idle', missed: [] }, route: { name: 'exercise' } });
     window.scrollTo(0, 0);
     const first = items[0];
@@ -350,7 +361,7 @@ class App extends Component {
       appBarTitle: titles[s.tab][0], appBarFa: titles[s.tab][1], streak: s.streak, xp: s.xp,
       bottomPad: showBottomTabs ? 'calc(64px + env(safe-area-inset-bottom))' : '0px',
       mainPad: wide ? '40px 40px 64px' : (r ? '12px 20px 40px' : '22px 20px 40px'),
-      railOffset: '0px', back: () => this.back(), dueCount: this.due().length, startReview: () => { const d = this.due(); this.start('review', null, this.shuffle(d).slice(0, 10)); } };
+      railOffset: '0px', back: () => this.back(), dueCount: this.due().length, startReview: () => this.startReview(), reviewEmpty: !this.due().length, openNextLesson: () => this.openNextLesson() };
 
     // learn
     const now = new Date();
