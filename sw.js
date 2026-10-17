@@ -39,18 +39,27 @@ self.addEventListener("fetch", e => {
   if (RUNTIME_HOSTS.includes(url.hostname)) e.respondWith(staleWhileRevalidate(req, url));
 });
 
-// App files: fresh when online so deploys show up at once, cached copy when offline.
+// App files: fresh when online so deploys show up at once, cached copy when offline. On a weak
+// connection a fetch can hang for minutes, so after NET_TIMEOUT the cached copy is used instead
+// (the fetch still finishes in the background and refreshes the cache for next time).
+// Once one request has timed out, the files that follow it skip the wait for a few seconds, so a
+// page load costs one timeout rather than one per round of files.
+const NET_TIMEOUT = 3000, SLOW_WINDOW = 15000;
+let slowUntil = 0;
 async function networkFirst(req) {
   const cache = await caches.open(CACHE);
-  try {
-    const res = await fetch(req);
+  const net = fetch(req).then(res => {
     if (res.ok) cache.put(req, res.clone());
+    slowUntil = 0;
     return res;
-  } catch (err) {
+  });
+  const fallback = async () => {
     const hit = await cache.match(req, { ignoreSearch: true });
-    if (hit) return hit;
-    throw err;
-  }
+    return hit || net;
+  };
+  if (Date.now() < slowUntil) { net.catch(() => {}); return fallback(); }
+  const timeout = new Promise(res => setTimeout(() => { slowUntil = Date.now() + SLOW_WINDOW; res(fallback()); }, NET_TIMEOUT));
+  return Promise.race([net.catch(fallback), timeout]);
 }
 
 // Audio never changes for a given file name, so serve it from cache. <audio> sends Range
