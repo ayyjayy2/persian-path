@@ -658,6 +658,10 @@ ${(v.is.profile) ? html`
       <span style="display:flex;align-items:center;gap:12px"><span style="color:var(--color-accent-700)">${v.ic.download}</span><span style="display:flex;flex-direction:column"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Install the app</span><span style="font-size:12px;color:var(--color-neutral-700)">Works offline, with lessons and audio cached</span></span></span>
       <span style="color:var(--color-neutral-500)">${v.ic.chev}</span>
     </button>
+    <button onClick=${v.refreshApp} disabled=${v.refreshing} style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border:0;border-bottom:1px solid var(--color-divider);background:transparent;cursor:pointer;text-align:left;min-height:60px">
+      <span style="display:flex;align-items:center;gap:12px"><span style="color:var(--color-accent-700);display:flex;animation:${v.refreshSpin}">${v.ic.refreshLg}</span><span style="display:flex;flex-direction:column"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Refresh app</span><span role="status" style="font-size:12px;color:var(--color-neutral-700)">${v.refreshMsg}</span></span></span>
+      <span style="color:var(--color-neutral-500)">${v.ic.chev}</span>
+    </button>
   </section>
   <section style="display:flex;flex-direction:column;gap:10px">
     <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">دستاوردها</span><h2 style="font-size:24px;margin:0">Achievements</h2></div>
