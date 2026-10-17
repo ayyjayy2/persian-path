@@ -265,14 +265,15 @@ class App extends Component {
   }
 
   // ---------- exercises ----------
-  // Nothing due: review the words that come due soonest rather than an empty session.
-  // Nothing learned yet: there is nothing to review, so go to the lessons.
+  // The review button is disabled when nothing is due; the note under it points to the next lesson.
   startReview() {
     const d = this.due();
-    if (d.length) return this.start('review', null, this.shuffle(d).slice(0, 10));
-    const srs = this.state.srs, soon = this.learned().sort((a, b) => (srs[a.key] ? srs[a.key].t : 0) - (srs[b.key] ? srs[b.key].t : 0));
-    if (soon.length) return this.start('review', null, this.shuffle(soon.slice(0, 10)));
-    this.go('learn');
+    if (d.length) this.start('review', null, this.shuffle(d).slice(0, 10));
+  }
+  openNextLesson() {
+    const p = this.state.progress, ls = this.lessons();
+    const l = ls.find(l => this.D.ACTIVITIES.some(a => !(p[l.id] || {})[a.id])) || ls[0];
+    this.setState({ tab: 'learn', route: { name: 'lesson', id: l.id } }); window.scrollTo(0, 0);
   }
   start(kind, lessonId, wordsOverride) {
     const D = this.D;
@@ -360,7 +361,7 @@ class App extends Component {
       appBarTitle: titles[s.tab][0], appBarFa: titles[s.tab][1], streak: s.streak, xp: s.xp,
       bottomPad: showBottomTabs ? 'calc(64px + env(safe-area-inset-bottom))' : '0px',
       mainPad: wide ? '40px 40px 64px' : (r ? '12px 20px 40px' : '22px 20px 40px'),
-      railOffset: '0px', back: () => this.back(), dueCount: this.due().length, startReview: () => this.startReview(), reviewCta: this.due().length ? 'Begin review' : this.learned().length ? 'Review ahead' : 'Start a lesson' };
+      railOffset: '0px', back: () => this.back(), dueCount: this.due().length, startReview: () => this.startReview(), reviewEmpty: !this.due().length, openNextLesson: () => this.openNextLesson() };
 
     // learn
     const now = new Date();
