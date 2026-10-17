@@ -46,3 +46,10 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
   background: var(--color-bg); border: 2px solid var(--m, var(--color-accent)); box-shadow: var(--shadow-sm); font-size: 14px; }
 .leaflet-popup-content { font-family: var(--font-body); font-size: 13px; line-height: 1.5; }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
+
+/* Crash / slow-load fallback (app.js Boundary, index.html watchdog) */
+.pl-crash { max-width: 420px; margin: 0 auto; padding: 96px 24px; text-align: center; font-family: var(--font-body); color: var(--color-text); }
+.pl-crash h1 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 28px; margin: 0 0 12px; }
+.pl-crash p { margin: 0 0 24px; line-height: 1.6; }
+.pl-crash .pl-crash-fa { font-family: 'Noto Naskh Arabic', serif; font-size: 32px; color: var(--color-accent); margin-bottom: 8px; }
+.pl-crash button { padding: 12px 28px; border: 1px solid var(--color-accent); border-radius: var(--radius-sm); background: transparent; color: var(--color-accent-700); cursor: pointer; }

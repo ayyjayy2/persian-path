@@ -595,7 +595,22 @@ class App extends Component {
   render() { return view(this.renderVals()); }
 }
 
-render(h(App, {}), document.getElementById('app'));
+// If a screen ever throws while drawing, Preact leaves the old one up with nothing responding to
+// taps. Catch it here and offer a reload instead; progress is already saved on the device.
+class Boundary extends Component {
+  state = { err: null };
+  componentDidCatch(err) { console.error(err); this.setState({ err }); }
+  render() {
+    if (!this.state.err) return this.props.children;
+    return h('div', { class: 'pl-crash' },
+      h('p', { class: 'pl-crash-fa', lang: 'fa', dir: 'rtl' }, 'ببخشید'),
+      h('h1', null, 'Something went wrong'),
+      h('p', null, 'Your progress is saved on this device. Reload to pick up where you left off.'),
+      h('button', { onClick: () => location.reload() }, 'Reload'));
+  }
+}
+
+render(h(Boundary, {}, h(App, {})), document.getElementById('app'));
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));

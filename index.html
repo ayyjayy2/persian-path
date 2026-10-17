@@ -29,6 +29,16 @@
 </head>
 <body>
   <div id="app"></div>
+  <script>
+    // Last resort: if the app hasn't drawn anything after 12 seconds (a file failed to load),
+    // show a way out instead of a blank, frozen screen.
+    setTimeout(function () {
+      var app = document.getElementById('app');
+      if (!app || app.firstChild) return;
+      app.innerHTML = '<div class="pl-crash"><h1>Still loading…</h1><p>Persian Learnin is taking longer than usual. Check your connection and try again.</p><button type="button">Reload</button></div>';
+      app.querySelector('button').addEventListener('click', function () { location.reload(); });
+    }, 12000);
+  </script>
   <noscript>Persian Learnin needs JavaScript to run.</noscript>
 </body>
 </html>
