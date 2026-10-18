@@ -11,12 +11,28 @@ const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
 const V1_KEY = 'persian_app_state';
-const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen'];
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen', 'myWords'];
 const MIN = 60e3, DAY = 864e5;
 // Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
 
 const dayKey = (t = Date.now()) => new Date(t).toDateString();
+
+// Pictures for My words live in IndexedDB: as data URLs in localStorage they would soon fill its
+// ~5 MB quota, and then progress would stop saving.
+const media = (() => {
+  let db;
+  const open = () => db || (db = new Promise((res, rej) => {
+    const r = indexedDB.open('pl_media', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('img');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const tx = (mode, fn) => open().then(d => new Promise((res, rej) => {
+    const t = d.transaction('img', mode), q = fn(t.objectStore('img'));
+    t.oncomplete = () => res(q.result); t.onerror = () => rej(t.error);
+  }));
+  return { get: k => tx('readonly', st => st.get(k)), put: (k, v) => tx('readwrite', st => st.put(v, k)), del: k => tx('readwrite', st => st.delete(k)) };
+})();
 
 function loadLocal() {
   try {
@@ -39,12 +55,12 @@ function rollDay(s) {
 class App extends Component {
   state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
     xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
-    progress: {}, srs: {}, mistakes: [], prefs: {}, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
+    progress: {}, srs: {}, mistakes: [], prefs: {}, myWords: [], imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
     online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
 
   componentDidMount() {
     this.D = D;
-    this.setState({ ...rollDay({ ...this.state, ...loadLocal() }), ready: true });
+    this.setState({ ...rollDay({ ...this.state, ...loadLocal() }), ready: true }, () => this.loadImgs());
     this._r = () => this.setState({ w: window.innerWidth });
     window.addEventListener('resize', this._r);
     this._bip = e => { e.preventDefault(); this._deferred = e; };
@@ -179,6 +195,11 @@ class App extends Component {
       download: ['M12 15V3', 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'm7 10 5 5 5-5'],
       lock: [{ r: [3, 11, 18, 11, 2] }, 'M7 11V7a5 5 0 0 1 10 0v4'],
       chat: ['M7.9 20A9 9 0 1 0 4 16.1L2 22Z'],
+      plus: ['M5 12h14', 'M12 5v14'],
+      sparkles: ['M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'],
+      trash: ['M3 6h18', 'M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6', 'M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2'],
+      image: [{ r: [3, 3, 18, 18, 2] }, { c: [9, 9, 2] }, 'm21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'],
+      pen: ['M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z', 'm15 5 4 4'],
     }[name] || [];
     return h('svg', { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': sw, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', style: { display: 'block', flex: 'none' } },
       ...P.map((p, i) => typeof p === 'string' ? h('path', { key: i, d: p }) : p.c ? h('circle', { key: i, cx: p.c[0], cy: p.c[1], r: p.c[2] }) : h('rect', { key: i, x: p.r[0], y: p.r[1], width: p.r[2], height: p.r[3], rx: p.r[4] })));
@@ -229,9 +250,103 @@ class App extends Component {
     this.setState({ ex: { ...ex, log: [...ex.log, { ...c, who: 'you' }], step: ex.step + 1, wrongMsg: null, correct: ex.correct + (ex.turnWrong ? 0 : 1), turnWrong: false, picked: [] } });
     setTimeout(() => this.setState(st => ({ ex: st.ex && st.ex.kind === 'convo' ? this.advanceNpc(st.ex) : st.ex })), 700);
   }
-  allWords() { return this.D.LESSONS.flatMap(l => l.words.map(w => ({ ...w, lessonTitle: l.title }))); }
+  allWords() { return this.D.LESSONS.flatMap(l => l.words.map(w => ({ ...w, lessonTitle: l.title }))).concat(this.myAsWords()); }
   wordByKey(k) { return this.allWords().find(w => w.key === k); }
-  learned() { const p = this.state.progress; return this.D.LESSONS.filter(l => p[l.id] && p[l.id].flashcard).flatMap(l => l.words.map((w, i) => ({ ...w, lessonTitle: l.title, idx: i }))); }
+  learned() { const p = this.state.progress; return this.D.LESSONS.filter(l => p[l.id] && p[l.id].flashcard).flatMap(l => l.words.map((w, i) => ({ ...w, lessonTitle: l.title, idx: i }))).concat(this.myAsWords()); }
+  // ---------- my words ----------
+  // Words the learner adds themselves. They count as learned straight away, so they join review now.
+  myAsWords() { return (this.state.myWords || []).map(w => ({ key: 'my:' + w.id, persian: w.fa, phonetic: w.lat, english: w.en, example: '', lessonTitle: 'My words', idx: 0 })); }
+  async loadImgs() {
+    const ids = (this.state.myWords || []).filter(w => w.img).map(w => w.id);
+    const imgs = {};
+    await Promise.all(ids.map(id => media.get(id).then(v => { if (v) imgs[id] = v; }).catch(() => {})));
+    this.setState(s => ({ imgs: { ...imgs, ...s.imgs } }));
+  }
+  draftUpd(p) { this.setState(s => ({ draft: { ...s.draft, ...p } })); }
+  editWord(id) {
+    const w = id && (this.state.myWords || []).find(x => x.id === id);
+    const img = w && this.state.imgs[id];
+    this._drawn = false;
+    this.setState({ draft: w ? { id, en: w.en, lat: w.lat, fa: w.fa, faAuto: false, src: 'manual', mode: img ? 'photo' : 'none', img: img || null, busy: false }
+      : { id: null, en: '', lat: '', fa: '', faAuto: true, src: null, mode: 'none', img: null, busy: false } });
+    this.nav({ name: 'addword' });
+  }
+  // Rough Latin-to-Persian spelling for words the lessons don't know; the learner can correct it.
+  translit(s) {
+    const C = { kh: 'خ', gh: 'ق', sh: 'ش', ch: 'چ', zh: 'ژ', b: 'ب', p: 'پ', t: 'ت', j: 'ج', h: 'ه', d: 'د', r: 'ر', z: 'ز', s: 'س', f: 'ف', q: 'ق', k: 'ک', g: 'گ', l: 'ل', m: 'م', n: 'ن', v: 'و', w: 'و', y: 'ی', x: 'خ', c: 'ک', "'": 'ع' };
+    return s.toLowerCase().split(/\s+/).filter(Boolean).map(w => {
+      w = w.replace(/[^a-z']/g, ''); let out = '', i = 0, prev = '';
+      while (i < w.length) {
+        const st = i === 0, two = w.slice(i, i + 2), ch = w[i];
+        const end = n => i + n >= w.length;
+        if (['kh', 'gh', 'sh', 'ch', 'zh'].includes(two)) { out += C[two]; prev = two; i += 2; continue; }
+        if (two === 'aa') { out += st ? 'آ' : 'ا'; i += 2; prev = ''; continue; }
+        if (['oo', 'ou', 'uu'].includes(two)) { out += st ? 'او' : 'و'; i += 2; prev = ''; continue; }
+        if (['ee', 'ii', 'ei', 'ey'].includes(two)) { out += st ? 'ای' : 'ی'; i += 2; prev = ''; continue; }
+        if (ch === 'a') out += st ? 'ا' : end(1) ? 'ا' : '';
+        else if (ch === 'e') out += st ? 'ا' : end(1) ? 'ه' : '';
+        else if (ch === 'o') out += st ? 'ا' : end(1) ? 'و' : '';
+        else if (ch === 'i') out += st ? 'ای' : 'ی';
+        else if (ch === 'u') out += st ? 'او' : 'و';
+        else if (C[ch] && ch !== prev) out += C[ch];
+        prev = ch; i++;
+      }
+      return out;
+    }).join(' ');
+  }
+  // Fill in the Persian script: a matching lesson word if there is one, otherwise transliterate.
+  autoScript(lat) {
+    if (!lat || !lat.trim()) return;
+    const norm = x => (x || '').toLowerCase().replace(/[^a-z' ]/g, '').trim();
+    const hit = this.allWords().find(w => !String(w.key).startsWith('my:') && (norm(w.phonetic) === norm(lat) || (w.writtenPhonetic && norm(w.writtenPhonetic) === norm(lat))));
+    const fa = hit ? hit.persian : this.translit(lat), src = hit ? 'app' : 'auto';
+    this.setState(s => ({ draft: s.draft && { ...s.draft, busy: false, ...(s.draft.faAuto ? { fa, src } : {}) } }));
+  }
+  tok(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  cvRef = el => { this._cv = el; if (el && !el._init) { el._init = true; this.clearCanvas(); } };
+  clearCanvas() { const c = this._cv; if (!c) return; const x = c.getContext('2d'); x.fillStyle = this.tok('--color-surface') || '#fff'; x.fillRect(0, 0, c.width, c.height); this._drawn = false; }
+  pt(e) { const c = this._cv, r = c.getBoundingClientRect(); return [(e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height]; }
+  drawStart = e => {
+    if (!this._cv) return; e.preventDefault(); try { this._cv.setPointerCapture(e.pointerId); } catch (er) {} this._pen = this.pt(e);
+    const x = this._cv.getContext('2d'); x.strokeStyle = this.tok('--color-text') || '#201f1d'; x.lineWidth = 6; x.lineCap = 'round'; x.lineJoin = 'round';
+    x.beginPath(); x.moveTo(...this._pen); x.lineTo(...this._pen); x.stroke(); this._drawn = true;
+  };
+  drawMove = e => { if (!this._pen) return; const p = this.pt(e), x = this._cv.getContext('2d'); x.beginPath(); x.moveTo(...this._pen); x.lineTo(...p); x.stroke(); this._pen = p; };
+  drawEnd = () => { this._pen = null; };
+  onPhoto = e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const img = new Image();
+    img.onload = () => {
+      const sc = Math.min(1, 640 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); this.draftUpd({ img: c.toDataURL('image/jpeg', 0.75) }); URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(f); e.target.value = '';
+  };
+  saveWord() {
+    const d = this.state.draft; if (!d || !d.en.trim() || !d.lat.trim() || !d.fa.trim()) return;
+    const img = d.mode === 'photo' ? d.img : d.mode === 'draw' && this._drawn && this._cv ? this._cv.toDataURL('image/jpeg', 0.75) : null;
+    const id = d.id || Date.now().toString(36);
+    if (img) media.put(id, img).catch(() => {}); else media.del(id).catch(() => {});
+    const rec = { id, en: d.en.trim(), lat: d.lat.trim(), fa: d.fa.trim(), img: !!img };
+    this.setState(s => {
+      const list = s.myWords || [], old = list.find(x => x.id === id);
+      const imgs = { ...s.imgs }; if (img) imgs[id] = img; else delete imgs[id];
+      return { myWords: old ? list.map(x => x.id === id ? { ...x, ...rec } : x) : [{ ...rec, created: Date.now() }, ...list], imgs, draft: null,
+        xp: old ? s.xp : s.xp + 5, todayXp: old ? s.todayXp : s.todayXp + 5 };
+    });
+    this.nav({ name: 'mywords' });
+  }
+  deleteWord(id) {
+    media.del(id).catch(() => {});
+    const key = 'my:' + id;
+    this.setState(s => {
+      const srs = { ...s.srs }; delete srs[key];
+      const imgs = { ...s.imgs }; delete imgs[id];
+      return { myWords: (s.myWords || []).filter(x => x.id !== id), srs, imgs, mistakes: s.mistakes.filter(k => k !== key), draft: null };
+    });
+    this.nav({ name: 'mywords' });
+  }
   // srs[key] = { b: Leitner box 0-4, t: when it is next due }. Words learned but never reviewed are due now.
   box(w) { const v = this.state.srs[w.key]; return v ? v.b : 0; }
   due() { const now = Date.now(); return this.learned().filter(w => { const v = this.state.srs[w.key]; return !v || v.t <= now; }); }
@@ -260,6 +375,7 @@ class App extends Component {
   back() {
     const r = this.state.route;
     if (r && r.name === 'map') return this.nav(r.from);
+    if (r && r.name === 'addword') return this.nav({ name: 'mywords' });
     if (r && r.name === 'results') { const lid = this.state.result && this.state.result.lessonId; return this.nav(lid ? { name: 'lesson', id: lid } : null); }
     this.nav(null);
   }
@@ -338,7 +454,7 @@ class App extends Component {
   renderVals() {
     const s = this.state;
     const I = (n, z, w) => this.icon(n, z, w);
-    const ic = { back: I('back', 22), x: I('x', 22), check: I('check', 18, 2), chev: I('chev', 18), flame: I('flame', 16), zap: I('zap', 16), vol: I('vol', 22), volSm: I('vol', 18), volLg: I('vol', 44, 1.3), bulb: I('bulb', 20), bulbSm: I('bulb', 16), refreshLg: I('review', 22), compass: I('compass', 22), play: I('play', 16), book: I('book', 22), download: I('download', 20), refresh: I('review', 10, 2), chat: I('chat', 20) };
+    const ic = { back: I('back', 22), x: I('x', 22), check: I('check', 18, 2), chev: I('chev', 18), flame: I('flame', 16), zap: I('zap', 16), vol: I('vol', 22), volSm: I('vol', 18), volLg: I('vol', 44, 1.3), bulb: I('bulb', 20), bulbSm: I('bulb', 16), refreshLg: I('review', 22), compass: I('compass', 22), play: I('play', 16), book: I('book', 22), download: I('download', 20), refresh: I('review', 10, 2), chat: I('chat', 20), plus: I('plus', 18), wand: I('sparkles', 16), trash: I('trash', 16), imageIc: I('image', 30, 1.3), pen: I('pen', 22) };
     const mode = this.props.forceLayout || 'auto';
     const wide = mode === 'desktop' || (mode === 'auto' && s.w >= 900);
     const base = { ic, is: {}, show: { fa: true, lat: true }, tabs: [], showRail: false, showBottomTabs: false, showAppBar: false, wide };
@@ -585,6 +701,36 @@ class App extends Component {
     v.wordQuery = s.wordQuery; v.setWordQuery = e => this.setState({ wordQuery: e.target.value });
     const q = s.wordQuery.trim().toLowerCase();
     v.collection = L.filter(w => !q || w.english.toLowerCase().includes(q) || w.phonetic.toLowerCase().includes(q) || w.persian.includes(q)).map(w => ({ ...this.disp(w), lesson: w.lessonTitle, box: Math.min(4, this.box(w)) + 1, play: () => this.play(w) }));
+
+    // my words
+    const my = s.myWords || [];
+    v.myCountLabel = my.length === 1 ? '1 word' : my.length + ' words'; v.noMy = my.length === 0;
+    v.myWords = my.map(w => { const img = s.imgs[w.id];
+      return { ...w, bgImg: img ? `url("${img}")` : 'none', hasImg: !!img, noImg: !img, open: () => this.editWord(w.id), play: e => { e.stopPropagation(); this.play({ persian: w.fa, phonetic: w.lat, english: w.en, key: 'my:' + w.id }); } }; });
+    v.addWord = () => this.editWord(null); v.openMy = () => this.nav({ name: 'mywords' });
+    v.cvRef = this.cvRef; v.drawStart = this.drawStart; v.drawMove = this.drawMove; v.drawEnd = this.drawEnd;
+    if (view === 'addword' && s.draft) {
+      const d = s.draft;
+      v.W = { ...d, bgImg: d.img ? `url("${d.img}")` : 'none', title: d.id ? 'Edit word' : 'Add a word', isEdit: !!d.id, saveLabel: d.id ? 'Save changes' : 'Save word',
+        noFa: !d.fa.trim(), noLat: !d.lat.trim(), cannotSave: !d.en.trim() || !d.lat.trim() || !d.fa.trim() || d.busy,
+        srcNote: d.busy ? 'Writing it in Persian…' : ({ app: 'Matched a word from your lessons', auto: 'Written from your spelling — tap to correct, or check with a native speaker', manual: 'Edited by you' }[d.src] || 'Fills in automatically as you type the sound'),
+        isDraw: d.mode === 'draw', isPhoto: d.mode === 'photo', hasPhoto: d.mode === 'photo' && !!d.img, noPhoto: d.mode === 'photo' && !d.img,
+        modes: [['none', 'None'], ['draw', 'Draw'], ['photo', 'Photo']].map(([m, label], j) => ({ label, go: () => this.draftUpd({ mode: m }), bl: j ? '1px solid var(--color-divider)' : '0', shadow: d.mode === m ? 'inset 0 0 0 1px var(--color-accent)' : 'none', color: d.mode === m ? 'var(--color-accent-700)' : 'var(--color-text)' })),
+        setEn: e => this.draftUpd({ en: e.target.value }),
+        setLat: e => {
+          const lat = e.target.value, auto = this.state.draft.faAuto;
+          this.draftUpd({ lat, ...(auto && !lat.trim() ? { fa: '', src: null } : {}), ...(auto && lat.trim() ? { busy: true } : {}) });
+          clearTimeout(this._tt);
+          if (auto && lat.trim()) this._tt = setTimeout(() => this.autoScript(lat), 450);
+        },
+        setFa: e => this.draftUpd({ fa: e.target.value, faAuto: false, src: 'manual' }),
+        regen: () => { this.draftUpd({ faAuto: true }); this.autoScript(d.lat); },
+        listen: () => d.fa.trim() && this.play({ persian: d.fa, key: 'draft' }),
+        clearDraw: () => this.clearCanvas(), onPhoto: this.onPhoto, removePhoto: () => this.draftUpd({ img: null }),
+        save: () => this.saveWord(), del: () => this.deleteWord(d.id) };
+    }
+    // The add-word page needs a draft; without one, show the list instead of rendering an empty form
+    if (view === 'addword' && !s.draft) { delete v.is.addword; v.is.mywords = true; }
 
     // sheet
     v.sheetOpen = !!s.sheet; v.sheetAuth = s.sheet === 'auth'; v.sheetInstall = s.sheet === 'install'; v.sheetSignOut = s.sheet === 'signout'; v.sheetHoliday = s.sheet === 'holiday';

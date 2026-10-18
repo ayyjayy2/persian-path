@@ -489,6 +489,13 @@ ${(v.is.review) ? html`
       ${(v.reviewEmpty) ? html`<p style="margin:0;flex-basis:100%;font-size:13px;color:var(--color-neutral-700)">Nothing to review right now. <button onClick=${v.openNextLesson} style="background:none;border:0;padding:0;color:var(--color-accent-700);text-decoration:underline;text-underline-offset:3px;cursor:pointer">Start a lesson</button> to add new words.</p>` : null}
     </div>
   </section>
+  <section style="display:flex;align-items:center;gap:14px;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:14px 0">
+      <button onClick=${v.openMy} style="flex:1;display:flex;align-items:center;gap:12px;border:0;background:transparent;cursor:pointer;text-align:left;min-height:52px;padding:0">
+        <span style="color:var(--color-accent-700)">${v.ic.pen}</span>
+        <span style="display:flex;flex-direction:column"><span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">My words</span><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">واژه‌های من</span></span><span style="font-size:12px;color:var(--color-neutral-700)">${v.myCountLabel} added by you</span></span>
+      </button>
+      <button class="btn btn-secondary" onClick=${v.addWord} style="min-height:44px;gap:6px">${v.ic.plus} Add</button>
+    </section>
   <section style="display:flex;flex-direction:column">
     <div style="display:flex;justify-content:space-between;align-items:baseline;direction:rtl"><span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">دفتر اشتباه‌ها</span><h2 style="font-size:24px;margin:0">Mistake notebook</h2></span>${(v.hasMistakes) ? html`<button class="btn btn-ghost" onClick=${v.drillMistakes} style="min-height:44px">Drill these</button>` : null}</div>
     ${(v.noMistakes) ? html`<p style="margin:8px 0 0;font-size:14px;color:var(--color-neutral-700);font-style:italic">Words you miss in practice will collect here.</p>` : null}
@@ -609,6 +616,113 @@ ${(v.is.article) ? html`
 </article>
 ` : null}
 
+
+${(v.is.mywords) ? html`
+<div style="display:flex;flex-direction:column;gap:20px;animation:plfade .25s ease">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
+    <button class="btn btn-primary" onClick=${v.addWord} style="min-height:44px;gap:6px">${v.ic.plus} Add a word</button>
+  </div>
+  <header style="display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--color-divider);padding-bottom:16px">
+    <span style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:24px;color:var(--color-accent-700)">واژه‌های من</span><h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">My words</h1></span>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-700);text-align:justify;hyphens:auto">Words you pick up from friends, films and menus. Each one joins your spaced review, so it sticks like the rest.</p>
+  </header>
+  ${(v.noMy) ? html`
+    <div style="border:1px dashed var(--color-neutral-400);border-radius:var(--radius-md);padding:32px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+      <span style="font-family:'Noto Naskh Arabic',serif;font-size:36px;color:var(--color-accent-700);line-height:1.3">پروانه</span>
+      <span style="font-style:italic;font-size:13px;color:var(--color-neutral-700)">parvaane · butterfly</span>
+      <p style="margin:0;font-size:14px;line-height:1.55;max-width:320px">Heard a new word? Write it the way it sounds — we'll write it in Persian for you.</p>
+      <button class="btn btn-primary" onClick=${v.addWord} style="min-height:44px;gap:6px;margin-top:4px">${v.ic.plus} Add your first word</button>
+    </div>
+  ` : null}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+    ${(v.myWords || []).map((w) => html`
+      <div role="button" tabindex="0" onClick=${w.open} style="border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;position:relative" class="hv18">
+        <div style="aspect-ratio:4/3;background:var(--color-surface);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--color-divider)">
+          ${(w.hasImg) ? html`<div role="img" aria-label=${w.en} style="width:100%;height:100%;background-image:${w.bgImg};background-size:cover;background-position:center;filter:sepia(.12) saturate(.9)"></div>` : null}
+          ${(w.noImg) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:30px;color:var(--color-accent-700);direction:rtl">${w.fa}</span>` : null}
+        </div>
+        <div style="padding:10px 12px;display:flex;flex-direction:column;gap:1px">
+          <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;text-align:right;line-height:1.4">${w.fa}</span>
+          <span style="font-size:12px;font-style:italic;color:var(--color-neutral-700);text-align:right">${w.lat}</span>
+          <span style="font-size:14px">${w.en}</span>
+        </div>
+        <button onClick=${w.play} aria-label="Play" style="position:absolute;top:8px;left:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--color-divider);background:var(--color-bg);color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
+      </div>
+    `)}
+  </div>
+</div>
+` : null}
+
+${(v.is.addword) ? html`
+<div style="display:flex;flex-direction:column;gap:22px;animation:plfade .25s ease;padding-bottom:24px">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
+    <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">واژهٔ تازه</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">My words</span></span>
+  </div>
+  <h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">${v.W.title}</h1>
+
+  <div class="field" style="display:flex;flex-direction:column;gap:6px">
+    <label style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px">Meaning</span><span style="font-size:12px;color:var(--color-neutral-700)">In your own language</span></label>
+    <input class="input" value=${v.W.en} onInput=${v.W.setEn} placeholder="e.g. butterfly" style="min-height:48px;font-size:16px" />
+  </div>
+  <div class="field" style="display:flex;flex-direction:column;gap:6px">
+    <label style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px">How it sounds</span><span style="font-size:12px;color:var(--color-neutral-700)">Spell it the way you hear it, in your own alphabet</span></label>
+    <input class="input" value=${v.W.lat} onInput=${v.W.setLat} placeholder="e.g. parvone" autocapitalize="off" autocomplete="off" spellcheck="false" style="min-height:48px;font-size:16px;font-style:italic" />
+  </div>
+
+  <section style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;direction:rtl">
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">خط فارسی</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Persian script</span></span>
+      <span style="display:flex;gap:4px;direction:ltr">
+        <button onClick=${v.W.listen} aria-label="Listen" disabled=${v.W.noFa} style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
+        <button class="btn btn-ghost" onClick=${v.W.regen} disabled=${v.W.noLat} style="min-height:40px;gap:6px;font-size:13px">${v.ic.wand} Auto-fill</button>
+      </span>
+    </div>
+    <input value=${v.W.fa} onInput=${v.W.setFa} dir="rtl" lang="fa" placeholder="…" style="border:0;border-bottom:1px solid var(--color-divider);background:transparent;font-family:'Noto Naskh Arabic',serif;font-size:36px;line-height:1.5;padding:4px 0;color:var(--color-text);outline:none;width:100%;box-sizing:border-box" />
+    <span style="font-size:12px;color:var(--color-neutral-700);font-style:italic">${v.W.srcNote}</span>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:10px">
+    <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px">Picture <span style="color:var(--color-neutral-600)">· optional</span></span><span style="font-size:12px;color:var(--color-neutral-700)">A picture ties the word to the thing itself — not to its translation.</span></span>
+    <div style="display:flex;border:1px solid var(--color-divider);border-radius:var(--radius-md);overflow:hidden;align-self:flex-start">
+      ${(v.W.modes || []).map((o) => html`<button onClick=${o.go} style="min-height:40px;padding:6px 16px;border:0;border-left:${o.bl};background:transparent;box-shadow:${o.shadow};color:${o.color};cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px">${o.label}</button>`)}
+    </div>
+    ${(v.W.isDraw) ? html`
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="border:1px solid var(--color-divider);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);overflow:hidden;padding:6px;background:var(--color-surface)">
+          <canvas ref=${v.cvRef} width="480" height="320" onPointerDown=${v.drawStart} onPointerMove=${v.drawMove} onPointerUp=${v.drawEnd} onPointerCancel=${v.drawEnd} onPointerLeave=${v.drawEnd} style="width:100%;aspect-ratio:3/2;display:block;touch-action:none;cursor:crosshair;border-radius:2px"></canvas>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--color-neutral-700);font-style:italic">Draw it with your finger — rough is fine.</span><button class="btn btn-ghost" onClick=${v.W.clearDraw} style="min-height:40px;gap:6px;font-size:13px">${v.ic.trash} Clear</button></div>
+      </div>
+    ` : null}
+    ${(v.W.isPhoto) ? html`
+      ${(v.W.hasPhoto) ? html`
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="border:1px solid var(--color-divider);outline:6px solid var(--color-surface);outline-offset:-7px;padding:6px;background:var(--color-surface);border-radius:var(--radius-md)"><div style="width:100%;aspect-ratio:3/2;background-image:${v.W.bgImg};background-size:cover;background-position:center;filter:sepia(.12) saturate(.9)"></div></div>
+          <div style="display:flex;justify-content:flex-end;gap:6px">
+            <label class="btn btn-ghost" style="min-height:40px;font-size:13px;cursor:pointer;display:flex;align-items:center">Replace<input type="file" accept="image/*" onChange=${v.W.onPhoto} style="display:none" /></label>
+            <button class="btn btn-ghost" onClick=${v.W.removePhoto} style="min-height:40px;gap:6px;font-size:13px">${v.ic.trash} Remove</button>
+          </div>
+        </div>
+      ` : null}
+      ${(v.W.noPhoto) ? html`
+        <label style="border:1px dashed var(--color-neutral-400);border-radius:var(--radius-md);aspect-ratio:3/2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:var(--color-accent-700)" class="hv19">
+          ${v.ic.imageIc}<span style="font-size:14px;color:var(--color-text)">Take or choose a photo</span>
+          <input type="file" accept="image/*" onChange=${v.W.onPhoto} style="display:none" />
+        </label>
+      ` : null}
+    ` : null}
+  </section>
+
+  <div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--color-divider);padding-top:18px">
+    <button class="btn btn-primary" onClick=${v.W.save} disabled=${v.W.cannotSave} style="min-height:50px;font-size:16px">${v.W.saveLabel}</button>
+    ${(v.W.isEdit) ? html`<button class="btn btn-secondary" onClick=${v.W.del} style="min-height:50px;font-size:16px;gap:6px">${v.ic.trash} Delete word</button>` : null}
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-align:center">New words join today's review.</p>
+  </div>
+</div>
+` : null}
+
 ${(v.is.map) ? html`
 <div style="display:flex;flex-direction:column;gap:14px;animation:plfade .25s ease">
   <div style="display:flex;align-items:center;gap:8px">
@@ -656,6 +770,10 @@ ${(v.is.profile) ? html`
     </div>
   </section>
   <section style="display:flex;flex-direction:column">
+    <button onClick=${v.openMy} style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border:0;border-top:1px solid var(--color-divider);background:transparent;cursor:pointer;text-align:left;min-height:60px">
+          <span style="display:flex;align-items:center;gap:12px"><span style="color:var(--color-accent-700)">${v.ic.pen}</span><span style="display:flex;flex-direction:column"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">My words</span><span style="font-size:12px;color:var(--color-neutral-700)">${v.myCountLabel} you've added — with drawings and photos</span></span></span>
+          <span style="color:var(--color-neutral-500)">${v.ic.chev}</span>
+        </button>
     <button onClick=${v.openWords} style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;border:0;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);background:transparent;cursor:pointer;text-align:left;min-height:60px">
       <span style="display:flex;align-items:center;gap:12px"><span style="color:var(--color-accent-700)">${v.ic.book}</span><span style="display:flex;flex-direction:column"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Word collection</span><span style="font-size:12px;color:var(--color-neutral-700)">${v.learnedCount} words learned</span></span></span>
       <span style="color:var(--color-neutral-500)">${v.ic.chev}</span>
