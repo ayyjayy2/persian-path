@@ -53,3 +53,5 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .pl-crash p { margin: 0 0 24px; line-height: 1.6; }
 .pl-crash .pl-crash-fa { font-family: 'Noto Naskh Arabic', serif; font-size: 32px; color: var(--color-accent); margin-bottom: 8px; }
 .pl-crash button { padding: 12px 28px; border: 1px solid var(--color-accent); border-radius: var(--radius-sm); background: transparent; color: var(--color-accent-700); cursor: pointer; }
+.hv18:hover{border-color:var(--color-accent) !important}
+.hv19:hover{background:color-mix(in srgb, var(--color-accent) 6%, transparent) !important}
