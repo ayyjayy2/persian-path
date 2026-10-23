@@ -384,6 +384,7 @@ class App extends Component {
     const r = this.state.route;
     if (r && r.name === 'map') return this.nav(r.from);
     if (r && r.name === 'addword') return this.nav({ name: 'mywords' });
+    if (r && r.name === 'grammar') return this.nav(r.from || null);
     if (r && r.name === 'results') { const lid = this.state.result && this.state.result.lessonId; return this.nav(lid ? { name: 'lesson', id: lid } : null); }
     this.nav(null);
   }
@@ -561,10 +562,11 @@ class App extends Component {
           open: locked ? noop : () => this.nav({ name: 'lesson', id: l.id }) };
       }
       const isScript = it.kind === 'script';
+      const page = it.kind === 'grammar' && D.GRAMMAR[it.id];
       return { isOther: true, icon: I(kindIcon[it.kind], 15), iconBorder: 'var(--color-divider)', kicker: { script: 'Script', grammar: 'Grammar', conversation: 'Conversation', skill: 'Skill' }[it.kind],
         title: it.title, desc: it.desc, glyph: isScript ? 'الفبا' : '', op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer',
         endIcon: locked ? I('lock', 14) : isScript && s.scriptSeen ? I('check', 16, 2) : ic.chev, endColor: isScript && s.scriptSeen ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
-        open: locked ? noop : isScript ? () => this.go('script') : noop };
+        open: locked ? noop : isScript ? () => this.go('script') : page ? () => this.nav({ name: 'grammar', id: it.id }) : noop };
     };
     const cpRow = st => ({ isOther: true, icon: I('chat', 15), iconBorder: 'var(--color-accent)', kicker: 'Checkpoint · conversation', title: st.checkpoint.title, desc: st.checkpoint.desc, glyph: '',
       op: st.playableCp ? 1 : 0.5, cursor: st.playableCp ? 'pointer' : 'default', endIcon: st.cpDone ? I('check', 16, 2) : st.playableCp ? ic.chev : I('lock', 14), endColor: st.cpDone ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
@@ -575,6 +577,10 @@ class App extends Component {
       meta: st.unlocked ? `${st.level} · ${st.doneCount + (st.cpDone ? 1 : 0)}/${st.total + 1}` : `${st.level} · Locked`,
       items: [...st.items.map(it => row(it, st)).filter(Boolean), cpRow(st)] }));
     if (electives.length) v.stageGroups.push({ fa: 'اختیاری', title: 'Electives', lockIcon: null, meta: 'Any time', items: electives.map(l => row({ kind: 'lesson', id: l.id }, { unlocked: true })).filter(Boolean) });
+    v.grammarList = D.STAGES.flatMap(st => st.items.filter(i => i.kind === 'grammar')).map(it => {
+      const ready = !!D.GRAMMAR[it.id];
+      return { title: it.title, desc: ready ? it.desc : 'Coming soon', op: ready ? 1 : 0.5, cursor: ready ? 'pointer' : 'default', end: ready ? ic.chev : null, open: ready ? () => this.nav({ name: 'grammar', id: it.id }) : noop };
+    });
     v.loop = [['Meet', 'Flashcards with native audio — the sound comes first'], ['Recognise', 'Pick the meaning, both directions, by eye and by ear'], ['Build', 'Arrange words into Persian order yourself'], ['Say', 'Shadow a native speaker and record yourself'], ['Use', 'Hold the conversation at the end of each stage']].map(([step, desc], i) => ({ step, desc, nFa: this.faNum(i + 1) }));
     v.plan = SI.map(st => ({ nFa: this.faNum(st.n), level: st.level, name: st.name, weeks: st.weeks, goal: st.goal, cando: st.cando,
       status: st.complete ? 'Complete' : st === cur ? 'In progress' : st.unlocked ? 'Open' : 'Locked', statusColor: st === cur ? 'var(--color-accent-700)' : 'var(--color-neutral-700)',
@@ -584,6 +590,12 @@ class App extends Component {
 
     v.chapterCount = lessons.length; v.chaptersDone = lessons.filter(l => D.ACTIVITIES.every(a => prog(l.id)[a.id])).length;
 
+    if (view === 'grammar') {
+      const g = D.GRAMMAR[r.id], written = P.register === 'written';
+      v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec })),
+        endings: (g.endings || []).map(([who, sp, wr]) => ({ who, end: written ? wr : sp })),
+        verbs: lessons.map(l => { const t = this.conjTable(l.id); return t && { ...t, lesson: l.title }; }).filter(Boolean) };
+    }
     // lesson
     if (view === 'lesson') {
       const l = D.LESSONS.find(x => x.id === r.id); const note = D.NOTES[l.id];
