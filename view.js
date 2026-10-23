@@ -9,7 +9,7 @@ const say = (fa, size = 12) => SAY[fa] ? html`<span style="font-family:var(--fon
 // Persian words inside English text, set in the Persian font
 const faRuns = (text) => text.split(/([\u0600-\u06FF\u200C]+(?:\s+[\u0600-\u06FF\u200C]+)*)/).map((t, i) => i % 2 ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:1.2em">${t}</span>` : t);
 const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
-// A verb's six present-tense forms: person on the left, Persian form on the right
+// A verb's six forms in one tense: person on the left, Persian form on the right
 const verbTable = (t) => html`
   <div style="display:flex;flex-direction:column">
     ${t.rows.map((r) => html`
@@ -224,6 +224,13 @@ ${(v.is.lesson) ? html`
     </div>
     ${verbTable(v.L.conj)}
     <button class="btn btn-ghost" onClick=${v.L.openPresent} style="align-self:flex-start;min-height:44px;padding:0;gap:6px">How the present tense works ${v.ic.chev}</button>
+    ${(v.L.conjPast) ? html`
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-top:1px solid var(--color-divider);padding-top:12px">
+      <span style="font-family:var(--font-heading);font-size:20px;font-weight:600">In the past${v.L.conjPast.inf !== v.L.conj.inf ? html` <span style="font-weight:400;font-size:15px;color:var(--color-neutral-700)">— from ${v.L.conjPast.inf}</span>` : null}</span>
+      <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">گذشته</span>${say('گذشته')}</span>
+    </div>
+    ${verbTable(v.L.conjPast)}
+    <button class="btn btn-ghost" onClick=${v.L.openPast} style="align-self:flex-start;min-height:44px;padding:0;gap:6px">How the past tense works ${v.ic.chev}</button>` : null}
   </section>
   ` : null}
 
