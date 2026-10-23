@@ -500,7 +500,7 @@ class App extends Component {
     const ln = l => lessons.indexOf(l) + 1;
     v.cont = { n: ln(nextL), title: nextL.title, glyph: nextL.glyph, next: nextA.title, pct: Math.round(D.ACTIVITIES.filter(a => prog(nextL.id)[a.id]).length / 5 * 100) + '%', open: () => this.nav({ name: 'lesson', id: nextL.id }) };
     const wodPool = lessons.flatMap(l => l.words), wodW = wodPool[Math.floor(now / DAY) % wodPool.length]; const wd = this.disp(wodW);
-    v.wod = { fa: wd.fa, lat: wd.lat, en: wd.en, play: () => this.play(wodW) };
+    v.wod = { fa: wd.fa, num: wd.num, lat: wd.lat, en: wd.en, play: () => this.play(wodW) };
     v.chapters = lessons.map((l, i) => ({ n: i + 1, nFa: this.faNum(i + 1), title: l.title, desc: l.description, count: l.words.length, glyph: l.glyph,
       marks: D.ACTIVITIES.map(a => ({ bg: prog(l.id)[a.id] ? 'var(--color-accent)' : 'var(--color-divider)' })), open: () => this.nav({ name: 'lesson', id: l.id }) }));
     // plan / stages
@@ -624,7 +624,7 @@ class App extends Component {
       if (ex.status) {
         const right = ex.status === 'right';
         X.fbColor = right ? 'var(--color-accent)' : 'var(--color-text)'; X.fbIcon = right ? I('check', 16, 2) : I('x', 16, 2);
-        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
+        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbNum = d.num; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
         else { X.fbTitle = right ? 'Afarin — well done' : 'Not quite'; X.fbFa = it.s.tiles.map(t => t[0]).join(' '); X.fbLat = it.s.tiles.map(t => t[1]).join(' '); X.fbEn = it.s.en; X.fbTip = it.s.tip; }
         X.cont = () => this.next(); X.showBottomBar = false;
       }
