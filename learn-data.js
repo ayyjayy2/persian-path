@@ -433,7 +433,7 @@ export const CONJ_PAST = {
 // Grammar topic pages, keyed by the path's grammar item ids. Topics without an entry stay inert.
 export const GRAMMAR = {
   present: {
-    title: "Present tense: mi- + stem", fa: "زمان حال",
+    title: "Present tense: mi- + stem", fa: "زمان حال", tense: "present",
     intro: "Most Persian verbs build the present tense the same way: mi- in front, the verb's present stem in the middle, and a personal ending that says who is doing it.",
     endings: [["I", "-am", "-am"], ["you", "-i", "-i"], ["he/she", "-e", "-ad"], ["we", "-im", "-im"], ["you all", "-in", "-id"], ["they", "-an", "-and"]],
     sections: [
@@ -444,6 +444,24 @@ export const GRAMMAR = {
       { h: "The verb goes last", p: "A Persian sentence ends with its verb: who, then what, then the verb.",
         ex: [{ fa: "مامانم تهران زندگی می‌کنه.", lat: "Maamaanam Tehroon zendegi mikone.", en: "My mom lives in Tehran." }] },
       { h: "Two verbs skip mi-", p: "daashtan (to have) and the verb “to be” never take mi- in the present: daaram, “I have”; hastam, “I am”. After an adjective, “to be” shrinks to just the ending: khubam, “I'm well”." },
+    ],
+  },
+  ezafe: {
+    title: "The ezāfe: linking words with -e", fa: "اضافه",
+    intro: "Persian puts the main noun first and the words that describe it after, joined by a short -e. That little sound, the ezāfe, is how you say “a white shirt”, “my friend” and “Grandma's house”.",
+    endings: [["after a consonant", "-e", "-e"], ["after a, aa or u", "-ye", "-ye"], ["after a final e (ه)", "-ye", "-ye"]],
+    sections: [
+      { h: "Noun first, then the description", p: "English says “red car”; Persian says car-of-red: maashin-e ghermez. The -e hangs on the first word and links it to the next.",
+        ex: [{ fa: "ماشین قرمز", lat: "maashin-e ghermez", en: "a red car" }, { fa: "پیرهن سفید", lat: "pirhan-e sefid", en: "a white shirt" }] },
+      { h: "Whose is it?", p: "The same link shows who owns something: the thing first, then the owner. doost-e man is “friend of me”, my friend.",
+        ex: [{ fa: "دوست من", lat: "doost-e man", en: "my friend" }, { fa: "خونهٔ مادربزرگ", lat: "khune-ye maadarbozorg", en: "Grandma's house" }] },
+      { h: "After a vowel it's -ye", p: "Two vowels can't touch, so a y slips in: chaai-ye sabz, hava-ye khub. A word ending in a silent ه, like gorbe or khune, takes -ye too.",
+        ex: [{ fa: "چای سبز", lat: "chaai-ye sabz", en: "green tea" }, { fa: "هوای خوب", lat: "hava-ye khub", en: "nice weather" }, { fa: "گربهٔ سفید", lat: "gorbe-ye sefid", en: "a white cat" }] },
+      { h: "Chain as many as you like", p: "Each word except the last gets its own -e. The noun comes first, then its descriptions, then the owner.",
+        ex: [{ fa: "ماشین قرمز بابام", lat: "maashin-e ghermez-e baabaam", en: "my dad's red car" }] },
+      { h: "The shortcut speech prefers", p: "For “my, your, his…” speakers usually skip doost-e man and stick an ending on the noun instead: -am my, -et your, -esh his/her, -emun our, -etun your (all), -eshun their. Use doost-e man when you want to stress whose it is.",
+        ex: [{ fa: "دوستم خوبه.", lat: "Doostam khube.", en: "My friend is well." }, { fa: "ماشینم تو پارکینگه.", lat: "Maashinam tu paarkinge.", en: "My car is in the parking lot." }] },
+      { h: "You hear it, but rarely see it", p: "The -e is a short vowel, so it usually isn't written: ماشین قرمز is just “car red” on the page. After a vowel you see the y: هوای. After a silent ه it's a small mark, ۀ, or nothing at all. Reading Persian means adding the -e yourself." },
     ],
   },
   past: {
@@ -492,7 +510,7 @@ export const SAY = {
   "کارت‌ها": "Kaart-haa", "شناخت": "Shenaakht", "شنیدن": "Shenidan", "جمله‌سازی": "Jomle-saazi", "گفتن": "Goftan", "گفتگو": "Goftegu",
   "پایه": "Paaye", "روزمره": "Ruzmarre", "تسلط": "Tasallot", "اختیاری": "Ekhtiyaari",
   "تاریخ": "Taarikh", "پرچم": "Parcham", "جغرافیا": "Joghraafiyaa", "جشن": "Jashn",
-  "دستور": "Dastoor", "زمان حال": "Zamaan-e haal", "زمان گذشته": "Zamaan-e gozashte", "گذشته": "Gozashte", "واکه‌ها": "Vaake-haa",
+  "دستور": "Dastoor", "زمان حال": "Zamaan-e haal", "زمان گذشته": "Zamaan-e gozashte", "اضافه": "Ezaafe", "گذشته": "Gozashte", "واکه‌ها": "Vaake-haa",
   "سلام": "Salaam", "نوش جان": "Nooshe jaan", "۱۲۳": "Yek, do, se", "رنگ": "Rang", "خانواده": "Khaanevaade", "عشق": "Eshgh",
   "چای": "Chaai", "چی؟": "Chi?", "خانه": "Khaane", "شهر": "Shahr", "لباس": "Lebaas", "شنبه": "Shanbe", "رفتن": "Raftan", "ولش کن": "Velesh kon",
 };
