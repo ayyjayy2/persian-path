@@ -592,6 +592,8 @@ class App extends Component {
         acts: D.ACTIVITIES.map(a => ({ ...a, icon: I(a.icon, 20), done: !!prog(l.id)[a.id], border: prog(l.id)[a.id] ? 'color-mix(in srgb, var(--color-accent) 55%, transparent)' : 'var(--color-divider)', start: () => this.start(a.id, l.id) })),
         words: l.words.map(w => { const d = this.disp(w); const p = s.playing === w.key; const alt = !!w.written; const written = P.register === 'written';
           return { ...d, play: () => this.play(w), btnBorder: p ? 'var(--color-accent)' : 'var(--color-divider)', btnBg: p ? 'var(--color-accent-100)' : 'transparent', hasAlt: alt, altLabel: written ? 'Spoken' : 'Written', altFa: written ? w.persian : w.written, altLat: written ? w.phonetic : w.writtenPhonetic }; }) };
+      v.L.conj = this.conjTable(l.id);
+      v.L.openPresent = () => this.nav({ name: 'grammar', id: 'present', from: { name: 'lesson', id: l.id } });
       v.noteOpen = s.noteOpen; v.noteRot = s.noteOpen ? '90deg' : '0deg'; v.toggleNote = () => this.setState({ noteOpen: !s.noteOpen });
     }
     v.registerLabel = P.register === 'written' ? 'written' : 'spoken';

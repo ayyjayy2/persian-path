@@ -7,6 +7,15 @@ import { SAY } from "./learn-data.js";
 // How to say a Persian label, shown in Latin letters beside it
 const say = (fa, size = 12) => SAY[fa] ? html`<span style="font-family:var(--font-body);font-style:italic;font-size:${size}px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--color-neutral-700);direction:ltr;white-space:nowrap">${SAY[fa]}</span>` : null;
 const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
+// A verb's six present-tense forms: person on the left, Persian form on the right
+const verbTable = (t) => html`
+  <div style="display:flex;flex-direction:column">
+    ${t.rows.map((r) => html`
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--color-divider)">
+        <span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px">${r.en}</span><span style="font-size:11px;color:var(--color-neutral-600)">${r.whoLat} <span style="font-family:'Noto Naskh Arabic',serif">${r.whoFa}</span></span></span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;line-height:1.4">${r.fa}</span><span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${r.lat}</span></span>
+      </div>`)}
+  </div>`;
 
 export function view(v) {
   return html`
@@ -193,6 +202,20 @@ ${(v.is.lesson) ? html`
     </button>
     ${(v.noteOpen) ? html`<p style="margin:0;padding:0 16px 16px 46px;font-size:14px;line-height:1.65;text-align:justify;hyphens:auto;color:var(--color-neutral-800)">${v.L.noteB}</p>` : null}
   </section>
+  ${(v.L.conj) ? html`
+  <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:16px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;direction:rtl">
+      <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">دستور</span>${say('دستور')}</span>
+      <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);direction:ltr">Grammar · ${v.registerLabel}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+      <span style="font-family:var(--font-heading);font-size:22px;font-weight:600">${v.L.conj.inf} <span style="font-weight:400;font-size:16px;color:var(--color-neutral-700)">— ${v.L.conj.en}</span></span>
+      <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${v.L.conj.infFa}</span>
+    </div>
+    ${verbTable(v.L.conj)}
+    <button class="btn btn-ghost" onClick=${v.L.openPresent} style="align-self:flex-start;min-height:44px;padding:0;gap:6px">How the present tense works ${v.ic.chev}</button>
+  </section>
+  ` : null}
 
   <section style="display:flex;flex-direction:column;gap:10px">
     <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">تمرین</span>${say('تمرین')}</span><h2 style="font-size:24px;margin:0">Practice</h2></div>
