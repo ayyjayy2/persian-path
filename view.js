@@ -681,6 +681,11 @@ ${(v.is.grammar) ? html`
     <h2 style="font-size:24px;margin:0">${sec.h}</h2>
     <p style="margin:0;font-size:15px;line-height:1.65">${faRuns(sec.p)}</p>
     ${sec.ex.map((x) => html`<div style="display:flex;flex-direction:column;align-items:flex-end;padding:8px 12px;border-right:2px solid var(--color-accent)"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;line-height:1.5">${x.fa}</span><span style="font-size:13px;font-style:italic;color:var(--color-neutral-700)">${x.lat}</span><span style="font-size:13px">${x.en}</span></div>`)}
+    ${sec.tables.map((t) => html`
+      <div style="display:flex;flex-direction:column;gap:4px;margin-top:6px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><span style="font-family:var(--font-heading);font-size:20px;font-weight:600">${t.inf} <span style="font-weight:400;font-size:15px;color:var(--color-neutral-700)">— ${t.en}</span></span><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${t.infFa}</span></div>
+        ${verbTable(t)}
+      </div>`)}
   </section>`)}
   ${(v.G.verbs.length) ? html`<section style="display:flex;flex-direction:column;gap:22px">
     <h2 style="font-size:24px;margin:0">Every lesson's verb</h2>

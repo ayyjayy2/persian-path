@@ -611,7 +611,7 @@ class App extends Component {
 
     if (view === 'grammar') {
       const g = D.GRAMMAR[r.id], written = P.register === 'written';
-      v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec })),
+      v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec, tables: (sec.conj || []).map(id => this.conjTable(id, g.tense)).filter(Boolean) })),
         endings: (g.endings || []).map(([who, sp, wr]) => ({ who, end: written ? wr : sp })),
         verbs: g.tense ? lessons.map(l => { const t = this.conjTable(l.id, g.tense); return t && { ...t, lesson: l.title }; }).filter(Boolean) : [] };
     }
