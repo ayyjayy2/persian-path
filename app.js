@@ -506,10 +506,15 @@ class App extends Component {
     const dayEn = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][todayIdx];
     const dayW = D.LESSONS.find(l => l.id === 'days')?.words.find(w => w.english === dayEn);
     v.dayName = dayW ? { en: dayEn, lat: dayW.phonetic } : null;
+    try {
+      const pt = Object.fromEntries(new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn', { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(now).map(p => [p.type, p.value]));
+      const month = ['Farvardin', 'Ordibehesht', 'Khordaad', 'Tir', 'Mordaad', 'Shahrivar', 'Mehr', 'Aabaan', 'Aazar', 'Dey', 'Bahman', 'Esfand'][pt.month - 1];
+      v.dateLat = v.dateFa && dayW && month ? `${dayW.phonetic}, ${pt.day} ${month} ${parseInt(pt.year)}` : '';
+    } catch (e) { v.dateLat = ''; }
     v.week = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'].map((fa, i) => {
       const done = i <= todayIdx && i > todayIdx - s.streak && (i < todayIdx || s.todayXp > 0);
       const today = i === todayIdx;
-      return { fa, en: ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'][i], border: done || today ? 'var(--color-accent)' : 'var(--color-divider)', bg: done ? 'var(--color-accent-100)' : 'transparent', color: done ? 'var(--color-accent-800)' : 'var(--color-neutral-600)' };
+      return { fa, en: ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'][i], lat: today && dayW ? dayW.phonetic : null, border: done || today ? 'var(--color-accent)' : 'var(--color-divider)', bg: done ? 'var(--color-accent-100)' : 'transparent', color: done ? 'var(--color-accent-800)' : 'var(--color-neutral-600)' };
     });
     const nextL = lessons.find(l => D.ACTIVITIES.some(a => !prog(l.id)[a.id])) || lessons[0];
     const nextA = D.ACTIVITIES.find(a => !prog(nextL.id)[a.id]) || D.ACTIVITIES[0];
