@@ -670,7 +670,7 @@ ${(v.is.grammar) ? html`
   <header style="display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--color-divider);padding-bottom:18px">
     <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:28px;color:var(--color-accent-700)">${v.G.fa}</span>${say(v.G.fa)}</span>
     <h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">${v.G.title}</h1>
-    <p style="margin:0;font-size:15px;line-height:1.6">${v.G.intro}</p>
+    <p style="margin:0;font-size:15px;line-height:1.6">${faRuns(v.G.intro)}</p>
   </header>
   ${(v.G.endings.length) ? html`
   <section style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">

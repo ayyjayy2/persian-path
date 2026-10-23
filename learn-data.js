@@ -466,6 +466,23 @@ export const GRAMMAR = {
       { h: "You hear it, but rarely see it", p: "The -e is a short vowel, so it usually isn't written: ماشین قرمز is just “car red” on the page. After a vowel you see the y: هوای. After a silent ه it's a small mark, ۀ, or nothing at all. Reading Persian means adding the -e yourself." },
     ],
   },
+  ro: {
+    title: "The object marker ro", fa: "را",
+    intro: "When a specific thing is on the receiving end of a verb, like the tea you drank or the friend you saw, Persian puts ro right after it. Written Persian spells it را, raa.",
+    endings: [["after a vowel", "ro", "raa"], ["after a consonant", "-o or ro", "raa"], ["me", "mano", "maraa"]],
+    sections: [
+      { h: "Specific things get ro", p: "Use ro when you mean one particular thing that you and the listener both have in mind. Leave it out when you mean “some” or “any”.",
+        ex: [{ fa: "چای رو خوردم.", lat: "Chaai ro khordam.", en: "I drank the tea." }, { fa: "چای خوردم.", lat: "Chaai khordam.", en: "I had some tea." }] },
+      { h: "It goes after the whole object", p: "ro comes after everything that describes the thing, ezāfe words included. Then the verb comes last.",
+        ex: [{ fa: "پیرهن سفید رو پوشیدم.", lat: "Pirhan-e sefid ro pushidam.", en: "I wore the white shirt." }] },
+      { h: "Names and “this, that” always take it", p: "A name, or anything with in (this) or aan (that), is specific by nature, so it gets ro.",
+        ex: [{ fa: "مریم رو دیدم.", lat: "Maryam ro didam.", en: "I saw Maryam." }, { fa: "این فیلم رو دیدی؟", lat: "In film ro didi?", en: "Have you seen this movie?" }] },
+      { h: "In speech it often shrinks to -o", p: "After a consonant, ro is usually just -o, joined to the word: maashino, “the car”. After a vowel it stays ro. With pronouns: mano (me), toro (you).",
+        ex: [{ fa: "ماشینو دیدی؟", lat: "Maashino didi?", en: "Did you see the car?" }] },
+      { h: "In writing it's را", p: "Books, signs and the news spell it را and read it raa: چای را خوردم, chaai raa khordam. Read raa, but say ro." },
+      { h: "Only for the thing acted on", p: "ro never marks the one doing the action, and it never follows a place you go to: raftam baazaar, “I went to the bazaar”, has no ro." },
+    ],
+  },
   past: {
     title: "Past tense: stem + ending", fa: "زمان گذشته", tense: "past",
     intro: "To say what happened, take the verb's past stem and add the same personal endings you know from the present. No mi- this time.",
@@ -512,7 +529,7 @@ export const SAY = {
   "کارت‌ها": "Kaart-haa", "شناخت": "Shenaakht", "شنیدن": "Shenidan", "جمله‌سازی": "Jomle-saazi", "گفتن": "Goftan", "گفتگو": "Goftegu",
   "پایه": "Paaye", "روزمره": "Ruzmarre", "تسلط": "Tasallot", "اختیاری": "Ekhtiyaari",
   "تاریخ": "Taarikh", "پرچم": "Parcham", "جغرافیا": "Joghraafiyaa", "جشن": "Jashn",
-  "دستور": "Dastoor", "زمان حال": "Zamaan-e haal", "زمان گذشته": "Zamaan-e gozashte", "اضافه": "Ezaafe", "گذشته": "Gozashte", "واکه‌ها": "Vaake-haa",
+  "دستور": "Dastoor", "زمان حال": "Zamaan-e haal", "زمان گذشته": "Zamaan-e gozashte", "اضافه": "Ezaafe", "را": "Raa", "گذشته": "Gozashte", "واکه‌ها": "Vaake-haa",
   "سلام": "Salaam", "نوش جان": "Nooshe jaan", "۱۲۳": "Yek, do, se", "رنگ": "Rang", "خانواده": "Khaanevaade", "عشق": "Eshgh",
   "چای": "Chaai", "چی؟": "Chi?", "خانه": "Khaane", "شهر": "Shahr", "لباس": "Lebaas", "شنبه": "Shanbe", "رفتن": "Raftan", "ولش کن": "Velesh kon",
 };
