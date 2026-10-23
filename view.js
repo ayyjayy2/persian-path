@@ -357,6 +357,7 @@ ${(v.is.exercise) ? html`
       <button onClick=${v.X.play} style="min-height:96px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--color-accent-700)" class="hv12">${v.ic.vol}<span style="font-size:13px;color:var(--color-text)">1 · Native speaker</span></button>
       <button onClick=${v.X.rec} style="min-height:96px;border:1px solid ${v.X.recBorder};border-radius:var(--radius-md);background:${v.X.recBg};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--color-accent-700)" class="hv13">${v.X.recIcon}<span style="font-size:13px;color:var(--color-text)">${v.X.recLabel}</span></button>
     </div>
+    ${(v.X.recErr) ? html`<p role="alert" style="margin:0;max-width:420px;font-size:13px;line-height:1.5;color:var(--color-text);border-top:1px solid var(--color-text);padding-top:10px">${v.X.recErr}</p>` : null}
     ${(v.X.recDone) ? html`
       <div style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px;animation:plup .2s ease">
         <button class="btn btn-secondary" onClick=${v.X.playMine} style="min-height:44px;gap:8px">${v.ic.play} Play my recording</button>
