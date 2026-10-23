@@ -215,6 +215,14 @@ class App extends Component {
     const written = this.prefs().register === 'written' && w.written;
     return { fa: written ? w.written : w.persian, lat: written ? w.writtenPhonetic : w.phonetic, en: w.english, num: w.digit != null ? this.faNum(w.digit) : null };
   }
+  conjTable(lessonId) {
+    const c = this.D.CONJ[lessonId]; if (!c) return null;
+    const written = this.prefs().register === 'written';
+    return { inf: c.inf, infFa: c.infFa, en: c.en, rows: c.rows.map(([sp, spLat, wr, wrLat, en], i) => {
+      const [who, whoLat, whoFa] = this.D.PERSONS[i];
+      return { who, whoLat, whoFa, fa: written ? wr : sp, lat: written ? wrLat : spLat, en };
+    }) };
+  }
   lessons() {
     const m = this.prefs().mature, all = this.D.LESSONS.filter(l => m || !l.mature);
     const order = this.D.STAGES.flatMap(st => st.items.filter(i => i.kind === 'lesson').map(i => i.id));
@@ -402,12 +410,17 @@ class App extends Component {
     else if (kind === 'listen') items = pool.map(w => ({ w, dir: 'listen', opts: opts(w) }));
     else if (kind === 'build') items = D.SENTENCES.map(s => ({ s, bank: this.shuffle([...s.tiles.map((t, i) => ({ fa: t[0], lat: t[1], ord: i })), ...s.extra.map(t => ({ fa: t[0], lat: t[1], ord: -1 }))]).map((t, id) => ({ ...t, id })) }));
     else if (kind === 'speak') items = pool.slice(0, 5).map(w => ({ w }));
+    else if (kind === 'grammar') {
+      const c = D.CONJ[lessonId]; if (!c) return;
+      const ws = c.rows.map(([sp, spLat, wr, wrLat, en], p) => ({ key: `g:${lessonId}:${p}`, persian: sp, phonetic: spLat, written: wr, writtenPhonetic: wrLat, english: en, p }));
+      items = this.shuffle(ws).map(w => ({ w, dir: 'en2fa', opts: this.shuffle([w, ...this.shuffle(ws.filter(x => x !== w)).slice(0, 3)]) }));
+    }
     else items = pool.map(w => ({ w }));
     if (!items.length) return; // an exercise with no items has nothing to show
     this.setState({ ex: { kind, lessonId, items, i: 0, status: null, picked: null, correct: 0, flipped: false, built: [], rec: 'idle', missed: [] }, route: { name: 'exercise' } });
     window.scrollTo(0, 0);
     const first = items[0];
-    if (first && first.w && kind !== 'quiz' || (first && first.dir === 'fa2en')) setTimeout(() => first.w && this.play(first.w), 350);
+    if (kind !== 'grammar' && (first && first.w && kind !== 'quiz' || (first && first.dir === 'fa2en'))) setTimeout(() => first.w && this.play(first.w), 350);
   }
   exUpd(patch) { this.setState(s => ({ ex: { ...s.ex, ...(typeof patch === 'function' ? patch(s.ex) : patch) } })); }
   next(extra = {}) {
@@ -415,13 +428,14 @@ class App extends Component {
     if (ex.i + 1 >= ex.items.length) return this.finish(ex);
     const ni = ex.i + 1, it = ex.items[ni];
     this.setState({ ex: { ...ex, i: ni, status: null, picked: null, flipped: false, built: [], rec: 'idle', recUrl: null } });
-    if (it.w && (ex.kind !== 'quiz' || it.dir === 'fa2en')) setTimeout(() => this.play(it.w), 300);
+    if (it.w && ex.kind !== 'grammar' && (ex.kind !== 'quiz' || it.dir === 'fa2en')) setTimeout(() => this.play(it.w), 300);
   }
   pick(o) {
     const ex = this.state.ex; if (ex.status) return;
     const it = ex.items[ex.i]; const right = o.key === it.w.key;
-    this.exUpd({ status: right ? 'right' : 'wrong', picked: o.key, correct: ex.correct + (right ? 1 : 0), missed: right ? ex.missed : [...ex.missed, it.w.key] });
-    if (right) this.play(it.w);
+    const g = ex.kind === 'grammar';
+    this.exUpd({ status: right ? 'right' : 'wrong', picked: o.key, correct: ex.correct + (right ? 1 : 0), missed: right || g ? ex.missed : [...ex.missed, it.w.key] });
+    if (right && !g) this.play(it.w);
   }
   finish(ex) {
     const total = ex.total || ex.items.length, xpE = 10 + Math.round((ex.correct / total) * 10);
@@ -519,7 +533,7 @@ class App extends Component {
     const nextL = lessons.find(l => D.ACTIVITIES.some(a => !prog(l.id)[a.id])) || lessons[0];
     const nextA = D.ACTIVITIES.find(a => !prog(nextL.id)[a.id]) || D.ACTIVITIES[0];
     const ln = l => lessons.indexOf(l) + 1;
-    v.cont = { n: ln(nextL), title: nextL.title, glyph: nextL.glyph, next: nextA.title, pct: Math.round(D.ACTIVITIES.filter(a => prog(nextL.id)[a.id]).length / 5 * 100) + '%', open: () => this.nav({ name: 'lesson', id: nextL.id }) };
+    v.cont = { n: ln(nextL), title: nextL.title, glyph: nextL.glyph, next: nextA.title, pct: Math.round(D.ACTIVITIES.filter(a => prog(nextL.id)[a.id]).length / D.ACTIVITIES.length * 100) + '%', open: () => this.nav({ name: 'lesson', id: nextL.id }) };
     const wodPool = lessons.flatMap(l => l.words), wodW = wodPool[Math.floor(now / DAY) % wodPool.length]; const wd = this.disp(wodW);
     v.wod = { fa: wd.fa, num: wd.num, lat: wd.lat, en: wd.en, play: () => this.play(wodW) };
     v.chapters = lessons.map((l, i) => ({ n: i + 1, nFa: this.faNum(i + 1), title: l.title, desc: l.description, count: l.words.length, glyph: l.glyph,
@@ -586,9 +600,9 @@ class App extends Component {
     if (view === 'exercise' && s.ex) {
       const ex = s.ex, it = ex.items[ex.i], k = ex.kind;
       const X = { pct: Math.round(ex.i / ex.items.length * 100) + '%', counter: `${ex.i + 1} / ${ex.items.length}`,
-        kindLabel: { flashcard: 'Flashcards', quiz: 'Recognition', listen: 'Listening', build: 'Sentence builder', speak: 'Speaking', review: 'Spaced review' }[k],
-        kindFa: { flashcard: 'کارت‌ها', quiz: 'شناخت', listen: 'شنیدن', build: 'جمله‌سازی', speak: 'گفتن', review: 'مرور' }[k],
-        isFlash: k === 'flashcard' || k === 'review', isChoice: k === 'quiz' || k === 'listen', isBuild: k === 'build', isSpeak: k === 'speak' };
+        kindLabel: { flashcard: 'Flashcards', quiz: 'Recognition', listen: 'Listening', build: 'Sentence builder', speak: 'Speaking', review: 'Spaced review', grammar: 'Grammar' }[k],
+        kindFa: { flashcard: 'کارت‌ها', quiz: 'شناخت', listen: 'شنیدن', build: 'جمله‌سازی', speak: 'گفتن', review: 'مرور', grammar: 'دستور' }[k],
+        isFlash: k === 'flashcard' || k === 'review', isChoice: k === 'quiz' || k === 'listen' || k === 'grammar', isBuild: k === 'build', isSpeak: k === 'speak' };
       if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
       v.exitEx = () => { const lid = ex.lessonId; this.setState({ ex: null }); this.nav(lid ? { name: 'lesson', id: lid } : null); };
       if (X.isFlash) {
@@ -606,7 +620,7 @@ class App extends Component {
       }
       if (X.isChoice) {
         X.isListen = it.dir === 'listen'; X.showPromptWord = !X.isListen; X.promptIsFa = it.dir === 'fa2en'; X.promptIsEn = it.dir === 'en2fa';
-        X.prompt = X.isListen ? 'What did you hear?' : it.dir === 'fa2en' ? 'What does this mean?' : 'How do you say this in Persian?';
+        X.prompt = k === 'grammar' ? 'Pick the right form' : X.isListen ? 'What did you hear?' : it.dir === 'fa2en' ? 'What does this mean?' : 'How do you say this in Persian?';
         X.listenBg = s.playing === it.w.key ? 'var(--color-accent-100)' : 'transparent';
         X.options = it.opts.map(o => { const d = this.disp(o); const isAns = o.key === it.w.key, isPick = ex.picked === o.key;
           const st = !ex.status ? 'idle' : isAns ? 'right' : isPick ? 'wrong' : 'dim';
@@ -646,7 +660,7 @@ class App extends Component {
       if (ex.status) {
         const right = ex.status === 'right';
         X.fbColor = right ? 'var(--color-accent)' : 'var(--color-text)'; X.fbIcon = right ? I('check', 16, 2) : I('x', 16, 2);
-        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbNum = d.num; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
+        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbNum = d.num; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = k === 'grammar' ? `${this.D.PERSONS[it.w.p][0]} (${this.D.PERSONS[it.w.p][1]}) → ${d.lat}` : this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
         else { X.fbTitle = right ? 'Afarin — well done' : 'Not quite'; X.fbFa = it.s.tiles.map(t => t[0]).join(' '); X.fbLat = it.s.tiles.map(t => t[1]).join(' '); X.fbEn = it.s.en; X.fbTip = it.s.tip; }
         X.cont = () => this.next(); X.showBottomBar = false;
       }
