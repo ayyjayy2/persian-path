@@ -425,8 +425,15 @@ class App extends Component {
     else if (kind === 'speak') items = pool.slice(0, 5).map(w => ({ w }));
     else if (kind === 'grammar') {
       const c = D.CONJ[lessonId]; if (!c) return;
-      const ws = c.rows.map(([sp, spLat, wr, wrLat, en], p) => ({ key: `g:${lessonId}:${p}`, persian: sp, phonetic: spLat, written: wr, writtenPhonetic: wrLat, english: en, p }));
-      items = this.shuffle(ws).map(w => ({ w, dir: 'en2fa', opts: this.shuffle([w, ...this.shuffle(ws.filter(x => x !== w)).slice(0, 3)]) }));
+      const forms = (rows, tense) => rows.map(([sp, spLat, wr, wrLat, en], p) => ({ key: `g:${lessonId}:${tense}:${p}`, persian: sp, phonetic: spLat, written: wr, writtenPhonetic: wrLat, english: en, p, tense }));
+      const pres = forms(c.rows, 'present');
+      // The past only comes up once its grammar page has been opened
+      const past = (this.state.grammarSeen || {}).past && D.CONJ_PAST[lessonId] ? forms(D.CONJ_PAST[lessonId].rows, 'past') : [];
+      // Wrong choices: other persons in the same tense, plus the same person in the other tense when there is one
+      items = this.shuffle([...pres, ...past]).map(w => {
+        const same = (w.tense === 'past' ? past : pres).filter(x => x !== w), twin = past.length ? (w.tense === 'past' ? pres : past)[w.p] : null;
+        return { w, dir: 'en2fa', opts: this.shuffle([w, ...(twin ? [twin] : []), ...this.shuffle(same).slice(0, twin ? 2 : 3)]) };
+      });
     }
     else items = pool.map(w => ({ w }));
     if (!items.length) return; // an exercise with no items has nothing to show
@@ -689,7 +696,7 @@ class App extends Component {
       if (ex.status) {
         const right = ex.status === 'right';
         X.fbColor = right ? 'var(--color-accent)' : 'var(--color-text)'; X.fbIcon = right ? I('check', 16, 2) : I('x', 16, 2);
-        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbNum = d.num; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = k === 'grammar' ? `${this.D.PERSONS[it.w.p][0]} (${this.D.PERSONS[it.w.p][1]}) → ${d.lat}` : this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
+        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbNum = d.num; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = k === 'grammar' ? `${this.D.PERSONS[it.w.p][0]} (${this.D.PERSONS[it.w.p][1]})${it.w.tense === 'past' ? ', past' : ''} → ${d.lat}` : this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
         else { X.fbTitle = right ? 'Afarin — well done' : 'Not quite'; X.fbFa = it.s.tiles.map(t => t[0]).join(' '); X.fbLat = it.s.tiles.map(t => t[1]).join(' '); X.fbEn = it.s.en; X.fbTip = it.s.tip; }
         X.cont = () => this.next(); X.showBottomBar = false;
       }
