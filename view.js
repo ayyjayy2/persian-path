@@ -2,6 +2,9 @@
 // `v` is the view model built by App.renderVals() in app.js.
 import { html } from "./vendor/preact-htm.js";
 
+// Persian digit set beside a number word (e.g. هفت ۷)
+const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
+
 export function view(v) {
   return html`
 <div style="min-height:100vh;display:flex;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
@@ -129,7 +132,7 @@ ${(v.is.learn) ? html`
       <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">عبارت روز</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Phrase of the day</span></span>
       <button onClick=${v.wod.play} aria-label="Play" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--color-accent);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer" class="hv2">${v.ic.vol}</button>
     </div>
-    ${(v.show.fa) ? html`<div style="font-family:'Noto Naskh Arabic',serif;font-size:40px;direction:rtl;text-align:right;line-height:1.4">${v.wod.fa}</div>` : null}
+    ${(v.show.fa) ? html`<div style="font-family:'Noto Naskh Arabic',serif;font-size:40px;direction:rtl;text-align:right;line-height:1.4">${v.wod.fa}${digit(v.wod.num)}</div>` : null}
     ${(v.show.lat) ? html`<div style="font-style:italic;font-size:15px;color:var(--color-neutral-700);text-align:right">${v.wod.lat}</div>` : null}
     <div style="font-family:var(--font-heading);font-size:22px;font-weight:600">${v.wod.en}</div>
     <p style="margin:0;font-size:14px;line-height:1.6;text-align:justify;hyphens:auto;color:var(--color-neutral-800)">Say it to anyone at the end of their work — a shopkeeper, a cook, a colleague. It acknowledges effort, not result. The reply is <em>salaamat baashi</em>, “may you be healthy.”</p>
@@ -268,7 +271,7 @@ ${(v.is.exercise) ? html`
     ${(v.X.showPromptWord) ? html`
       <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:24px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative">
         ${(v.X.promptIsFa) ? html`
-          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}</span>` : null}
+          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}${digit(v.X.num)}</span>` : null}
           ${(v.show.lat) ? html`<span style="font-style:italic;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
           <button onClick=${v.X.play} aria-label="Play" style="position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
         ` : null}
@@ -278,7 +281,7 @@ ${(v.is.exercise) ? html`
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
       ${(v.X.options || []).map((o) => html`
         <button onClick=${o.pick} style="min-height:64px;padding:12px 14px;border:1px solid ${o.border};border-radius:var(--radius-md);background:${o.bg};opacity:${o.op};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;transition:background .15s,border-color .15s" class="hv8">
-          ${(o.showFa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;line-height:1.35">${o.fa}</span>` : null}
+          ${(o.showFa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;line-height:1.35">${o.fa}${digit(o.num)}</span>` : null}
           ${(o.showLat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${o.lat}</span>` : null}
           ${(o.showEn) ? html`<span style="font-size:15px">${o.en}</span>` : null}
         </button>
@@ -345,7 +348,7 @@ ${(v.is.exercise) ? html`
   <div style="display:flex;flex-direction:column;gap:20px;align-items:center;text-align:center">
     <h2 style="font-size:26px;margin:0;align-self:flex-start">Listen, then say it aloud</h2>
     <div style="width:100%;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:24px;display:flex;flex-direction:column;align-items:center;gap:6px">
-      ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}</span>` : null}
+      ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}${digit(v.X.num)}</span>` : null}
       ${(v.show.lat) ? html`<span style="font-style:italic;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
       <span style="font-size:14px;margin-top:4px">${v.X.en}</span>
     </div>
@@ -384,7 +387,7 @@ ${(v.is.exercise) ? html`
         <span style="font-family:var(--font-heading);font-size:24px;font-weight:600">${v.X.fbTitle}</span>
       </div>
       <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-        ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl">${v.X.fbFa}</span>` : null}
+        ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl">${v.X.fbFa}${digit(v.X.fbNum)}</span>` : null}
         ${(v.show.lat) ? html`<span style="font-style:italic;font-size:14px;color:var(--color-neutral-700)">${v.X.fbLat}</span>` : null}
         <span style="font-size:14px">— ${v.X.fbEn}</span>
       </div>
@@ -453,7 +456,7 @@ ${(v.is.results) ? html`
     ${(v.R.missed || []).map((w) => html`
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider);gap:12px">
         <span style="font-size:14px">${w.en}</span>
-        <span style="display:flex;align-items:center;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px">${w.fa}</span><button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button></span>
+        <span style="display:flex;align-items:center;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl">${w.fa}${digit(w.num)}</span><button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button></span>
       </div>
     `)}
     <p style="margin:8px 0 0;font-size:12px;color:var(--color-neutral-700)">Added to your mistake notebook and your next review.</p>
@@ -504,7 +507,7 @@ ${(v.is.review) ? html`
     ${(v.mistakeList || []).map((w) => html`
       <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
         <span style="display:flex;flex-direction:column"><span style="font-size:14px">${w.en}</span><span style="font-size:11px;color:var(--color-neutral-600)">${w.lesson}</span></span>
-        <span style="display:flex;flex-direction:column;align-items:flex-end">${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.4">${w.fa}</span>` : null}${(v.show.lat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end">${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.4;direction:rtl">${w.fa}${digit(w.num)}</span>` : null}${(v.show.lat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}</span>
         <button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
       </div>
     `)}
@@ -814,7 +817,7 @@ ${(v.is.words) ? html`
     ${(v.collection || []).map((w) => html`
       <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
         <span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px">${w.en}</span><span style="font-size:11px;color:var(--color-neutral-600)">${w.lesson} · box ${w.box}</span></span>
-        <span style="display:flex;flex-direction:column;align-items:flex-end">${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.4">${w.fa}</span>` : null}${(v.show.lat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end">${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.4;direction:rtl">${w.fa}${digit(w.num)}</span>` : null}${(v.show.lat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}</span>
         <button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
       </div>
     `)}
