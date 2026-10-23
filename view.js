@@ -9,6 +9,15 @@ const say = (fa, size = 12) => SAY[fa] ? html`<span style="font-family:var(--fon
 // Persian words inside English text, set in the Persian font
 const faRuns = (text) => text.split(/([\u0600-\u06FF\u200C]+(?:\s+[\u0600-\u06FF\u200C]+)*)/).map((t, i) => i % 2 ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:1.2em">${t}</span>` : t);
 const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
+// A verb's command forms and how it's used, under its table
+const verbNotes = (t) => html`
+  ${(t.imp) ? html`<div style="display:flex;flex-direction:column;gap:6px;padding-top:4px">
+    <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Commands</span>
+    ${t.imp.map((f, i) => html`<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center">
+      <span style="font-size:13px;color:var(--color-neutral-700)">${i ? 'to several people, or politely' : 'to one person'}</span>
+      <span style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;line-height:1.4">${f.fa}!</span><span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${f.lat}!</span></span></div>`)}
+  </div>` : null}
+  ${(t.note) ? html`<p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-800)">${faRuns(t.note)}</p>` : null}`;
 // A verb's six forms in one tense: person on the left, Persian form on the right
 const verbTable = (t) => html`
   <div style="display:flex;flex-direction:column">
@@ -223,6 +232,7 @@ ${(v.is.lesson) ? html`
       <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${v.L.conj.infFa}</span>
     </div>
     ${verbTable(v.L.conj)}
+    ${verbNotes(v.L.conj)}
     <button class="btn btn-ghost" onClick=${v.L.openPresent} style="align-self:flex-start;min-height:44px;padding:0;gap:6px">How the present tense works ${v.ic.chev}</button>
     ${(v.L.conjPast) ? html`
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-top:1px solid var(--color-divider);padding-top:12px">
@@ -689,11 +699,15 @@ ${(v.is.grammar) ? html`
   </section>`)}
   ${(v.G.verbs.length) ? html`<section style="display:flex;flex-direction:column;gap:22px">
     <h2 style="font-size:24px;margin:0">Every lesson's verb</h2>
-    ${v.G.verbs.map((t) => html`
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${v.G.verbBtns.map((b) => html`<button onClick=${b.pick} style="min-height:40px;padding:6px 14px;border:1px solid ${b.border};color:${b.color};background:${b.bg};border-radius:999px;cursor:pointer;font-size:13px;white-space:nowrap">${b.label}</button>`)}
+    </div>
+    ${((t) => html`
       <div style="display:flex;flex-direction:column;gap:6px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><span style="display:flex;flex-direction:column"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${t.lesson}</span><span style="font-family:var(--font-heading);font-size:20px;font-weight:600">${t.inf} <span style="font-weight:400;font-size:15px;color:var(--color-neutral-700)">— ${t.en}</span></span></span><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${t.infFa}</span></div>
         ${verbTable(t)}
-      </div>`)}
+        ${verbNotes(t)}
+      </div>`)(v.G.verb)}
   </section>` : null}
 </article>
 ` : null}

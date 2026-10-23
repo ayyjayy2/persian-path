@@ -222,7 +222,8 @@ class App extends Component {
   // Rows of [spoken, spokenLatin, written, writtenLatin, English] in the current register
   formTable(c) {
     const written = this.prefs().register === 'written';
-    return { inf: c.inf, infFa: c.infFa, en: c.en, rows: c.rows.map(([sp, spLat, wr, wrLat, en], i) => {
+    const pickReg = ([sp, spLat, wr, wrLat]) => ({ fa: written ? wr : sp, lat: written ? wrLat : spLat });
+    return { inf: c.inf, infFa: c.infFa, en: c.en, note: c.note, imp: c.imp && c.imp.map(pickReg), rows: c.rows.map(([sp, spLat, wr, wrLat, en], i) => {
       const [who, whoLat, whoFa] = this.D.PERSONS[i];
       return { who, whoLat, whoFa, fa: written ? wr : sp, lat: written ? wrLat : spLat, en };
     }) };
@@ -616,7 +617,11 @@ class App extends Component {
       const g = D.GRAMMAR[r.id], written = P.register === 'written';
       v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec, tables: [...(sec.conj || []).map(id => this.conjTable(id, g.tense)), ...(sec.verbs || []).map(t => this.formTable(t))].filter(Boolean) })),
         endings: (g.endings || []).map(([who, sp, wr]) => ({ who, end: written ? wr : sp })),
-        verbs: g.tense ? lessons.map(l => { const t = this.conjTable(l.id, g.tense); return t && { ...t, lesson: l.title }; }).filter(Boolean) : [] };
+        verbs: g.tense ? lessons.map(l => { const t = this.conjTable(l.id, g.tense); return t && { ...t, id: l.id, lesson: l.title }; }).filter(Boolean) : [] };
+      // One verb at a time, picked from a row of buttons
+      const vs = v.G.verbs; v.G.verb = vs.find(t => t.id === s.grammarVerb) || vs[0];
+      v.G.verbBtns = vs.map(t => { const on = t === v.G.verb; return { label: t.inf, pick: () => this.setState({ grammarVerb: t.id }),
+        border: on ? 'var(--color-accent)' : 'var(--color-divider)', color: on ? 'var(--color-accent-700)' : 'var(--color-text)', bg: on ? 'var(--color-accent-100)' : 'transparent' }; });
     }
     // lesson
     if (view === 'lesson') {
