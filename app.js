@@ -11,7 +11,7 @@ const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
 const V1_KEY = 'persian_app_state';
-const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen', 'vowelsSeen', 'myWords'];
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords'];
 const MIN = 60e3, DAY = 864e5;
 // Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
@@ -55,7 +55,7 @@ function rollDay(s) {
 class App extends Component {
   state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
     xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
-    progress: {}, srs: {}, mistakes: [], prefs: {}, myWords: [], imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
+    progress: {}, srs: {}, mistakes: [], prefs: {}, grammarSeen: {}, myWords: [], imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
     online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
 
   componentDidMount() {
@@ -132,7 +132,7 @@ class App extends Component {
     try { await sb.auth.signOut(); } catch (e) {}
     // Back to a clean guest profile on this device
     this._lastSaved = null;
-    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], scriptSeen: false, vowelsSeen: false, tab: 'learn', route: null });
+    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], scriptSeen: false, vowelsSeen: false, grammarSeen: {}, tab: 'learn', route: null });
   }
 
   // ---------- refresh ----------
@@ -229,15 +229,20 @@ class App extends Component {
     return [...order.map(id => all.find(l => l.id === id)).filter(Boolean), ...all.filter(l => !order.includes(l.id))];
   }
   lessonDone(id) { const p = this.state.progress[id] || {}; return ['flashcard', 'quiz', 'listen'].every(a => p[a]); }
+  itemDone(it) {
+    const s = this.state;
+    if (it.kind === 'lesson') return this.lessonDone(it.id);
+    if (it.kind === 'script') return !!(it.id === 'vowels' ? s.vowelsSeen : s.scriptSeen);
+    return it.kind === 'grammar' && !!(s.grammarSeen || {})[it.id];
+  }
   stageInfo() {
     const s = this.state; let prevDone = true;
     return this.D.STAGES.map(st => {
-      // Optional items get their own check but never hold a stage back
-      const req = st.items.filter(it => !it.optional), playable = req.filter(it => it.kind === 'lesson' || it.kind === 'script');
-      const isDone = it => it.kind === 'lesson' ? this.lessonDone(it.id) : !!s.scriptSeen;
-      const doneCount = playable.filter(isDone).length;
+      // Only items that exist count; optional and not-yet-built ones never hold a stage back
+      const playable = st.items.filter(it => !it.optional && (it.kind === 'lesson' || it.kind === 'script' || (it.kind === 'grammar' && this.D.GRAMMAR[it.id])));
+      const doneCount = playable.filter(it => this.itemDone(it)).length;
       const cpDone = !!s.progress['cp:' + st.checkpoint.id];
-      const complete = doneCount === playable.length && cpDone && playable.length === req.length;
+      const complete = doneCount === playable.length && cpDone;
       const unlocked = st.n <= 2 || prevDone; prevDone = complete;
       return { ...st, doneCount, total: playable.length, cpDone, complete, unlocked, playableCp: unlocked && !!this.D.SCENARIOS[st.checkpoint.id] };
     });
@@ -385,6 +390,7 @@ class App extends Component {
     setTimeout(() => { const el = document.getElementById('vowels'); if (el) el.scrollIntoView({ block: 'start' }); }, 60);
   }
   nav(route) { this.setState({ route }); window.scrollTo(0, 0); }
+  openGrammar(id, from) { this.setState({ grammarSeen: { ...this.state.grammarSeen, [id]: true } }); this.nav({ name: 'grammar', id, from }); }
   back() {
     const r = this.state.route;
     if (r && r.name === 'map') return this.nav(r.from);
@@ -566,12 +572,12 @@ class App extends Component {
           op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer', endIcon: locked ? I('lock', 14) : this.lessonDone(l.id) ? I('check', 16, 2) : ic.chev, endColor: this.lessonDone(l.id) ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
           open: locked ? noop : () => this.nav({ name: 'lesson', id: l.id }) };
       }
-      const isScript = it.kind === 'script', isVowels = it.id === 'vowels', seen = isVowels ? s.vowelsSeen : s.scriptSeen;
+      const isScript = it.kind === 'script', isVowels = it.id === 'vowels', seen = this.itemDone(it);
       const page = it.kind === 'grammar' && D.GRAMMAR[it.id];
       return { isOther: true, icon: I(kindIcon[it.kind], 15), iconBorder: 'var(--color-divider)', kicker: { script: 'Script', grammar: 'Grammar', conversation: 'Conversation', skill: 'Skill' }[it.kind],
         title: it.title, desc: it.desc, glyph: isVowels ? 'واکه‌ها' : isScript ? 'الفبا' : '', op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer',
-        endIcon: locked ? I('lock', 14) : isScript && seen ? I('check', 16, 2) : ic.chev, endColor: isScript && seen ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
-        open: locked ? noop : isVowels ? () => this.openVowels() : isScript ? () => this.go('script') : page ? () => this.nav({ name: 'grammar', id: it.id }) : noop };
+        endIcon: locked ? I('lock', 14) : seen ? I('check', 16, 2) : ic.chev, endColor: seen ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
+        open: locked ? noop : isVowels ? () => this.openVowels() : isScript ? () => this.go('script') : page ? () => this.openGrammar(it.id) : noop };
     };
     const cpRow = st => ({ isOther: true, icon: I('chat', 15), iconBorder: 'var(--color-accent)', kicker: 'Checkpoint · conversation', title: st.checkpoint.title, desc: st.checkpoint.desc, glyph: '',
       op: st.playableCp ? 1 : 0.5, cursor: st.playableCp ? 'pointer' : 'default', endIcon: st.cpDone ? I('check', 16, 2) : st.playableCp ? ic.chev : I('lock', 14), endColor: st.cpDone ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
@@ -584,7 +590,7 @@ class App extends Component {
     if (electives.length) v.stageGroups.push({ fa: 'اختیاری', title: 'Electives', lockIcon: null, meta: 'Any time', items: electives.map(l => row({ kind: 'lesson', id: l.id }, { unlocked: true })).filter(Boolean) });
     v.grammarList = D.STAGES.flatMap(st => st.items.filter(i => i.kind === 'grammar')).map(it => {
       const ready = !!D.GRAMMAR[it.id];
-      return { title: it.title, desc: ready ? it.desc : 'Coming soon', op: ready ? 1 : 0.5, cursor: ready ? 'pointer' : 'default', end: ready ? ic.chev : null, open: ready ? () => this.nav({ name: 'grammar', id: it.id }) : noop };
+      return { title: it.title, desc: ready ? it.desc : 'Coming soon', op: ready ? 1 : 0.5, cursor: ready ? 'pointer' : 'default', end: ready ? ic.chev : null, open: ready ? () => this.openGrammar(it.id) : noop };
     });
     v.loop = [['Meet', 'Flashcards with native audio — the sound comes first'], ['Recognise', 'Pick the meaning, both directions, by eye and by ear'], ['Build', 'Arrange words into Persian order yourself'], ['Say', 'Shadow a native speaker and record yourself'], ['Use', 'Hold the conversation at the end of each stage']].map(([step, desc], i) => ({ step, desc, nFa: this.faNum(i + 1) }));
     v.plan = SI.map(st => ({ nFa: this.faNum(st.n), level: st.level, name: st.name, weeks: st.weeks, goal: st.goal, cando: st.cando,
@@ -610,7 +616,7 @@ class App extends Component {
         words: l.words.map(w => { const d = this.disp(w); const p = s.playing === w.key; const alt = !!w.written; const written = P.register === 'written';
           return { ...d, play: () => this.play(w), btnBorder: p ? 'var(--color-accent)' : 'var(--color-divider)', btnBg: p ? 'var(--color-accent-100)' : 'transparent', hasAlt: alt, altLabel: written ? 'Spoken' : 'Written', altFa: written ? w.persian : w.written, altLat: written ? w.phonetic : w.writtenPhonetic }; }) };
       v.L.conj = this.conjTable(l.id);
-      v.L.openPresent = () => this.nav({ name: 'grammar', id: 'present', from: { name: 'lesson', id: l.id } });
+      v.L.openPresent = () => this.openGrammar('present', { name: 'lesson', id: l.id });
       v.noteOpen = s.noteOpen; v.noteRot = s.noteOpen ? '90deg' : '0deg'; v.toggleNote = () => this.setState({ noteOpen: !s.noteOpen });
     }
     v.registerLabel = P.register === 'written' ? 'written' : 'spoken';
