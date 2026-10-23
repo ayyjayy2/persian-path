@@ -1,8 +1,11 @@
 // Screen markup, converted from the v2 design export (Persian Learnin.dc.html).
 // `v` is the view model built by App.renderVals() in app.js.
 import { html } from "./vendor/preact-htm.js";
+import { SAY } from "./learn-data.js";
 
 // Persian digit set beside a number word (e.g. هفت ۷)
+// How to say a Persian label, shown in Latin letters beside it
+const say = (fa, size = 12) => SAY[fa] ? html`<span style="font-family:var(--font-body);font-style:italic;font-size:${size}px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--color-neutral-700);direction:ltr;white-space:nowrap">${SAY[fa]}</span>` : null;
 const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
 
 export function view(v) {
@@ -12,7 +15,7 @@ export function view(v) {
 ${(v.showRail) ? html`
 <aside style="width:248px;flex:none;position:sticky;top:0;height:100vh;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;padding:28px 20px;gap:28px;box-sizing:border-box">
   <div style="display:flex;flex-direction:column;gap:2px">
-    <span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;color:var(--color-accent-700);direction:rtl;text-align:left;line-height:1.3">فارسی</span>
+    <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;color:var(--color-accent-700);direction:rtl;text-align:left;line-height:1.3">فارسی</span>${say('فارسی')}</span>
     <span style="font-family:var(--font-heading);font-size:24px;font-weight:600;letter-spacing:-0.01em">Persian Learnin</span>
   </div>
   <nav style="display:flex;flex-direction:column;gap:2px">
@@ -33,7 +36,7 @@ ${(v.showAppBar) ? html`
 <header style="position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--color-bg) 92%, transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--color-divider);padding:12px 20px;padding-top:max(12px, env(safe-area-inset-top))">
   <div style="max-width:680px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;direction:rtl">
     <div style="display:flex;align-items:baseline;gap:10px">
-      <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${v.appBarFa}</span>
+      <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${v.appBarFa}</span>${say(v.appBarFa)}</span>
       <span style="font-family:var(--font-heading);font-size:22px;font-weight:600">${v.appBarTitle}</span>
     </div>
     <div style="display:flex;align-items:center;gap:14px;font-size:13px;font-feature-settings:'tnum';direction:ltr">
@@ -52,7 +55,7 @@ ${(v.is.learn) ? html`
   <section style="display:flex;flex-direction:column;gap:6px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
       <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.dateEn}</span>
-      <span style="font-family:'Noto Naskh Arabic',serif;font-size:14px;color:var(--color-neutral-700);direction:rtl">${v.dateFa}</span>
+      <span style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-family:'Noto Naskh Arabic',serif;font-size:14px;color:var(--color-neutral-700);direction:rtl">${v.dateFa}</span>${(v.dateLat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${v.dateLat}</span>` : null}</span>
     </div>
     ${(v.dayName) ? html`<span style="font-size:13px;color:var(--color-neutral-700)">${v.dayName.en} is <span style="font-style:italic;color:var(--color-accent-700)">${v.dayName.lat}</span></span>` : null}
     <h1 style="font-size:40px;font-weight:400;margin:4px 0 0;line-height:1.05">${v.greeting}</h1>
@@ -61,7 +64,7 @@ ${(v.is.learn) ? html`
 
   <section style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;direction:rtl">
-      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">مسیر تسلط</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Path to fluency</span></span>
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">مسیر تسلط</span>${say('مسیر تسلط')}</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Path to fluency</span></span>
       <button class="btn btn-ghost" onClick=${v.openPlan} style="min-height:40px;direction:ltr">Full plan</button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;direction:rtl">
@@ -74,7 +77,7 @@ ${(v.is.learn) ? html`
     </div>
     <div style="display:flex;flex-direction:column;gap:4px">
       <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);font-feature-settings:'tnum'">Stage ${v.path.n} of 5 · ${v.path.level} · ${v.path.weeks}</span>
-      <span style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;color:var(--color-accent-700)">${v.path.fa}</span><span style="font-family:var(--font-heading);font-size:28px;font-weight:400;line-height:1.1">${v.path.name}</span></span>
+      <span style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;color:var(--color-accent-700)">${v.path.fa}</span>${say(v.path.fa)}</span><span style="font-family:var(--font-heading);font-size:28px;font-weight:400;line-height:1.1">${v.path.name}</span></span>
       <p style="margin:0;font-size:13px;line-height:1.55;color:var(--color-neutral-800)">${v.path.goal}</p>
     </div>
     <div style="display:flex;flex-direction:column;border-top:1px solid var(--color-divider)">
@@ -90,7 +93,7 @@ ${(v.is.learn) ? html`
 
   <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;direction:rtl">
-      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">هدف روزانه</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Daily goal</span></span>
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:17px;color:var(--color-accent-700)">هدف روزانه</span>${say('هدف روزانه')}</span><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Daily goal</span></span>
       <span style="font-size:13px;font-feature-settings:'tnum';color:var(--color-neutral-700);direction:ltr">${v.todayXp} / ${v.goal} XP</span>
     </div>
     <div style="height:2px;background:var(--color-divider);position:relative"><div style="position:absolute;right:0;top:-1px;height:4px;background:var(--color-accent);width:${v.goalPct}"></div></div>
@@ -99,6 +102,7 @@ ${(v.is.learn) ? html`
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="width:34px;height:34px;border-radius:50%;border:1px solid ${d.border};background:${d.bg};display:flex;align-items:center;justify-content:center;font-family:'Noto Naskh Arabic',serif;font-size:15px;color:${d.color}">${d.fa}</div>
           <span style="font-size:10px;color:var(--color-neutral-600)">${d.en}</span>
+          ${(d.lat) ? html`<span style="font-size:10px;font-style:italic;color:var(--color-accent-700);white-space:nowrap">${d.lat}</span>` : null}
         </div>
       `)}
     </div>
@@ -111,17 +115,17 @@ ${(v.is.learn) ? html`
 
   <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
     <div style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:8px">
-      <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">مرور</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Spaced review</span></span>
+      <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">مرور</span>${say('مرور')}</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Spaced review</span></span>
       <div style="display:flex;align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-size:44px;line-height:1;font-feature-settings:'tnum'">${v.dueCount}</span><span style="font-size:14px">words due today</span></div>
       <p style="margin:0;font-size:13px;color:var(--color-neutral-700)">Short, timed reviews move words into long-term memory.</p>
       <button class="btn btn-primary" onClick=${v.startReview} disabled=${v.reviewEmpty} style="align-self:flex-start;margin-top:4px;min-height:44px;padding-inline:20px">Begin review</button>
       ${(v.reviewEmpty) ? html`<p style="margin:0;font-size:13px;color:var(--color-neutral-700)">Nothing to review right now. <button onClick=${v.openNextLesson} style="background:none;border:0;padding:0;color:var(--color-accent-700);text-decoration:underline;text-underline-offset:3px;cursor:pointer">Start a lesson</button> to add new words.</p>` : null}
     </div>
     <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:18px;display:flex;flex-direction:column;gap:8px;cursor:pointer" onClick=${v.cont.open} class="hv1">
-      <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">ادامه</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);direction:ltr">Continue · Chapter ${v.cont.n}</span></span>
+      <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">ادامه</span>${say('ادامه')}</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);direction:ltr">Continue · Chapter ${v.cont.n}</span></span>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;direction:rtl">
         <span style="font-family:var(--font-heading);font-size:24px;font-weight:600;line-height:1.1">${v.cont.title}</span>
-        <span style="font-family:'Noto Naskh Arabic',serif;font-size:24px;color:var(--color-accent-700)">${v.cont.glyph}</span>
+        <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:24px;color:var(--color-accent-700)">${v.cont.glyph}</span>${say(v.cont.glyph)}</span>
       </div>
       <p style="margin:0;font-size:13px;color:var(--color-neutral-700)">Next: ${v.cont.next}</p>
       <div style="height:1px;background:var(--color-divider);margin-top:auto;position:relative"><div style="position:absolute;left:0;top:-1px;height:3px;background:var(--color-accent);width:${v.cont.pct}"></div></div>
@@ -130,7 +134,7 @@ ${(v.is.learn) ? html`
 
   <section style="border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:22px 0;display:flex;flex-direction:column;gap:10px">
     <div style="display:flex;justify-content:space-between;align-items:center;direction:rtl">
-      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">عبارت روز</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Phrase of the day</span></span>
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">عبارت روز</span>${say('عبارت روز')}</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Phrase of the day</span></span>
       <button onClick=${v.wod.play} aria-label="Play" style="width:44px;height:44px;border-radius:50%;border:1px solid var(--color-accent);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer" class="hv2">${v.ic.vol}</button>
     </div>
     ${(v.show.fa) ? html`<div style="font-family:'Noto Naskh Arabic',serif;font-size:40px;direction:rtl;text-align:right;line-height:1.4">${v.wod.fa}${digit(v.wod.num)}</div>` : null}
@@ -141,12 +145,12 @@ ${(v.is.learn) ? html`
 
   <section style="display:flex;flex-direction:column">
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;direction:rtl">
-      <span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">فهرست</span><h2 style="font-size:28px;margin:0">Contents</h2></span>
+      <span style="display:flex;align-items:baseline;gap:10px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">فهرست</span>${say('فهرست')}</span><h2 style="font-size:28px;margin:0">Contents</h2></span>
       <span style="font-size:12px;color:var(--color-neutral-700);font-feature-settings:'tnum';direction:ltr">${v.chaptersDone} of ${v.chapterCount} complete</span>
     </div>
     ${(v.stageGroups || []).map((g) => html`
       <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:24px 0 8px;border-bottom:1px solid var(--color-text);direction:rtl">
-        <span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">${g.fa}</span><span style="font-family:var(--font-heading);font-size:21px;font-weight:600">${g.title}</span></span>
+        <span style="display:flex;align-items:baseline;gap:10px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">${g.fa}</span>${say(g.fa)}</span><span style="font-family:var(--font-heading);font-size:21px;font-weight:600">${g.title}</span></span>
         <span style="font-size:11px;color:var(--color-neutral-700);direction:ltr;font-feature-settings:'tnum';display:flex;align-items:center;gap:6px">${g.lockIcon}${g.meta}</span>
       </div>
       ${(g.items || []).map((c) => html`
@@ -161,7 +165,7 @@ ${(v.is.learn) ? html`
             <span style="font-size:12px;color:var(--color-neutral-700)">${c.desc}</span>
             ${(c.isLesson) ? html`<span style="display:flex;gap:4px;margin-top:4px">${(c.marks || []).map((m) => html`<span style="width:18px;height:3px;background:${m.bg}"></span>`)}</span>` : null}
           </span>
-          <span style="display:flex;align-items:center;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-neutral-700)">${c.glyph}</span><span style="color:${c.endColor};display:flex">${c.endIcon}</span></span>
+          <span style="display:flex;align-items:center;gap:10px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-neutral-700)">${c.glyph}</span>${say(c.glyph)}</span><span style="color:${c.endColor};display:flex">${c.endIcon}</span></span>
         </button>
       `)}
     `)}
@@ -178,7 +182,7 @@ ${(v.is.lesson) ? html`
   </div>
   <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid var(--color-divider);padding-bottom:18px">
     <div><h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">${v.L.title}</h1><p style="margin:6px 0 0;color:var(--color-neutral-700);font-size:14px">${v.L.desc}</p><p style="margin:12px 0 0;font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">You'll be able to</span><em>${v.L.cando}</em></p></div>
-    <span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;color:var(--color-accent-700);line-height:1.2">${v.L.glyph}</span>
+    <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;color:var(--color-accent-700);line-height:1.2">${v.L.glyph}</span>${say(v.L.glyph)}</span>
   </div>
 
   <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md)">
@@ -191,7 +195,7 @@ ${(v.is.lesson) ? html`
   </section>
 
   <section style="display:flex;flex-direction:column;gap:10px">
-    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">تمرین</span><h2 style="font-size:24px;margin:0">Practice</h2></div>
+    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">تمرین</span>${say('تمرین')}</span><h2 style="font-size:24px;margin:0">Practice</h2></div>
     ${(v.L.acts || []).map((a) => html`
       <button onClick=${a.start} style="display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border:1px solid ${a.border};border-radius:var(--radius-md);background:transparent;cursor:pointer;text-align:left;min-height:68px" class="hv5">
         <span style="width:44px;height:44px;border:1px solid var(--color-divider);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--color-accent-700)">${a.icon}</span>
@@ -208,7 +212,7 @@ ${(v.is.lesson) ? html`
   </section>
 
   <section style="display:flex;flex-direction:column">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;direction:rtl"><span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">واژه‌ها</span><h2 style="font-size:24px;margin:0">Vocabulary</h2></span><span style="font-size:12px;color:var(--color-neutral-700);direction:ltr">Register: ${v.registerLabel}</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;direction:rtl"><span style="display:flex;align-items:baseline;gap:10px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">واژه‌ها</span>${say('واژه‌ها')}</span><h2 style="font-size:24px;margin:0">Vocabulary</h2></span><span style="font-size:12px;color:var(--color-neutral-700);direction:ltr">Register: ${v.registerLabel}</span></div>
     ${(v.L.words || []).map((w) => html`
       <div style="display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
         <button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid ${w.btnBorder};background:${w.btnBg};color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
@@ -232,7 +236,7 @@ ${(v.is.exercise) ? html`
     <div style="flex:1;height:1px;background:var(--color-divider);position:relative"><div style="position:absolute;right:0;top:-1px;height:3px;background:var(--color-accent);width:${v.X.pct};transition:width .35s ease"></div></div>
     <span style="font-size:12px;font-feature-settings:'tnum';color:var(--color-neutral-700);min-width:44px;text-align:left;direction:ltr">${v.X.counter}</span>
   </div>
-  <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">${v.X.kindFa}</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.X.kindLabel}</span></span>
+  <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">${v.X.kindFa}</span>${say(v.X.kindFa)}</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.X.kindLabel}</span></span>
 
   ${(v.X.isFlash) ? html`
   <div style="display:flex;flex-direction:column;gap:18px;align-items:center">
@@ -406,7 +410,7 @@ ${(v.is.path) ? html`
 <div style="display:flex;flex-direction:column;gap:24px;animation:plfade .25s ease">
   <div style="display:flex;align-items:center;justify-content:space-between">
     <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
-    <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">برنامه</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">The plan</span></span>
+    <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">برنامه</span>${say('برنامه')}</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">The plan</span></span>
   </div>
   <header style="display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--color-divider);padding-bottom:18px">
     <h1 style="font-size:42px;font-weight:400;margin:0;line-height:1.05">From zero to fluent</h1>
@@ -499,12 +503,12 @@ ${(v.is.review) ? html`
   <section style="display:flex;align-items:center;gap:14px;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:14px 0">
       <button onClick=${v.openMy} style="flex:1;display:flex;align-items:center;gap:12px;border:0;background:transparent;cursor:pointer;text-align:left;min-height:52px;padding:0">
         <span style="color:var(--color-accent-700)">${v.ic.pen}</span>
-        <span style="display:flex;flex-direction:column"><span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">My words</span><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">واژه‌های من</span></span><span style="font-size:12px;color:var(--color-neutral-700)">${v.myCountLabel} added by you</span></span>
+        <span style="display:flex;flex-direction:column"><span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">My words</span><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">واژه‌های من</span>${say('واژه‌های من')}</span></span><span style="font-size:12px;color:var(--color-neutral-700)">${v.myCountLabel} added by you</span></span>
       </button>
       <button class="btn btn-secondary" onClick=${v.addWord} style="min-height:44px;gap:6px">${v.ic.plus} Add</button>
     </section>
   <section style="display:flex;flex-direction:column">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;direction:rtl"><span style="display:flex;align-items:baseline;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">دفتر اشتباه‌ها</span><h2 style="font-size:24px;margin:0">Mistake notebook</h2></span>${(v.hasMistakes) ? html`<button class="btn btn-ghost" onClick=${v.drillMistakes} style="min-height:44px">Drill these</button>` : null}</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;direction:rtl"><span style="display:flex;align-items:baseline;gap:10px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">دفتر اشتباه‌ها</span>${say('دفتر اشتباه‌ها')}</span><h2 style="font-size:24px;margin:0">Mistake notebook</h2></span>${(v.hasMistakes) ? html`<button class="btn btn-ghost" onClick=${v.drillMistakes} style="min-height:44px">Drill these</button>` : null}</div>
     ${(v.noMistakes) ? html`<p style="margin:8px 0 0;font-size:14px;color:var(--color-neutral-700);font-style:italic">Words you miss in practice will collect here.</p>` : null}
     ${(v.mistakeList || []).map((w) => html`
       <div style="display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
@@ -593,7 +597,7 @@ ${(v.is.explore) ? html`
         <span style="font-family:var(--font-heading);font-size:23px;font-weight:600;line-height:1.15">${a.title}</span>
         <span style="font-size:13px;line-height:1.5;color:var(--color-neutral-700)">${a.preview}</span>
       </span>
-      <span style="height:72px;border:1px solid var(--color-divider);outline:4px solid var(--color-surface);outline-offset:-5px;display:flex;align-items:center;justify-content:center;font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${a.fa}</span>
+      <span style="height:72px;border:1px solid var(--color-divider);outline:4px solid var(--color-surface);outline-offset:-5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${a.fa}${say(a.fa, 10)}</span>
     </button>
   `)}
 </div>
@@ -606,7 +610,7 @@ ${(v.is.article) ? html`
     <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.A.category} · ${v.A.readTime}</span>
   </div>
   <header style="display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--color-divider);padding-bottom:18px">
-    <span style="font-family:'Noto Naskh Arabic',serif;font-size:28px;color:var(--color-accent-700)">${v.A.fa}</span>
+    <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:28px;color:var(--color-accent-700)">${v.A.fa}</span>${say(v.A.fa)}</span>
     <h1 style="font-size:42px;font-weight:400;margin:0;line-height:1.05">${v.A.title}</h1>
     <p style="margin:0;font-style:italic;color:var(--color-neutral-700)">${v.A.subtitle}</p>
   </header>
@@ -631,7 +635,7 @@ ${(v.is.mywords) ? html`
     <button class="btn btn-primary" onClick=${v.addWord} style="min-height:44px;gap:6px">${v.ic.plus} Add a word</button>
   </div>
   <header style="display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--color-divider);padding-bottom:16px">
-    <span style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:24px;color:var(--color-accent-700)">واژه‌های من</span><h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">My words</h1></span>
+    <span style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:24px;color:var(--color-accent-700)">واژه‌های من</span>${say('واژه‌های من')}</span><h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">My words</h1></span>
     <p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-700);text-align:justify;hyphens:auto">Words you pick up from friends, films and menus. Each one joins your spaced review, so it sticks like the rest.</p>
   </header>
   ${(v.noMy) ? html`
@@ -665,7 +669,7 @@ ${(v.is.addword) ? html`
 <div style="display:flex;flex-direction:column;gap:22px;animation:plfade .25s ease;padding-bottom:24px">
   <div style="display:flex;align-items:center;justify-content:space-between">
     <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
-    <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">واژهٔ تازه</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">My words</span></span>
+    <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">واژهٔ تازه</span>${say('واژهٔ تازه')}</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">My words</span></span>
   </div>
   <h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">${v.W.title}</h1>
 
@@ -680,7 +684,7 @@ ${(v.is.addword) ? html`
 
   <section style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:14px 16px;display:flex;flex-direction:column;gap:8px">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;direction:rtl">
-      <span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">خط فارسی</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Persian script</span></span>
+      <span style="display:flex;align-items:baseline;gap:8px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">خط فارسی</span>${say('خط فارسی')}</span><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Persian script</span></span>
       <span style="display:flex;gap:4px;direction:ltr">
         <button onClick=${v.W.listen} aria-label="Listen" disabled=${v.W.noFa} style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
         <button class="btn btn-ghost" onClick=${v.W.regen} disabled=${v.W.noLat} style="min-height:40px;gap:6px;font-size:13px">${v.ic.wand} Auto-fill</button>
@@ -762,7 +766,7 @@ ${(v.is.profile) ? html`
     `)}
   </section>
   <section style="display:flex;flex-direction:column;gap:0">
-    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl;margin-bottom:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">تنظیمات</span><h2 style="font-size:24px;margin:0">Learning preferences</h2></div>
+    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl;margin-bottom:6px"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">تنظیمات</span>${say('تنظیمات')}</span><h2 style="font-size:24px;margin:0">Learning preferences</h2></div>
     ${(v.prefs || []).map((p) => html`
       <div style="display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:1px solid var(--color-divider)">
         <span style="display:flex;flex-direction:column"><span style="font-size:14px">${p.label}</span><span style="font-size:12px;color:var(--color-neutral-700)">${p.hint}</span></span>
@@ -795,7 +799,7 @@ ${(v.is.profile) ? html`
     </button>
   </section>
   <section style="display:flex;flex-direction:column;gap:10px">
-    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">دستاوردها</span><h2 style="font-size:24px;margin:0">Achievements</h2></div>
+    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">دستاوردها</span>${say('دستاوردها')}</span><h2 style="font-size:24px;margin:0">Achievements</h2></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">
       ${(v.achievements || []).map((a) => html`
         <div style="border:1px solid ${a.border};border-radius:var(--radius-md);padding:12px;display:flex;flex-direction:column;gap:4px;opacity:${a.op}">
