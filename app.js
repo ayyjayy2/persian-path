@@ -217,7 +217,10 @@ class App extends Component {
   }
   conjTable(lessonId, tense = 'present') {
     const base = this.D.CONJ[lessonId], c = tense === 'past' ? base && { ...base, ...this.D.CONJ_PAST[lessonId] } : base;
-    if (!c || !c.rows) return null;
+    return c && c.rows ? this.formTable(c) : null;
+  }
+  // Rows of [spoken, spokenLatin, written, writtenLatin, English] in the current register
+  formTable(c) {
     const written = this.prefs().register === 'written';
     return { inf: c.inf, infFa: c.infFa, en: c.en, rows: c.rows.map(([sp, spLat, wr, wrLat, en], i) => {
       const [who, whoLat, whoFa] = this.D.PERSONS[i];
@@ -611,7 +614,7 @@ class App extends Component {
 
     if (view === 'grammar') {
       const g = D.GRAMMAR[r.id], written = P.register === 'written';
-      v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec, tables: (sec.conj || []).map(id => this.conjTable(id, g.tense)).filter(Boolean) })),
+      v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec, tables: [...(sec.conj || []).map(id => this.conjTable(id, g.tense)), ...(sec.verbs || []).map(t => this.formTable(t))].filter(Boolean) })),
         endings: (g.endings || []).map(([who, sp, wr]) => ({ who, end: written ? wr : sp })),
         verbs: g.tense ? lessons.map(l => { const t = this.conjTable(l.id, g.tense); return t && { ...t, lesson: l.title }; }).filter(Boolean) : [] };
     }
