@@ -215,6 +215,14 @@ class App extends Component {
     const written = this.prefs().register === 'written' && w.written;
     return { fa: written ? w.written : w.persian, lat: written ? w.writtenPhonetic : w.phonetic, en: w.english, num: w.digit != null ? this.faNum(w.digit) : null };
   }
+  conjTable(lessonId) {
+    const c = this.D.CONJ[lessonId]; if (!c) return null;
+    const written = this.prefs().register === 'written';
+    return { inf: c.inf, infFa: c.infFa, en: c.en, rows: c.rows.map(([sp, spLat, wr, wrLat, en], i) => {
+      const [who, whoLat, whoFa] = this.D.PERSONS[i];
+      return { who, whoLat, whoFa, fa: written ? wr : sp, lat: written ? wrLat : spLat, en };
+    }) };
+  }
   lessons() {
     const m = this.prefs().mature, all = this.D.LESSONS.filter(l => m || !l.mature);
     const order = this.D.STAGES.flatMap(st => st.items.filter(i => i.kind === 'lesson').map(i => i.id));
@@ -376,6 +384,7 @@ class App extends Component {
     const r = this.state.route;
     if (r && r.name === 'map') return this.nav(r.from);
     if (r && r.name === 'addword') return this.nav({ name: 'mywords' });
+    if (r && r.name === 'grammar') return this.nav(r.from || null);
     if (r && r.name === 'results') { const lid = this.state.result && this.state.result.lessonId; return this.nav(lid ? { name: 'lesson', id: lid } : null); }
     this.nav(null);
   }
@@ -402,12 +411,17 @@ class App extends Component {
     else if (kind === 'listen') items = pool.map(w => ({ w, dir: 'listen', opts: opts(w) }));
     else if (kind === 'build') items = D.SENTENCES.map(s => ({ s, bank: this.shuffle([...s.tiles.map((t, i) => ({ fa: t[0], lat: t[1], ord: i })), ...s.extra.map(t => ({ fa: t[0], lat: t[1], ord: -1 }))]).map((t, id) => ({ ...t, id })) }));
     else if (kind === 'speak') items = pool.slice(0, 5).map(w => ({ w }));
+    else if (kind === 'grammar') {
+      const c = D.CONJ[lessonId]; if (!c) return;
+      const ws = c.rows.map(([sp, spLat, wr, wrLat, en], p) => ({ key: `g:${lessonId}:${p}`, persian: sp, phonetic: spLat, written: wr, writtenPhonetic: wrLat, english: en, p }));
+      items = this.shuffle(ws).map(w => ({ w, dir: 'en2fa', opts: this.shuffle([w, ...this.shuffle(ws.filter(x => x !== w)).slice(0, 3)]) }));
+    }
     else items = pool.map(w => ({ w }));
     if (!items.length) return; // an exercise with no items has nothing to show
     this.setState({ ex: { kind, lessonId, items, i: 0, status: null, picked: null, correct: 0, flipped: false, built: [], rec: 'idle', missed: [] }, route: { name: 'exercise' } });
     window.scrollTo(0, 0);
     const first = items[0];
-    if (first && first.w && kind !== 'quiz' || (first && first.dir === 'fa2en')) setTimeout(() => first.w && this.play(first.w), 350);
+    if (kind !== 'grammar' && (first && first.w && kind !== 'quiz' || (first && first.dir === 'fa2en'))) setTimeout(() => first.w && this.play(first.w), 350);
   }
   exUpd(patch) { this.setState(s => ({ ex: { ...s.ex, ...(typeof patch === 'function' ? patch(s.ex) : patch) } })); }
   next(extra = {}) {
@@ -415,13 +429,14 @@ class App extends Component {
     if (ex.i + 1 >= ex.items.length) return this.finish(ex);
     const ni = ex.i + 1, it = ex.items[ni];
     this.setState({ ex: { ...ex, i: ni, status: null, picked: null, flipped: false, built: [], rec: 'idle', recUrl: null } });
-    if (it.w && (ex.kind !== 'quiz' || it.dir === 'fa2en')) setTimeout(() => this.play(it.w), 300);
+    if (it.w && ex.kind !== 'grammar' && (ex.kind !== 'quiz' || it.dir === 'fa2en')) setTimeout(() => this.play(it.w), 300);
   }
   pick(o) {
     const ex = this.state.ex; if (ex.status) return;
     const it = ex.items[ex.i]; const right = o.key === it.w.key;
-    this.exUpd({ status: right ? 'right' : 'wrong', picked: o.key, correct: ex.correct + (right ? 1 : 0), missed: right ? ex.missed : [...ex.missed, it.w.key] });
-    if (right) this.play(it.w);
+    const g = ex.kind === 'grammar';
+    this.exUpd({ status: right ? 'right' : 'wrong', picked: o.key, correct: ex.correct + (right ? 1 : 0), missed: right || g ? ex.missed : [...ex.missed, it.w.key] });
+    if (right && !g) this.play(it.w);
   }
   finish(ex) {
     const total = ex.total || ex.items.length, xpE = 10 + Math.round((ex.correct / total) * 10);
@@ -519,7 +534,7 @@ class App extends Component {
     const nextL = lessons.find(l => D.ACTIVITIES.some(a => !prog(l.id)[a.id])) || lessons[0];
     const nextA = D.ACTIVITIES.find(a => !prog(nextL.id)[a.id]) || D.ACTIVITIES[0];
     const ln = l => lessons.indexOf(l) + 1;
-    v.cont = { n: ln(nextL), title: nextL.title, glyph: nextL.glyph, next: nextA.title, pct: Math.round(D.ACTIVITIES.filter(a => prog(nextL.id)[a.id]).length / 5 * 100) + '%', open: () => this.nav({ name: 'lesson', id: nextL.id }) };
+    v.cont = { n: ln(nextL), title: nextL.title, glyph: nextL.glyph, next: nextA.title, pct: Math.round(D.ACTIVITIES.filter(a => prog(nextL.id)[a.id]).length / D.ACTIVITIES.length * 100) + '%', open: () => this.nav({ name: 'lesson', id: nextL.id }) };
     const wodPool = lessons.flatMap(l => l.words), wodW = wodPool[Math.floor(now / DAY) % wodPool.length]; const wd = this.disp(wodW);
     v.wod = { fa: wd.fa, num: wd.num, lat: wd.lat, en: wd.en, play: () => this.play(wodW) };
     v.chapters = lessons.map((l, i) => ({ n: i + 1, nFa: this.faNum(i + 1), title: l.title, desc: l.description, count: l.words.length, glyph: l.glyph,
@@ -547,10 +562,11 @@ class App extends Component {
           open: locked ? noop : () => this.nav({ name: 'lesson', id: l.id }) };
       }
       const isScript = it.kind === 'script';
+      const page = it.kind === 'grammar' && D.GRAMMAR[it.id];
       return { isOther: true, icon: I(kindIcon[it.kind], 15), iconBorder: 'var(--color-divider)', kicker: { script: 'Script', grammar: 'Grammar', conversation: 'Conversation', skill: 'Skill' }[it.kind],
         title: it.title, desc: it.desc, glyph: isScript ? 'الفبا' : '', op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer',
         endIcon: locked ? I('lock', 14) : isScript && s.scriptSeen ? I('check', 16, 2) : ic.chev, endColor: isScript && s.scriptSeen ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
-        open: locked ? noop : isScript ? () => this.go('script') : noop };
+        open: locked ? noop : isScript ? () => this.go('script') : page ? () => this.nav({ name: 'grammar', id: it.id }) : noop };
     };
     const cpRow = st => ({ isOther: true, icon: I('chat', 15), iconBorder: 'var(--color-accent)', kicker: 'Checkpoint · conversation', title: st.checkpoint.title, desc: st.checkpoint.desc, glyph: '',
       op: st.playableCp ? 1 : 0.5, cursor: st.playableCp ? 'pointer' : 'default', endIcon: st.cpDone ? I('check', 16, 2) : st.playableCp ? ic.chev : I('lock', 14), endColor: st.cpDone ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
@@ -561,6 +577,10 @@ class App extends Component {
       meta: st.unlocked ? `${st.level} · ${st.doneCount + (st.cpDone ? 1 : 0)}/${st.total + 1}` : `${st.level} · Locked`,
       items: [...st.items.map(it => row(it, st)).filter(Boolean), cpRow(st)] }));
     if (electives.length) v.stageGroups.push({ fa: 'اختیاری', title: 'Electives', lockIcon: null, meta: 'Any time', items: electives.map(l => row({ kind: 'lesson', id: l.id }, { unlocked: true })).filter(Boolean) });
+    v.grammarList = D.STAGES.flatMap(st => st.items.filter(i => i.kind === 'grammar')).map(it => {
+      const ready = !!D.GRAMMAR[it.id];
+      return { title: it.title, desc: ready ? it.desc : 'Coming soon', op: ready ? 1 : 0.5, cursor: ready ? 'pointer' : 'default', end: ready ? ic.chev : null, open: ready ? () => this.nav({ name: 'grammar', id: it.id }) : noop };
+    });
     v.loop = [['Meet', 'Flashcards with native audio — the sound comes first'], ['Recognise', 'Pick the meaning, both directions, by eye and by ear'], ['Build', 'Arrange words into Persian order yourself'], ['Say', 'Shadow a native speaker and record yourself'], ['Use', 'Hold the conversation at the end of each stage']].map(([step, desc], i) => ({ step, desc, nFa: this.faNum(i + 1) }));
     v.plan = SI.map(st => ({ nFa: this.faNum(st.n), level: st.level, name: st.name, weeks: st.weeks, goal: st.goal, cando: st.cando,
       status: st.complete ? 'Complete' : st === cur ? 'In progress' : st.unlocked ? 'Open' : 'Locked', statusColor: st === cur ? 'var(--color-accent-700)' : 'var(--color-neutral-700)',
@@ -570,6 +590,12 @@ class App extends Component {
 
     v.chapterCount = lessons.length; v.chaptersDone = lessons.filter(l => D.ACTIVITIES.every(a => prog(l.id)[a.id])).length;
 
+    if (view === 'grammar') {
+      const g = D.GRAMMAR[r.id], written = P.register === 'written';
+      v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec })),
+        endings: (g.endings || []).map(([who, sp, wr]) => ({ who, end: written ? wr : sp })),
+        verbs: lessons.map(l => { const t = this.conjTable(l.id); return t && { ...t, lesson: l.title }; }).filter(Boolean) };
+    }
     // lesson
     if (view === 'lesson') {
       const l = D.LESSONS.find(x => x.id === r.id); const note = D.NOTES[l.id];
@@ -578,6 +604,8 @@ class App extends Component {
         acts: D.ACTIVITIES.map(a => ({ ...a, icon: I(a.icon, 20), done: !!prog(l.id)[a.id], border: prog(l.id)[a.id] ? 'color-mix(in srgb, var(--color-accent) 55%, transparent)' : 'var(--color-divider)', start: () => this.start(a.id, l.id) })),
         words: l.words.map(w => { const d = this.disp(w); const p = s.playing === w.key; const alt = !!w.written; const written = P.register === 'written';
           return { ...d, play: () => this.play(w), btnBorder: p ? 'var(--color-accent)' : 'var(--color-divider)', btnBg: p ? 'var(--color-accent-100)' : 'transparent', hasAlt: alt, altLabel: written ? 'Spoken' : 'Written', altFa: written ? w.persian : w.written, altLat: written ? w.phonetic : w.writtenPhonetic }; }) };
+      v.L.conj = this.conjTable(l.id);
+      v.L.openPresent = () => this.nav({ name: 'grammar', id: 'present', from: { name: 'lesson', id: l.id } });
       v.noteOpen = s.noteOpen; v.noteRot = s.noteOpen ? '90deg' : '0deg'; v.toggleNote = () => this.setState({ noteOpen: !s.noteOpen });
     }
     v.registerLabel = P.register === 'written' ? 'written' : 'spoken';
@@ -586,9 +614,9 @@ class App extends Component {
     if (view === 'exercise' && s.ex) {
       const ex = s.ex, it = ex.items[ex.i], k = ex.kind;
       const X = { pct: Math.round(ex.i / ex.items.length * 100) + '%', counter: `${ex.i + 1} / ${ex.items.length}`,
-        kindLabel: { flashcard: 'Flashcards', quiz: 'Recognition', listen: 'Listening', build: 'Sentence builder', speak: 'Speaking', review: 'Spaced review' }[k],
-        kindFa: { flashcard: 'کارت‌ها', quiz: 'شناخت', listen: 'شنیدن', build: 'جمله‌سازی', speak: 'گفتن', review: 'مرور' }[k],
-        isFlash: k === 'flashcard' || k === 'review', isChoice: k === 'quiz' || k === 'listen', isBuild: k === 'build', isSpeak: k === 'speak' };
+        kindLabel: { flashcard: 'Flashcards', quiz: 'Recognition', listen: 'Listening', build: 'Sentence builder', speak: 'Speaking', review: 'Spaced review', grammar: 'Grammar' }[k],
+        kindFa: { flashcard: 'کارت‌ها', quiz: 'شناخت', listen: 'شنیدن', build: 'جمله‌سازی', speak: 'گفتن', review: 'مرور', grammar: 'دستور' }[k],
+        isFlash: k === 'flashcard' || k === 'review', isChoice: k === 'quiz' || k === 'listen' || k === 'grammar', isBuild: k === 'build', isSpeak: k === 'speak' };
       if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
       v.exitEx = () => { const lid = ex.lessonId; this.setState({ ex: null }); this.nav(lid ? { name: 'lesson', id: lid } : null); };
       if (X.isFlash) {
@@ -606,7 +634,7 @@ class App extends Component {
       }
       if (X.isChoice) {
         X.isListen = it.dir === 'listen'; X.showPromptWord = !X.isListen; X.promptIsFa = it.dir === 'fa2en'; X.promptIsEn = it.dir === 'en2fa';
-        X.prompt = X.isListen ? 'What did you hear?' : it.dir === 'fa2en' ? 'What does this mean?' : 'How do you say this in Persian?';
+        X.prompt = k === 'grammar' ? 'Pick the right form' : X.isListen ? 'What did you hear?' : it.dir === 'fa2en' ? 'What does this mean?' : 'How do you say this in Persian?';
         X.listenBg = s.playing === it.w.key ? 'var(--color-accent-100)' : 'transparent';
         X.options = it.opts.map(o => { const d = this.disp(o); const isAns = o.key === it.w.key, isPick = ex.picked === o.key;
           const st = !ex.status ? 'idle' : isAns ? 'right' : isPick ? 'wrong' : 'dim';
@@ -646,7 +674,7 @@ class App extends Component {
       if (ex.status) {
         const right = ex.status === 'right';
         X.fbColor = right ? 'var(--color-accent)' : 'var(--color-text)'; X.fbIcon = right ? I('check', 16, 2) : I('x', 16, 2);
-        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbNum = d.num; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
+        if (it.w) { const d = this.disp(it.w); X.fbTitle = right ? ['Afarin — well done', 'Correct', 'Aali — excellent'][ex.i % 3] : 'Not quite'; X.fbFa = d.fa; X.fbNum = d.num; X.fbLat = d.lat; X.fbEn = d.en; X.fbTip = k === 'grammar' ? `${this.D.PERSONS[it.w.p][0]} (${this.D.PERSONS[it.w.p][1]}) → ${d.lat}` : this.tip(it.w) || (right ? null : 'This word will come back in your next review.'); }
         else { X.fbTitle = right ? 'Afarin — well done' : 'Not quite'; X.fbFa = it.s.tiles.map(t => t[0]).join(' '); X.fbLat = it.s.tiles.map(t => t[1]).join(' '); X.fbEn = it.s.en; X.fbTip = it.s.tip; }
         X.cont = () => this.next(); X.showBottomBar = false;
       }

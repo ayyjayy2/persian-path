@@ -7,6 +7,15 @@ import { SAY } from "./learn-data.js";
 // How to say a Persian label, shown in Latin letters beside it
 const say = (fa, size = 12) => SAY[fa] ? html`<span style="font-family:var(--font-body);font-style:italic;font-size:${size}px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--color-neutral-700);direction:ltr;white-space:nowrap">${SAY[fa]}</span>` : null;
 const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
+// A verb's six present-tense forms: person on the left, Persian form on the right
+const verbTable = (t) => html`
+  <div style="display:flex;flex-direction:column">
+    ${t.rows.map((r) => html`
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--color-divider)">
+        <span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px">${r.en}</span><span style="font-size:11px;color:var(--color-neutral-600)">${r.whoLat} <span style="font-family:'Noto Naskh Arabic',serif">${r.whoFa}</span></span></span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;line-height:1.4">${r.fa}</span><span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${r.lat}</span></span>
+      </div>`)}
+  </div>`;
 
 export function view(v) {
   return html`
@@ -170,6 +179,14 @@ ${(v.is.learn) ? html`
       `)}
     `)}
   </section>
+  <section style="display:flex;flex-direction:column">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">دستور</span>${say('دستور')}</span><h2 style="font-size:28px;margin:0">Grammar</h2></div>
+    ${(v.grammarList || []).map((gr) => html`
+      <button onClick=${gr.open} style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 4px;border:0;border-bottom:1px solid var(--color-divider);background:transparent;text-align:left;cursor:${gr.cursor};opacity:${gr.op};min-height:56px">
+        <span style="display:flex;flex-direction:column;gap:3px;min-width:0"><span style="font-family:var(--font-heading);font-size:20px;font-weight:600;line-height:1.15">${gr.title}</span><span style="font-size:12px;color:var(--color-neutral-700)">${gr.desc}</span></span>
+        <span style="color:var(--color-neutral-500);display:flex">${gr.end}</span>
+      </button>`)}
+  </section>
 </div>
 ` : null}
 
@@ -193,6 +210,20 @@ ${(v.is.lesson) ? html`
     </button>
     ${(v.noteOpen) ? html`<p style="margin:0;padding:0 16px 16px 46px;font-size:14px;line-height:1.65;text-align:justify;hyphens:auto;color:var(--color-neutral-800)">${v.L.noteB}</p>` : null}
   </section>
+  ${(v.L.conj) ? html`
+  <section style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:16px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;direction:rtl">
+      <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">دستور</span>${say('دستور')}</span>
+      <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700);direction:ltr">Grammar · ${v.registerLabel}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+      <span style="font-family:var(--font-heading);font-size:22px;font-weight:600">${v.L.conj.inf} <span style="font-weight:400;font-size:16px;color:var(--color-neutral-700)">— ${v.L.conj.en}</span></span>
+      <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${v.L.conj.infFa}</span>
+    </div>
+    ${verbTable(v.L.conj)}
+    <button class="btn btn-ghost" onClick=${v.L.openPresent} style="align-self:flex-start;min-height:44px;padding:0;gap:6px">How the present tense works ${v.ic.chev}</button>
+  </section>
+  ` : null}
 
   <section style="display:flex;flex-direction:column;gap:10px">
     <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;color:var(--color-accent-700)">تمرین</span>${say('تمرین')}</span><h2 style="font-size:24px;margin:0">Practice</h2></div>
@@ -601,6 +632,38 @@ ${(v.is.explore) ? html`
     </button>
   `)}
 </div>
+` : null}
+
+${(v.is.grammar) ? html`
+<article style="display:flex;flex-direction:column;gap:18px;animation:plfade .25s ease">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <button onClick=${v.back} aria-label="Back" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.back}</button>
+    <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">Grammar · ${v.registerLabel}</span>
+  </div>
+  <header style="display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--color-divider);padding-bottom:18px">
+    <span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:28px;color:var(--color-accent-700)">${v.G.fa}</span>${say(v.G.fa)}</span>
+    <h1 style="font-size:40px;font-weight:400;margin:0;line-height:1.05">${v.G.title}</h1>
+    <p style="margin:0;font-size:15px;line-height:1.6">${v.G.intro}</p>
+  </header>
+  ${(v.G.endings.length) ? html`
+  <section style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+    ${v.G.endings.map((e) => html`<div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:10px;display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:11px;color:var(--color-neutral-700)">${e.who}</span><span style="font-family:var(--font-heading);font-size:22px;font-weight:600">${e.end}</span></div>`)}
+  </section>` : null}
+  ${v.G.sections.map((sec) => html`
+  <section style="display:flex;flex-direction:column;gap:8px">
+    <h2 style="font-size:24px;margin:0">${sec.h}</h2>
+    <p style="margin:0;font-size:15px;line-height:1.65">${sec.p}</p>
+    ${sec.ex.map((x) => html`<div style="display:flex;flex-direction:column;align-items:flex-end;padding:8px 12px;border-right:2px solid var(--color-accent)"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;line-height:1.5">${x.fa}</span><span style="font-size:13px;font-style:italic;color:var(--color-neutral-700)">${x.lat}</span><span style="font-size:13px">${x.en}</span></div>`)}
+  </section>`)}
+  <section style="display:flex;flex-direction:column;gap:22px">
+    <h2 style="font-size:24px;margin:0">Every lesson's verb</h2>
+    ${v.G.verbs.map((t) => html`
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px"><span style="display:flex;flex-direction:column"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${t.lesson}</span><span style="font-family:var(--font-heading);font-size:20px;font-weight:600">${t.inf} <span style="font-weight:400;font-size:15px;color:var(--color-neutral-700)">— ${t.en}</span></span></span><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${t.infFa}</span></div>
+        ${verbTable(t)}
+      </div>`)}
+  </section>
+</article>
 ` : null}
 
 ${(v.is.article) ? html`
