@@ -438,16 +438,29 @@ class App extends Component {
     window.scrollTo(0, 0);
   }
   async record() {
-    const ex = this.state.ex;
-    if (ex.rec === 'rec') { if (this._mr && this._mr.state === 'recording') this._mr.stop(); else this.exUpd({ rec: 'done' }); clearTimeout(this._recT); return; }
-    this.exUpd({ rec: 'rec', recUrl: null });
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream); const chunks = [];
-      mr.ondataavailable = e => chunks.push(e.data);
-      mr.onstop = () => { stream.getTracks().forEach(t => t.stop()); this.exUpd({ rec: 'done', recUrl: URL.createObjectURL(new Blob(chunks)) }); };
-      this._mr = mr; mr.start(); this._recT = setTimeout(() => mr.state === 'recording' && mr.stop(), 4000);
-    } catch (e) { this._mr = null; this._recT = setTimeout(() => this.exUpd({ rec: 'done' }), 1800); }
+    const ex = this.state.ex, item = ex.items[ex.i];
+    if (ex.rec === 'asking') return;
+    if (ex.rec === 'rec') { clearTimeout(this._recT); if (this._mr && this._mr.state === 'recording') this._mr.stop(); return; }
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return this.exUpd({ rec: 'error', recErr: "This browser can't record audio." });
+    // Updates only apply while the same word is still on screen
+    const same = () => this.state.ex && this.state.ex.items[this.state.ex.i] === item;
+    this.exUpd({ rec: 'asking', recUrl: null, recErr: null });
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) {
+      if (same()) this.exUpd({ rec: 'error', recErr: e.name === 'NotAllowedError' ? 'Microphone access is blocked. Allow it for this site in your browser settings, then try again.' : "Couldn't start the microphone." });
+      return;
+    }
+    if (!same()) return stream.getTracks().forEach(t => t.stop());
+    const mr = new MediaRecorder(stream), chunks = [];
+    mr.ondataavailable = e => e.data.size && chunks.push(e.data);
+    mr.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      if (!same()) return;
+      this.exUpd(chunks.length ? { rec: 'done', recUrl: URL.createObjectURL(new Blob(chunks, { type: mr.mimeType })) } : { rec: 'error', recErr: 'Nothing was recorded. Try again.' });
+    };
+    this._mr = mr; mr.start(); this.exUpd({ rec: 'rec' });
+    this._recT = setTimeout(() => mr.state === 'recording' && mr.stop(), 5000);
   }
 
   // ---------- render ----------
@@ -610,9 +623,10 @@ class App extends Component {
       if (X.isSpeak) {
         X.recDone = ex.rec === 'done'; X.rec = () => this.record();
         X.recIcon = ex.rec === 'rec' ? h('span', { style: { width: 22, height: 22, borderRadius: '50%', background: 'var(--color-accent)', animation: 'plblink 1s infinite' } }) : I('mic', 22);
-        X.recLabel = ex.rec === 'rec' ? 'Recording… tap to stop' : ex.rec === 'done' ? 'Record again' : '2 · Your turn';
+        X.recLabel = { asking: 'Allow the microphone…', rec: 'Recording… tap to stop', done: 'Record again', error: 'Try again' }[ex.rec] || '2 · Your turn';
+        X.recErr = ex.rec === 'error' ? ex.recErr : null;
         X.recBorder = ex.rec === 'rec' ? 'var(--color-accent)' : 'var(--color-divider)'; X.recBg = ex.rec === 'rec' ? 'var(--color-accent-100)' : 'transparent';
-        X.playMine = () => { if (ex.recUrl) new Audio(ex.recUrl).play(); else this.play(it.w); };
+        X.playMine = () => { if (this._a) this._a.pause(); this._a = new Audio(ex.recUrl); this._a.play().catch(() => {}); };
         X.selfRates = [['Needs work', 0], ['Close', 1], ['Nailed it', 1]].map(([label, c]) => ({ label, go: () => this.next({ correct: ex.correct + c }) }));
       }
       if (k === 'convo') {
