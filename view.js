@@ -6,6 +6,8 @@ import { SAY } from "./learn-data.js";
 // Persian digit set beside a number word (e.g. هفت ۷)
 // How to say a Persian label, shown in Latin letters beside it
 const say = (fa, size = 12) => SAY[fa] ? html`<span style="font-family:var(--font-body);font-style:italic;font-size:${size}px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--color-neutral-700);direction:ltr;white-space:nowrap">${SAY[fa]}</span>` : null;
+// Persian words inside English text, set in the Persian font
+const faRuns = (text) => text.split(/([\u0600-\u06FF\u200C]+(?:\s+[\u0600-\u06FF\u200C]+)*)/).map((t, i) => i % 2 ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:1.2em">${t}</span>` : t);
 const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
 // A verb's six present-tense forms: person on the left, Persian form on the right
 const verbTable = (t) => html`
@@ -558,6 +560,24 @@ ${(v.is.script) ? html`
   <section style="display:flex;flex-direction:column;gap:6px">
     <h1 style="font-size:40px;font-weight:400;margin:0">The alphabet</h1>
     <p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-700);text-align:justify;hyphens:auto">Thirty-two letters, written right to left. Most letters change shape depending on where they sit in a word — learn the four forms and reading opens up.</p>
+  </section>
+  <section id="vowels" style="display:flex;flex-direction:column;gap:10px;scroll-margin-top:72px">
+    <div style="display:flex;align-items:baseline;gap:10px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">واکه‌ها</span>${say('واکه‌ها')}</span><h2 style="font-size:28px;margin:0">Vowels</h2></div>
+    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-700)">Persian has six vowels. The three long ones are always written as letters; the three short ones usually aren't written at all.</p>
+    <div style="display:flex;flex-direction:column">
+      ${(v.vowels || []).map((vw) => html`
+        <div style="display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
+          <span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${vw.kind}</span><span style="font-family:var(--font-heading);font-size:22px;font-weight:600;line-height:1.1">${vw.lat}</span></span>
+          <span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:26px;line-height:1.3;color:var(--color-accent-700)">${vw.mark}</span>${(vw.name) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${vw.name} · usually unwritten</span>` : null}</span><span style="font-size:13px;line-height:1.4">Like ${vw.like}</span></span>
+          <button onClick=${vw.play} aria-label=${'Play ' + vw.wlat} style="display:flex;align-items:center;gap:8px;border:1px solid ${vw.playing ? 'var(--color-accent)' : 'var(--color-divider)'};border-radius:var(--radius-md);background:transparent;cursor:pointer;padding:6px 10px;min-height:44px">
+            <span style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-family:'Noto Naskh Arabic',serif;font-size:18px;line-height:1.3">${vw.fa}</span><span style="font-size:11px;font-style:italic;color:var(--color-neutral-700)">${vw.wlat} · ${vw.en}</span></span>
+            <span style="color:var(--color-accent-700);display:flex">${v.ic.volSm}</span>
+          </button>
+        </div>`)}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px">
+      ${(v.vowelNotes || []).map((n) => html`<p style="margin:0;font-size:14px;line-height:1.6"><strong style="font-weight:600">${faRuns(n.h)}.</strong> ${faRuns(n.p)}</p>`)}
+    </div>
   </section>
   <div style="display:flex;gap:6px;overflow-x:auto;margin:0 -20px;padding:0 20px 4px">
     ${(v.letterFilters || []).map((f) => html`

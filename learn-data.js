@@ -124,7 +124,7 @@ export const STAGES = [
   { id: "s1", n: 1, name: "Foundations", fa: "پایه", level: "Pre-A1", weeks: "Weeks 1–3",
     goal: "Read the script, pronounce every sound, and get through a first meeting.",
     cando: ["Read and write all 32 letters", "Greet people and introduce yourself", "Count to 100 and say your age", "Use to and shomaa correctly"],
-    items: [{ kind: "script", title: "The alphabet", desc: "32 letters, four forms each" }, { kind: "lesson", id: "greetings" }, { kind: "lesson", id: "numbers" }, { kind: "lesson", id: "pronouns" }],
+    items: [{ kind: "script", title: "The alphabet", desc: "32 letters, four forms each" }, { kind: "script", id: "vowels", optional: true, title: "Vowels: long & short", desc: "Six vowel sounds — three you'll rarely see written" }, { kind: "lesson", id: "greetings" }, { kind: "lesson", id: "numbers" }, { kind: "lesson", id: "pronouns" }],
     checkpoint: { id: "first-meeting", title: "First meeting", desc: "Meet Maryam at a friend's party" } },
   { id: "s2", n: 2, name: "Survival", fa: "روزمره", level: "A1", weeks: "Weeks 4–8",
     goal: "Handle everyday needs: food, family, time and simple questions.",
@@ -382,6 +382,24 @@ export const GRAMMAR = {
   },
 };
 
+// Six vowels. key = an example word in the lessons (so it has a recording)
+export const VOWELS = [
+  { long: true, lat: "aa", mark: "آ / ا", like: "“a” in father, lips slightly rounded — close to “aw” in law", key: "food:Aab" },
+  { long: true, lat: "i (ee)", mark: "ی", like: "“ee” in see", key: "food:Shir" },
+  { long: true, lat: "u (oo)", mark: "و", like: "“oo” in food", key: "relationships:Doost" },
+  { long: false, lat: "a", mark: "بَ", name: "zebar — a dash above", like: "“a” in cat", key: "home-life:Sag" },
+  { long: false, lat: "e", mark: "بِ", name: "zir — a dash below", like: "“e” in bed", key: "colors:Sefid" },
+  { long: false, lat: "o", mark: "بُ", name: "pish — a small و above", like: "“o” in go, but short, without the glide", key: "home-life:Gorbe" },
+];
+export const VOWEL_NOTES = [
+  { h: "Short vowels are invisible", p: "سگ is just s-g — the a isn't written. You learn the word to know its vowels, which is why the app always shows the Latin spelling." },
+  { h: "و and ی do double duty", p: "They can be consonants (v, y) or long vowels (oo, ee). و is sometimes a short o, too: دو do (two), تو to (you)." },
+  { h: "A final ه is often just e", p: "خانه khaane, گربه gorbe — the ه at the end is the e sound, not an h." },
+  { h: "Words can't start with a bare vowel", p: "An ا goes in front to carry it: اسم esm (name), ایران Iraan, and آ for a long aa at the start: آب aab." },
+  { h: "Two blends", p: "ey as in say — کی key (when). ow as in go — نوروز Nowruz." },
+  { h: "How the app spells sounds", p: "aa is the long a, a the short one. oo and u are the same long sound; so are ee and i." },
+];
+
 // How to say the Persian labels and glyphs shown beside English in the UI
 export const SAY = {
   "فارسی": "Faarsi", "مرور": "Morur", "الفبا": "Alefbaa", "کاوش": "Kaavosh", "من": "Man",
@@ -392,7 +410,7 @@ export const SAY = {
   "کارت‌ها": "Kaart-haa", "شناخت": "Shenaakht", "شنیدن": "Shenidan", "جمله‌سازی": "Jomle-saazi", "گفتن": "Goftan", "گفتگو": "Goftegu",
   "پایه": "Paaye", "روزمره": "Ruzmarre", "تسلط": "Tasallot", "اختیاری": "Ekhtiyaari",
   "تاریخ": "Taarikh", "پرچم": "Parcham", "جغرافیا": "Joghraafiyaa", "جشن": "Jashn",
-"دستور": "Dastoor", "زمان حال": "Zamaan-e haal",
+  "دستور": "Dastoor", "زمان حال": "Zamaan-e haal", "واکه‌ها": "Vaake-haa",
   "سلام": "Salaam", "نوش جان": "Nooshe jaan", "۱۲۳": "Yek, do, se", "رنگ": "Rang", "خانواده": "Khaanevaade", "عشق": "Eshgh",
   "چای": "Chaai", "چی؟": "Chi?", "خانه": "Khaane", "شهر": "Shahr", "لباس": "Lebaas", "شنبه": "Shanbe", "رفتن": "Raftan", "ولش کن": "Velesh kon",
 };

@@ -11,7 +11,7 @@ const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
 const V1_KEY = 'persian_app_state';
-const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen', 'myWords'];
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen', 'vowelsSeen', 'myWords'];
 const MIN = 60e3, DAY = 864e5;
 // Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
@@ -132,7 +132,7 @@ class App extends Component {
     try { await sb.auth.signOut(); } catch (e) {}
     // Back to a clean guest profile on this device
     this._lastSaved = null;
-    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], scriptSeen: false, tab: 'learn', route: null });
+    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], scriptSeen: false, vowelsSeen: false, tab: 'learn', route: null });
   }
 
   // ---------- refresh ----------
@@ -232,11 +232,12 @@ class App extends Component {
   stageInfo() {
     const s = this.state; let prevDone = true;
     return this.D.STAGES.map(st => {
-      const playable = st.items.filter(it => it.kind === 'lesson' || it.kind === 'script');
+      // Optional items get their own check but never hold a stage back
+      const req = st.items.filter(it => !it.optional), playable = req.filter(it => it.kind === 'lesson' || it.kind === 'script');
       const isDone = it => it.kind === 'lesson' ? this.lessonDone(it.id) : !!s.scriptSeen;
       const doneCount = playable.filter(isDone).length;
       const cpDone = !!s.progress['cp:' + st.checkpoint.id];
-      const complete = doneCount === playable.length && cpDone && playable.length === st.items.length;
+      const complete = doneCount === playable.length && cpDone && playable.length === req.length;
       const unlocked = st.n <= 2 || prevDone; prevDone = complete;
       return { ...st, doneCount, total: playable.length, cpDone, complete, unlocked, playableCp: unlocked && !!this.D.SCENARIOS[st.checkpoint.id] };
     });
@@ -379,6 +380,10 @@ class App extends Component {
 
   // ---------- navigation ----------
   go(tab) { this.setState({ tab, route: null }); window.scrollTo(0, 0); }
+  openVowels() {
+    this.setState({ tab: 'script', route: null, vowelsSeen: true });
+    setTimeout(() => { const el = document.getElementById('vowels'); if (el) el.scrollIntoView({ block: 'start' }); }, 60);
+  }
   nav(route) { this.setState({ route }); window.scrollTo(0, 0); }
   back() {
     const r = this.state.route;
@@ -561,12 +566,12 @@ class App extends Component {
           op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer', endIcon: locked ? I('lock', 14) : this.lessonDone(l.id) ? I('check', 16, 2) : ic.chev, endColor: this.lessonDone(l.id) ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
           open: locked ? noop : () => this.nav({ name: 'lesson', id: l.id }) };
       }
-      const isScript = it.kind === 'script';
+      const isScript = it.kind === 'script', isVowels = it.id === 'vowels', seen = isVowels ? s.vowelsSeen : s.scriptSeen;
       const page = it.kind === 'grammar' && D.GRAMMAR[it.id];
       return { isOther: true, icon: I(kindIcon[it.kind], 15), iconBorder: 'var(--color-divider)', kicker: { script: 'Script', grammar: 'Grammar', conversation: 'Conversation', skill: 'Skill' }[it.kind],
-        title: it.title, desc: it.desc, glyph: isScript ? 'الفبا' : '', op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer',
-        endIcon: locked ? I('lock', 14) : isScript && s.scriptSeen ? I('check', 16, 2) : ic.chev, endColor: isScript && s.scriptSeen ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
-        open: locked ? noop : isScript ? () => this.go('script') : page ? () => this.nav({ name: 'grammar', id: it.id }) : noop };
+        title: it.title, desc: it.desc, glyph: isVowels ? 'واکه‌ها' : isScript ? 'الفبا' : '', op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer',
+        endIcon: locked ? I('lock', 14) : isScript && seen ? I('check', 16, 2) : ic.chev, endColor: isScript && seen ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
+        open: locked ? noop : isVowels ? () => this.openVowels() : isScript ? () => this.go('script') : page ? () => this.nav({ name: 'grammar', id: it.id }) : noop };
     };
     const cpRow = st => ({ isOther: true, icon: I('chat', 15), iconBorder: 'var(--color-accent)', kicker: 'Checkpoint · conversation', title: st.checkpoint.title, desc: st.checkpoint.desc, glyph: '',
       op: st.playableCp ? 1 : 0.5, cursor: st.playableCp ? 'pointer' : 'default', endIcon: st.cpDone ? I('check', 16, 2) : st.playableCp ? ic.chev : I('lock', 14), endColor: st.cpDone ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
@@ -706,6 +711,9 @@ class App extends Component {
     // script
     const filt = s.letterFilter;
     const FL = [['all', 'All 32'], ['persian', 'Persian-only'], ['nc', 'Non-connectors'], ['alike', 'Sound-alikes']];
+    v.vowels = D.VOWELS.map(vw => { const w = this.wordByKey(vw.key);
+      return { ...vw, kind: vw.long ? 'Long' : 'Short', fa: w.persian, wlat: w.phonetic, en: w.english, playing: s.playing === w.key, play: () => { this.setState({ vowelsSeen: true }); this.play(w); } }; });
+    v.vowelNotes = D.VOWEL_NOTES;
     v.letterFilters = FL.map(([id, label]) => ({ label, go: () => this.setState({ letterFilter: id }), border: filt === id ? 'var(--color-accent)' : 'var(--color-divider)', color: filt === id ? 'var(--color-accent-700)' : 'var(--color-text)' }));
     v.letterFilterNote = { all: null, persian: 'Persian added four letters to the Arabic alphabet for sounds Arabic lacks: p, ch, zh and g.', nc: 'These seven letters never join to the letter after them — so a word can have gaps in the middle, like دوست (doost).', alike: 'Several letters share one sound. Spelling must be memorised word by word — but in speech you only need one.' }[filt];
     v.letters = D.LETTERS.map((l, i) => ({ ...l, i })).filter(l => filt === 'all' || (filt === 'persian' && l.persianOnly) || (filt === 'nc' && !l.connects) || (filt === 'alike' && l.group))
