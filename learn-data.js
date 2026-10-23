@@ -301,64 +301,87 @@ export const LESSONS = RAW.map(([id, title, description, glyph, words]) => ({
 export const PERSONS = [["I", "man", "من"], ["you", "to", "تو"], ["he/she", "oo", "او"], ["we", "maa", "ما"], ["you all", "shomaa", "شما"], ["they", "aan-haa", "آن‌ها"]];
 
 // One verb per lesson, present tense. Row: [spoken, spokenLatin, written, writtenLatin, English]
+// note: how the verb is used. imp: command forms [one person, several/polite], each [spoken, spokenLatin, written, writtenLatin]
 export const CONJ = {
-  greetings: { inf: "khub budan", infFa: "خوب بودن", en: "to be well", rows: [
+  greetings: { inf: "khub budan", infFa: "خوب بودن", en: "to be well", note: "Say how someone is: the adjective takes the “to be” ending. Khubam, mamnoon, “I'm well, thanks”. Not used as a command.",
+    rows: [
     ["خوبم", "khubam", "خوبم", "khubam", "I am well"], ["خوبی", "khubi", "خوبی", "khubi", "you are well"],
     ["خوبه", "khube", "خوب است", "khub ast", "he/she is well"], ["خوبیم", "khubim", "خوبیم", "khubim", "we are well"],
     ["خوبین", "khubin", "خوبید", "khubid", "you all are well"], ["خوبن", "khuban", "خوبند", "khuband", "they are well"]] },
-  expressions: { inf: "balad budan", infFa: "بلد بودن", en: "to know how", rows: [
+  expressions: { inf: "balad budan", infFa: "بلد بودن", en: "to know how", note: "balad means knowing how to do something, a skill: Faarsi baladi? “Do you know Persian?” For knowing a fact Persians use daanestan; for knowing a person, shenaakhtan. Not used as a command.",
+    rows: [
     ["بلدم", "baladam", "بلدم", "baladam", "I know how"], ["بلدی", "baladi", "بلدی", "baladi", "you know how"],
     ["بلده", "balade", "بلد است", "balad ast", "he/she knows how"], ["بلدیم", "baladim", "بلدیم", "baladim", "we know how"],
     ["بلدین", "baladin", "بلدید", "baladid", "you all know how"], ["بلدن", "baladan", "بلدند", "baladand", "they know how"]] },
-  numbers: { inf: "daashtan", infFa: "داشتن", en: "to have", rows: [
+  numbers: { inf: "daashtan", infFa: "داشتن", en: "to have", note: "Besides “to have”, daashtan in front of another verb means “to be doing right now”: daaram miram, “I'm on my way”. Not used as a command.",
+    rows: [
     ["دارم", "daaram", "دارم", "daaram", "I have"], ["داری", "daari", "داری", "daari", "you have"],
     ["داره", "daare", "دارد", "daarad", "he/she has"], ["داریم", "daarim", "داریم", "daarim", "we have"],
     ["دارین", "daarin", "دارید", "daarid", "you all have"], ["دارن", "daaran", "دارند", "daarand", "they have"]] },
-  colors: { inf: "didan", infFa: "دیدن", en: "to see", rows: [
+  colors: { inf: "didan", infFa: "دیدن", en: "to see", note: "The command bebin! means “look!” and is used all the time to get attention: Bebin, in chiye? “Look, what's this?”",
+    imp: [["ببین", "bebin", "ببین", "bebin"], ["ببینین", "bebinin", "ببینید", "bebinid"]],
+    rows: [
     ["می‌بینم", "mibinam", "می‌بینم", "mibinam", "I see"], ["می‌بینی", "mibini", "می‌بینی", "mibini", "you see"],
     ["می‌بینه", "mibine", "می‌بیند", "mibinad", "he/she sees"], ["می‌بینیم", "mibinim", "می‌بینیم", "mibinim", "we see"],
     ["می‌بینین", "mibinin", "می‌بینید", "mibinid", "you all see"], ["می‌بینن", "mibinan", "می‌بینند", "mibinand", "they see"]] },
-  family: { inf: "zendegi kardan", infFa: "زندگی کردن", en: "to live", rows: [
+  family: { inf: "zendegi kardan", infFa: "زندگی کردن", en: "to live", note: "zendegi is “life” and kardan is “to do”, so this is literally “to do life”. Many Persian verbs are a word plus kardan; only kardan changes.",
+    rows: [
     ["زندگی می‌کنم", "zendegi mikonam", "زندگی می‌کنم", "zendegi mikonam", "I live"], ["زندگی می‌کنی", "zendegi mikoni", "زندگی می‌کنی", "zendegi mikoni", "you live"],
     ["زندگی می‌کنه", "zendegi mikone", "زندگی می‌کند", "zendegi mikonad", "he/she lives"], ["زندگی می‌کنیم", "zendegi mikonim", "زندگی می‌کنیم", "zendegi mikonim", "we live"],
     ["زندگی می‌کنین", "zendegi mikonin", "زندگی می‌کنید", "zendegi mikonid", "you all live"], ["زندگی می‌کنن", "zendegi mikonan", "زندگی می‌کنند", "zendegi mikonand", "they live"]] },
-  relationships: { inf: "doost daashtan", infFa: "دوست داشتن", en: "to like / love", rows: [
+  relationships: { inf: "doost daashtan", infFa: "دوست داشتن", en: "to like / love", note: "Use it for things and people you like: chaai doost daaram, “I like tea”. With the “you” ending tucked in, dooset daaram means “I love you”. Not used as a command.",
+    rows: [
     ["دوست دارم", "doost daaram", "دوست دارم", "doost daaram", "I like"], ["دوست داری", "doost daari", "دوست داری", "doost daari", "you like"],
     ["دوست داره", "doost daare", "دوست دارد", "doost daarad", "he/she likes"], ["دوست داریم", "doost daarim", "دوست داریم", "doost daarim", "we like"],
     ["دوست دارین", "doost daarin", "دوست دارید", "doost daarid", "you all like"], ["دوست دارن", "doost daaran", "دوست دارند", "doost daarand", "they like"]] },
-  food: { inf: "khordan", infFa: "خوردن", en: "to eat", rows: [
+  food: { inf: "khordan", infFa: "خوردن", en: "to eat", note: "Persians “eat” drinks too: chaai khordan, “to drink tea”. The command bokhor! “eat!” is what a host says when piling food on your plate.",
+    imp: [["بخور", "bokhor", "بخور", "bokhor"], ["بخورین", "bokhorin", "بخورید", "bokhorid"]],
+    rows: [
     ["می‌خورم", "mikhoram", "می‌خورم", "mikhoram", "I eat"], ["می‌خوری", "mikhori", "می‌خوری", "mikhori", "you eat"],
     ["می‌خوره", "mikhore", "می‌خورد", "mikhorad", "he/she eats"], ["می‌خوریم", "mikhorim", "می‌خوریم", "mikhorim", "we eat"],
     ["می‌خورین", "mikhorin", "می‌خورید", "mikhorid", "you all eat"], ["می‌خورن", "mikhoran", "می‌خورند", "mikhorand", "they eat"]] },
-  questions: { inf: "khaastan", infFa: "خواستن", en: "to want", rows: [
+  questions: { inf: "khaastan", infFa: "خواستن", en: "to want", note: "Put the subjunctive after it to say what you want to do: mikhaam beram, “I want to go”. The polite way to order is mikhaam, “I'd like”. Not used as a command.",
+    rows: [
     ["می‌خوام", "mikhaam", "می‌خواهم", "mikhaaham", "I want"], ["می‌خوای", "mikhaay", "می‌خواهی", "mikhaahi", "you want"],
     ["می‌خواد", "mikhaad", "می‌خواهد", "mikhaahad", "he/she wants"], ["می‌خوایم", "mikhaaym", "می‌خواهیم", "mikhaahim", "we want"],
     ["می‌خواین", "mikhaayn", "می‌خواهید", "mikhaahid", "you all want"], ["می‌خوان", "mikhaan", "می‌خواهند", "mikhaahand", "they want"]] },
-  pronouns: { inf: "hastan", infFa: "هستن", en: "to be", rows: [
+  pronouns: { inf: "hastan", infFa: "هستن", en: "to be", note: "After a description it shrinks to just the ending: khubam, “I'm well”; khaste-i? “are you tired?” Use hast on its own for “there is”: chaai hast? “Is there tea?” Not used as a command.",
+    rows: [
     ["هستم", "hastam", "هستم", "hastam", "I am"], ["هستی", "hasti", "هستی", "hasti", "you are"],
     ["هست", "hast", "است", "ast", "he/she is"], ["هستیم", "hastim", "هستیم", "hastim", "we are"],
     ["هستین", "hastin", "هستید", "hastid", "you all are"], ["هستن", "hastan", "هستند", "hastand", "they are"]] },
-  "home-life": { inf: "khaabidan", infFa: "خوابیدن", en: "to sleep", rows: [
+  "home-life": { inf: "khaabidan", infFa: "خوابیدن", en: "to sleep", note: "khaab means both “sleep” and “a dream”. To say you're sleepy: khaabam miaad, literally “sleep is coming to me”.",
+    imp: [["بخواب", "bekhaab", "بخواب", "bekhaab"], ["بخوابین", "bekhaabin", "بخوابید", "bekhaabid"]],
+    rows: [
     ["می‌خوابم", "mikhaabam", "می‌خوابم", "mikhaabam", "I sleep"], ["می‌خوابی", "mikhaabi", "می‌خوابی", "mikhaabi", "you sleep"],
     ["می‌خوابه", "mikhaabe", "می‌خوابد", "mikhaabad", "he/she sleeps"], ["می‌خوابیم", "mikhaabim", "می‌خوابیم", "mikhaabim", "we sleep"],
     ["می‌خوابین", "mikhaabin", "می‌خوابید", "mikhaabid", "you all sleep"], ["می‌خوابن", "mikhaaban", "می‌خوابند", "mikhaaband", "they sleep"]] },
-  "getting-around": { inf: "raftan", infFa: "رفتن", en: "to go", rows: [
+  "getting-around": { inf: "raftan", infFa: "رفتن", en: "to go", note: "The command boro! means “go!” and, said sharply, “go away!”. For “let's go” use berim! In speech the place comes after the verb: miram khune, “I'm going home”.",
+    imp: [["برو", "boro", "برو", "boro"], ["برین", "berin", "بروید", "beravid"]],
+    rows: [
     ["می‌رم", "miram", "می‌روم", "miravam", "I go"], ["می‌ری", "miri", "می‌روی", "miravi", "you go"],
     ["می‌ره", "mire", "می‌رود", "miravad", "he/she goes"], ["می‌ریم", "mirim", "می‌رویم", "miravim", "we go"],
     ["می‌رین", "mirin", "می‌روید", "miravid", "you all go"], ["می‌رن", "miran", "می‌روند", "miravand", "they go"]] },
-  clothing: { inf: "pushidan", infFa: "پوشیدن", en: "to wear", rows: [
+  clothing: { inf: "pushidan", infFa: "پوشیدن", en: "to wear", note: "For putting clothes on. Taking them off is a different verb: dar aavordan. bepush! is what a parent says before you go out in the cold.",
+    imp: [["بپوش", "bepush", "بپوش", "bepush"], ["بپوشین", "bepushin", "بپوشید", "bepushid"]],
+    rows: [
     ["می‌پوشم", "mipusham", "می‌پوشم", "mipusham", "I wear"], ["می‌پوشی", "mipushi", "می‌پوشی", "mipushi", "you wear"],
     ["می‌پوشه", "mipushe", "می‌پوشد", "mipushad", "he/she wears"], ["می‌پوشیم", "mipushim", "می‌پوشیم", "mipushim", "we wear"],
     ["می‌پوشین", "mipushin", "می‌پوشید", "mipushid", "you all wear"], ["می‌پوشن", "mipushan", "می‌پوشند", "mipushand", "they wear"]] },
-  days: { inf: "aamadan", infFa: "آمدن", en: "to come", rows: [
+  days: { inf: "aamadan", infFa: "آمدن", en: "to come", note: "The command looks different because the present stem is irregular: biaa! “come!”, as in biaa injaa, “come here”. To several people, or politely: biaayn. Khosh umadid, “welcome”, is the past of this verb: “you came well”.",
+    imp: [["بیا", "biaa", "بیا", "biaa"], ["بیاین", "biaayn", "بیایید", "biaayid"]],
+    rows: [
     ["میام", "miaam", "می‌آیم", "miaayam", "I come"], ["میای", "miaay", "می‌آیی", "miaayi", "you come"],
     ["میاد", "miaad", "می‌آید", "miaayad", "he/she comes"], ["میایم", "miaaym", "می‌آییم", "miaayim", "we come"],
     ["میاین", "miaayn", "می‌آیید", "miaayid", "you all come"], ["میان", "miaan", "می‌آیند", "miaayand", "they come"]] },
-  verbs: { inf: "goftan", infFa: "گفتن", en: "to say", rows: [
+  verbs: { inf: "goftan", infFa: "گفتن", en: "to say", note: "To tell someone, put be (to) before the person: be man begu, “tell me”. The command begu! is also how you'd say “go on, say it”.",
+    imp: [["بگو", "begu", "بگو", "begu"], ["بگین", "begin", "بگویید", "beguyid"]],
+    rows: [
     ["می‌گم", "migam", "می‌گویم", "miguyam", "I say"], ["می‌گی", "migi", "می‌گویی", "miguyi", "you say"],
     ["می‌گه", "mige", "می‌گوید", "miguyad", "he/she says"], ["می‌گیم", "migim", "می‌گوییم", "miguyim", "we say"],
     ["می‌گین", "migin", "می‌گویید", "miguyid", "you all say"], ["می‌گن", "migan", "می‌گویند", "miguyand", "they say"]] },
-  slang: { inf: "fahmidan", infFa: "فهمیدن", en: "to understand", rows: [
+  slang: { inf: "fahmidan", infFa: "فهمیدن", en: "to understand", note: "Its most useful form is the negative: nemifahmam, “I don't understand”. Fahmidi? “Got it?” is how people check you followed. Not used as a command.",
+    rows: [
     ["می‌فهمم", "mifahmam", "می‌فهمم", "mifahmam", "I understand"], ["می‌فهمی", "mifahmi", "می‌فهمی", "mifahmi", "you understand"],
     ["می‌فهمه", "mifahme", "می‌فهمد", "mifahmad", "he/she understands"], ["می‌فهمیم", "mifahmim", "می‌فهمیم", "mifahmim", "we understand"],
     ["می‌فهمین", "mifahmin", "می‌فهمید", "mifahmid", "you all understand"], ["می‌فهمن", "mifahman", "می‌فهمند", "mifahmand", "they understand"]] },
