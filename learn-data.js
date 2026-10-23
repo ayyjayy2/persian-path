@@ -134,12 +134,12 @@ export const STAGES = [
   { id: "s3", n: 3, name: "Building sentences", fa: "جمله‌سازی", level: "A2", weeks: "Weeks 9–16",
     goal: "Make your own sentences in the present and past — not just phrases.",
     cando: ["Conjugate any regular verb in the present", "Tell a story in the past tense", "Link nouns and adjectives with the ezāfe", "Mark direct objects with ro"],
-    items: [{ kind: "lesson", id: "verbs" }, { kind: "grammar", title: "Present tense: mi- + stem", desc: "mi-ravam, mi-khoram, mi-bínam" }, { kind: "grammar", title: "The ezāfe", desc: "ketaab-e man — my book" }, { kind: "lesson", id: "home-life" }, { kind: "grammar", title: "Past tense", desc: "raftam, khordam, didam" }, { kind: "grammar", title: "The object marker ro", desc: "chaai ro khordam" }, { kind: "lesson", id: "getting-around" }, { kind: "lesson", id: "clothing" }],
+    items: [{ kind: "lesson", id: "verbs" }, { kind: "grammar", id: "present", title: "Present tense: mi- + stem", desc: "mi-ravam, mi-khoram, mi-bínam" }, { kind: "grammar", id: "ezafe", title: "The ezāfe", desc: "ketaab-e man — my book" }, { kind: "lesson", id: "home-life" }, { kind: "grammar", id: "past", title: "Past tense", desc: "raftam, khordam, didam" }, { kind: "grammar", id: "ro", title: "The object marker ro", desc: "chaai ro khordam" }, { kind: "lesson", id: "getting-around" }, { kind: "lesson", id: "clothing" }],
     checkpoint: { id: "taxi", title: "Taking a taxi", desc: "Give directions across Tehran" } },
   { id: "s4", n: 4, name: "Conversation", fa: "گفتگو", level: "B1", weeks: "Months 5–9",
     goal: "Hold a ten-minute conversation with a native speaker on everyday topics.",
     cando: ["Speak about the future and give reasons", "Navigate ta'arof as a guest and a host", "Haggle and handle money", "Understand native speech at natural speed"],
-    items: [{ kind: "grammar", title: "Future & subjunctive", desc: "mikhaam beram — I want to go" }, { kind: "conversation", title: "Dinner at an Iranian home", desc: "Ta'arof, compliments and seconds" }, { kind: "conversation", title: "At the bazaar", desc: "Ask prices and haggle politely" }, { kind: "skill", title: "Listening at full speed", desc: "Real street interviews, slowed then natural" }, { kind: "grammar", title: "Formal vs. colloquial", desc: "Read written Persian, speak Tehrani" }],
+    items: [{ kind: "grammar", id: "future", title: "Future & subjunctive", desc: "mikhaam beram — I want to go" }, { kind: "conversation", title: "Dinner at an Iranian home", desc: "Ta'arof, compliments and seconds" }, { kind: "conversation", title: "At the bazaar", desc: "Ask prices and haggle politely" }, { kind: "skill", title: "Listening at full speed", desc: "Real street interviews, slowed then natural" }, { kind: "grammar", id: "register", title: "Formal vs. colloquial", desc: "Read written Persian, speak Tehrani" }],
     checkpoint: { id: "family-visit", title: "Meeting the family", desc: "A full visit, start to goodbye" } },
   { id: "s5", n: 5, name: "Fluency", fa: "تسلط", level: "B2–C1", weeks: "Month 10 onward",
     goal: "Follow films, express opinions, and enjoy Persian on its own terms.",
@@ -227,6 +227,7 @@ export const ACTIVITIES = [
   { id: "listen", title: "Listening", desc: "Hear it, then pick the meaning", mins: 3, icon: "headphones" },
   { id: "build", title: "Sentence builder", desc: "Put words in Persian order — verb last", mins: 4, icon: "blocks", isNew: true },
   { id: "speak", title: "Speaking", desc: "Shadow a native speaker, then compare", mins: 3, icon: "mic", isNew: true },
+  { id: "grammar", title: "Grammar", desc: "Pick the right verb form — I eat, you eat…", mins: 2, icon: "blocks", isNew: true },
 ];
 
 export const SENTENCES = [
@@ -296,6 +297,91 @@ export const LESSONS = RAW.map(([id, title, description, glyph, words]) => ({
   words: words.map(([persian, phonetic, english, example, written, writtenPhonetic]) => ({ key: id + ":" + phonetic, persian, phonetic, english, example, written, writtenPhonetic, digit: id === "numbers" ? DIGITS[phonetic] : undefined })),
 }));
 
+// Grammatical persons, in conjugation-table order: [English, Latin, Persian]
+export const PERSONS = [["I", "man", "من"], ["you", "to", "تو"], ["he/she", "oo", "او"], ["we", "maa", "ما"], ["you all", "shomaa", "شما"], ["they", "aan-haa", "آن‌ها"]];
+
+// One verb per lesson, present tense. Row: [spoken, spokenLatin, written, writtenLatin, English]
+export const CONJ = {
+  greetings: { inf: "khub budan", infFa: "خوب بودن", en: "to be well", rows: [
+    ["خوبم", "khubam", "خوبم", "khubam", "I am well"], ["خوبی", "khubi", "خوبی", "khubi", "you are well"],
+    ["خوبه", "khube", "خوب است", "khub ast", "he/she is well"], ["خوبیم", "khubim", "خوبیم", "khubim", "we are well"],
+    ["خوبین", "khubin", "خوبید", "khubid", "you all are well"], ["خوبن", "khuban", "خوبند", "khuband", "they are well"]] },
+  expressions: { inf: "balad budan", infFa: "بلد بودن", en: "to know how", rows: [
+    ["بلدم", "baladam", "بلدم", "baladam", "I know how"], ["بلدی", "baladi", "بلدی", "baladi", "you know how"],
+    ["بلده", "balade", "بلد است", "balad ast", "he/she knows how"], ["بلدیم", "baladim", "بلدیم", "baladim", "we know how"],
+    ["بلدین", "baladin", "بلدید", "baladid", "you all know how"], ["بلدن", "baladan", "بلدند", "baladand", "they know how"]] },
+  numbers: { inf: "daashtan", infFa: "داشتن", en: "to have", rows: [
+    ["دارم", "daaram", "دارم", "daaram", "I have"], ["داری", "daari", "داری", "daari", "you have"],
+    ["داره", "daare", "دارد", "daarad", "he/she has"], ["داریم", "daarim", "داریم", "daarim", "we have"],
+    ["دارین", "daarin", "دارید", "daarid", "you all have"], ["دارن", "daaran", "دارند", "daarand", "they have"]] },
+  colors: { inf: "didan", infFa: "دیدن", en: "to see", rows: [
+    ["می‌بینم", "mibinam", "می‌بینم", "mibinam", "I see"], ["می‌بینی", "mibini", "می‌بینی", "mibini", "you see"],
+    ["می‌بینه", "mibine", "می‌بیند", "mibinad", "he/she sees"], ["می‌بینیم", "mibinim", "می‌بینیم", "mibinim", "we see"],
+    ["می‌بینین", "mibinin", "می‌بینید", "mibinid", "you all see"], ["می‌بینن", "mibinan", "می‌بینند", "mibinand", "they see"]] },
+  family: { inf: "zendegi kardan", infFa: "زندگی کردن", en: "to live", rows: [
+    ["زندگی می‌کنم", "zendegi mikonam", "زندگی می‌کنم", "zendegi mikonam", "I live"], ["زندگی می‌کنی", "zendegi mikoni", "زندگی می‌کنی", "zendegi mikoni", "you live"],
+    ["زندگی می‌کنه", "zendegi mikone", "زندگی می‌کند", "zendegi mikonad", "he/she lives"], ["زندگی می‌کنیم", "zendegi mikonim", "زندگی می‌کنیم", "zendegi mikonim", "we live"],
+    ["زندگی می‌کنین", "zendegi mikonin", "زندگی می‌کنید", "zendegi mikonid", "you all live"], ["زندگی می‌کنن", "zendegi mikonan", "زندگی می‌کنند", "zendegi mikonand", "they live"]] },
+  relationships: { inf: "doost daashtan", infFa: "دوست داشتن", en: "to like / love", rows: [
+    ["دوست دارم", "doost daaram", "دوست دارم", "doost daaram", "I like"], ["دوست داری", "doost daari", "دوست داری", "doost daari", "you like"],
+    ["دوست داره", "doost daare", "دوست دارد", "doost daarad", "he/she likes"], ["دوست داریم", "doost daarim", "دوست داریم", "doost daarim", "we like"],
+    ["دوست دارین", "doost daarin", "دوست دارید", "doost daarid", "you all like"], ["دوست دارن", "doost daaran", "دوست دارند", "doost daarand", "they like"]] },
+  food: { inf: "khordan", infFa: "خوردن", en: "to eat", rows: [
+    ["می‌خورم", "mikhoram", "می‌خورم", "mikhoram", "I eat"], ["می‌خوری", "mikhori", "می‌خوری", "mikhori", "you eat"],
+    ["می‌خوره", "mikhore", "می‌خورد", "mikhorad", "he/she eats"], ["می‌خوریم", "mikhorim", "می‌خوریم", "mikhorim", "we eat"],
+    ["می‌خورین", "mikhorin", "می‌خورید", "mikhorid", "you all eat"], ["می‌خورن", "mikhoran", "می‌خورند", "mikhorand", "they eat"]] },
+  questions: { inf: "khaastan", infFa: "خواستن", en: "to want", rows: [
+    ["می‌خوام", "mikhaam", "می‌خواهم", "mikhaaham", "I want"], ["می‌خوای", "mikhaay", "می‌خواهی", "mikhaahi", "you want"],
+    ["می‌خواد", "mikhaad", "می‌خواهد", "mikhaahad", "he/she wants"], ["می‌خوایم", "mikhaaym", "می‌خواهیم", "mikhaahim", "we want"],
+    ["می‌خواین", "mikhaayn", "می‌خواهید", "mikhaahid", "you all want"], ["می‌خوان", "mikhaan", "می‌خواهند", "mikhaahand", "they want"]] },
+  pronouns: { inf: "hastan", infFa: "هستن", en: "to be", rows: [
+    ["هستم", "hastam", "هستم", "hastam", "I am"], ["هستی", "hasti", "هستی", "hasti", "you are"],
+    ["هست", "hast", "است", "ast", "he/she is"], ["هستیم", "hastim", "هستیم", "hastim", "we are"],
+    ["هستین", "hastin", "هستید", "hastid", "you all are"], ["هستن", "hastan", "هستند", "hastand", "they are"]] },
+  "home-life": { inf: "khaabidan", infFa: "خوابیدن", en: "to sleep", rows: [
+    ["می‌خوابم", "mikhaabam", "می‌خوابم", "mikhaabam", "I sleep"], ["می‌خوابی", "mikhaabi", "می‌خوابی", "mikhaabi", "you sleep"],
+    ["می‌خوابه", "mikhaabe", "می‌خوابد", "mikhaabad", "he/she sleeps"], ["می‌خوابیم", "mikhaabim", "می‌خوابیم", "mikhaabim", "we sleep"],
+    ["می‌خوابین", "mikhaabin", "می‌خوابید", "mikhaabid", "you all sleep"], ["می‌خوابن", "mikhaaban", "می‌خوابند", "mikhaaband", "they sleep"]] },
+  "getting-around": { inf: "raftan", infFa: "رفتن", en: "to go", rows: [
+    ["می‌رم", "miram", "می‌روم", "miravam", "I go"], ["می‌ری", "miri", "می‌روی", "miravi", "you go"],
+    ["می‌ره", "mire", "می‌رود", "miravad", "he/she goes"], ["می‌ریم", "mirim", "می‌رویم", "miravim", "we go"],
+    ["می‌رین", "mirin", "می‌روید", "miravid", "you all go"], ["می‌رن", "miran", "می‌روند", "miravand", "they go"]] },
+  clothing: { inf: "pushidan", infFa: "پوشیدن", en: "to wear", rows: [
+    ["می‌پوشم", "mipusham", "می‌پوشم", "mipusham", "I wear"], ["می‌پوشی", "mipushi", "می‌پوشی", "mipushi", "you wear"],
+    ["می‌پوشه", "mipushe", "می‌پوشد", "mipushad", "he/she wears"], ["می‌پوشیم", "mipushim", "می‌پوشیم", "mipushim", "we wear"],
+    ["می‌پوشین", "mipushin", "می‌پوشید", "mipushid", "you all wear"], ["می‌پوشن", "mipushan", "می‌پوشند", "mipushand", "they wear"]] },
+  days: { inf: "aamadan", infFa: "آمدن", en: "to come", rows: [
+    ["میام", "miaam", "می‌آیم", "miaayam", "I come"], ["میای", "miaay", "می‌آیی", "miaayi", "you come"],
+    ["میاد", "miaad", "می‌آید", "miaayad", "he/she comes"], ["میایم", "miaaym", "می‌آییم", "miaayim", "we come"],
+    ["میاین", "miaayn", "می‌آیید", "miaayid", "you all come"], ["میان", "miaan", "می‌آیند", "miaayand", "they come"]] },
+  verbs: { inf: "goftan", infFa: "گفتن", en: "to say", rows: [
+    ["می‌گم", "migam", "می‌گویم", "miguyam", "I say"], ["می‌گی", "migi", "می‌گویی", "miguyi", "you say"],
+    ["می‌گه", "mige", "می‌گوید", "miguyad", "he/she says"], ["می‌گیم", "migim", "می‌گوییم", "miguyim", "we say"],
+    ["می‌گین", "migin", "می‌گویید", "miguyid", "you all say"], ["می‌گن", "migan", "می‌گویند", "miguyand", "they say"]] },
+  slang: { inf: "fahmidan", infFa: "فهمیدن", en: "to understand", rows: [
+    ["می‌فهمم", "mifahmam", "می‌فهمم", "mifahmam", "I understand"], ["می‌فهمی", "mifahmi", "می‌فهمی", "mifahmi", "you understand"],
+    ["می‌فهمه", "mifahme", "می‌فهمد", "mifahmad", "he/she understands"], ["می‌فهمیم", "mifahmim", "می‌فهمیم", "mifahmim", "we understand"],
+    ["می‌فهمین", "mifahmin", "می‌فهمید", "mifahmid", "you all understand"], ["می‌فهمن", "mifahman", "می‌فهمند", "mifahmand", "they understand"]] },
+};
+
+// Grammar topic pages, keyed by the path's grammar item ids. Topics without an entry stay inert.
+export const GRAMMAR = {
+  present: {
+    title: "Present tense: mi- + stem", fa: "زمان حال",
+    intro: "Most Persian verbs build the present tense the same way: mi- in front, the verb's present stem in the middle, and a personal ending that says who is doing it.",
+    endings: [["I", "-am", "-am"], ["you", "-i", "-i"], ["he/she", "-e", "-ad"], ["we", "-im", "-im"], ["you all", "-in", "-id"], ["they", "-an", "-and"]],
+    sections: [
+      { h: "The pattern", p: "mi + khor + am = mikhoram, “I eat”. Change only the ending to change the person: mikhori, “you eat”; mikhorim, “we eat”.",
+        ex: [{ fa: "می‌خورم", lat: "mikhoram", en: "I eat" }, { fa: "می‌خوریم", lat: "mikhorim", en: "we eat" }] },
+      { h: "Drop the pronoun", p: "The ending already tells you who, so man, to, maa… are usually left out. Add the pronoun only for emphasis.",
+        ex: [{ fa: "غذا می‌خورم.", lat: "Ghazaa mikhoram.", en: "I eat food." }, { fa: "من چای می‌خورم، تو قهوه.", lat: "Man chaai mikhoram, to ghahve.", en: "I have tea, you (have) coffee." }] },
+      { h: "The verb goes last", p: "A Persian sentence ends with its verb: who, then what, then the verb.",
+        ex: [{ fa: "مامانم تهران زندگی می‌کنه.", lat: "Maamaanam Tehroon zendegi mikone.", en: "My mom lives in Tehran." }] },
+      { h: "Two verbs skip mi-", p: "daashtan (to have) and the verb “to be” never take mi- in the present: daaram, “I have”; hastam, “I am”. After an adjective, “to be” shrinks to just the ending: khubam, “I'm well”." },
+    ],
+  },
+};
+
 // How to say the Persian labels and glyphs shown beside English in the UI
 export const SAY = {
   "فارسی": "Faarsi", "مرور": "Morur", "الفبا": "Alefbaa", "کاوش": "Kaavosh", "من": "Man",
@@ -306,6 +392,7 @@ export const SAY = {
   "کارت‌ها": "Kaart-haa", "شناخت": "Shenaakht", "شنیدن": "Shenidan", "جمله‌سازی": "Jomle-saazi", "گفتن": "Goftan", "گفتگو": "Goftegu",
   "پایه": "Paaye", "روزمره": "Ruzmarre", "تسلط": "Tasallot", "اختیاری": "Ekhtiyaari",
   "تاریخ": "Taarikh", "پرچم": "Parcham", "جغرافیا": "Joghraafiyaa", "جشن": "Jashn",
+"دستور": "Dastoor", "زمان حال": "Zamaan-e haal",
   "سلام": "Salaam", "نوش جان": "Nooshe jaan", "۱۲۳": "Yek, do, se", "رنگ": "Rang", "خانواده": "Khaanevaade", "عشق": "Eshgh",
   "چای": "Chaai", "چی؟": "Chi?", "خانه": "Khaane", "شهر": "Shahr", "لباس": "Lebaas", "شنبه": "Shanbe", "رفتن": "Raftan", "ولش کن": "Velesh kon",
 };
