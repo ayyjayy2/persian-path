@@ -288,9 +288,12 @@ export const ACHIEVEMENTS = [
   { id: "word_collector", title: "Word Collector", desc: "Learn words from 5 lessons" },
 ];
 
+// Numeric value of each number word, shown as Persian digits alongside the word
+const DIGITS = { Yek: 1, Do: 2, Se: 3, Chahaar: 4, Panj: 5, Shesh: 6, Haft: 7, Hasht: 8, Noh: 9, Dah: 10, Bist: 20, Sad: 100 };
+
 export const LESSONS = RAW.map(([id, title, description, glyph, words]) => ({
   id, title, description, glyph, mature: id === "slang",
-  words: words.map(([persian, phonetic, english, example, written, writtenPhonetic]) => ({ key: id + ":" + phonetic, persian, phonetic, english, example, written, writtenPhonetic })),
+  words: words.map(([persian, phonetic, english, example, written, writtenPhonetic]) => ({ key: id + ":" + phonetic, persian, phonetic, english, example, written, writtenPhonetic, digit: id === "numbers" ? DIGITS[phonetic] : undefined })),
 }));
 
 // Every recording in audio/ (regenerate this list when audio is added)

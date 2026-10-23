@@ -213,7 +213,7 @@ class App extends Component {
   setPref(k, v) { this.setState(s => ({ prefs: { ...s.prefs, [k]: v } })); }
   disp(w) {
     const written = this.prefs().register === 'written' && w.written;
-    return { fa: written ? w.written : w.persian, lat: written ? w.writtenPhonetic : w.phonetic, en: w.english };
+    return { fa: written ? w.written : w.persian, lat: written ? w.writtenPhonetic : w.phonetic, en: w.english, num: w.digit != null ? this.faNum(w.digit) : null };
   }
   lessons() {
     const m = this.prefs().mature, all = this.D.LESSONS.filter(l => m || !l.mature);

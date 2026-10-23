@@ -210,6 +210,7 @@ ${(v.is.lesson) ? html`
         <button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid ${w.btnBorder};background:${w.btnBg};color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
         <span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:14px">${w.en}</span>${(w.hasAlt) ? html`<span style="font-size:11px;color:var(--color-neutral-600)">${w.altLabel}: <span style="font-family:'Noto Naskh Arabic',serif">${w.altFa}</span> · ${w.altLat}</span>` : null}</span>
         <span style="display:flex;flex-direction:column;align-items:flex-end">
+          ${(w.num) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;color:var(--color-accent-700)">${w.num}</span>` : null}
           ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;line-height:1.4">${w.fa}</span>` : null}
           ${(v.show.lat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}
         </span>
@@ -235,6 +236,7 @@ ${(v.is.exercise) ? html`
       <div style="position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);transform:rotateY(${v.X.rot})">
         <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--color-divider);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px">
           <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-neutral-600)">Persian</span>
+          ${(v.X.num) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:64px;line-height:1.1;color:var(--color-accent-700)">${v.X.num}</span>` : null}
           ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:52px;direction:rtl;line-height:1.35;text-align:center">${v.X.fa}</span>` : null}
           ${(v.show.lat) ? html`<span style="font-style:italic;font-size:17px;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
           <span style="font-size:12px;color:var(--color-neutral-600);margin-top:8px">Tap to reveal</span>
