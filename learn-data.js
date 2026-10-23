@@ -442,7 +442,7 @@ export const GRAMMAR = {
       { h: "Drop the pronoun", p: "The ending already tells you who, so man, to, maa… are usually left out. Add the pronoun only for emphasis.",
         ex: [{ fa: "غذا می‌خورم.", lat: "Ghazaa mikhoram.", en: "I eat food." }, { fa: "من چای می‌خورم، تو قهوه.", lat: "Man chaai mikhoram, to ghahve.", en: "I have tea, you (have) coffee." }] },
       { h: "The verb goes last", p: "A Persian sentence ends with its verb: who, then what, then the verb.",
-        ex: [{ fa: "مامانم تهران زندگی می‌کنه.", lat: "Maamaanam Tehroon zendegi mikone.", en: "My mom lives in Tehran." }] },
+        ex: [{ fa: "مامانم تهران زندگی می‌کنه.", lat: "Maamaanam Tehraan zendegi mikone.", en: "My mom lives in Tehran." }] },
       { h: "Two verbs skip mi-", p: "daashtan (to have) and the verb “to be” never take mi- in the present: daaram, “I have”; hastam, “I am”. After an adjective, “to be” shrinks to just the ending: khubam, “I'm well”." },
     ],
   },
