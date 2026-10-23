@@ -613,7 +613,7 @@ class App extends Component {
       const g = D.GRAMMAR[r.id], written = P.register === 'written';
       v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec })),
         endings: (g.endings || []).map(([who, sp, wr]) => ({ who, end: written ? wr : sp })),
-        verbs: lessons.map(l => { const t = this.conjTable(l.id, g.tense); return t && { ...t, lesson: l.title }; }).filter(Boolean) };
+        verbs: g.tense ? lessons.map(l => { const t = this.conjTable(l.id, g.tense); return t && { ...t, lesson: l.title }; }).filter(Boolean) : [] };
     }
     // lesson
     if (view === 'lesson') {
