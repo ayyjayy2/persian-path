@@ -490,6 +490,9 @@ class App extends Component {
     v.greetingSub = hr < 12 ? 'Good morning — a few minutes now is worth an hour later.' : hr < 18 ? 'Hello — pick up where you left off.' : 'Good evening — a short review before sleep helps memory settle.';
     v.todayXp = s.todayXp; v.goal = s.goal; v.goalPct = Math.min(100, Math.round(s.todayXp / s.goal * 100)) + '%';
     const todayIdx = (now.getDay() + 1) % 7;
+    const dayEn = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][todayIdx];
+    const dayW = D.LESSONS.find(l => l.id === 'days')?.words.find(w => w.english === dayEn);
+    v.dayName = dayW ? { en: dayEn, lat: dayW.phonetic } : null;
     v.week = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'].map((fa, i) => {
       const done = i <= todayIdx && i > todayIdx - s.streak && (i < todayIdx || s.todayXp > 0);
       const today = i === todayIdx;

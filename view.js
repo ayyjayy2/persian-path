@@ -54,6 +54,7 @@ ${(v.is.learn) ? html`
       <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.dateEn}</span>
       <span style="font-family:'Noto Naskh Arabic',serif;font-size:14px;color:var(--color-neutral-700);direction:rtl">${v.dateFa}</span>
     </div>
+    ${(v.dayName) ? html`<span style="font-size:13px;color:var(--color-neutral-700)">${v.dayName.en} is <span style="font-style:italic;color:var(--color-accent-700)">${v.dayName.lat}</span></span>` : null}
     <h1 style="font-size:40px;font-weight:400;margin:4px 0 0;line-height:1.05">${v.greeting}</h1>
     <p style="margin:0;color:var(--color-neutral-700);font-size:14px">${v.greetingSub}</p>
   </section>
@@ -105,7 +106,7 @@ ${(v.is.learn) ? html`
       <svg width="6" height="9" viewBox="0 0 6 9" style="flex:none;margin-right:-1px"><path d="M5.5 .5 1 4.5l4.5 4" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /></svg>
       <div style="flex:1;height:1px;background:currentColor"></div>
     </div>
-    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);font-style:italic">The Persian week begins on Saturday — shanbe.</p>
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-700);font-style:italic;text-align:right">The Persian week begins on Saturday — shanbe.</p>
   </section>
 
   <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
