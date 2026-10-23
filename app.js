@@ -215,8 +215,9 @@ class App extends Component {
     const written = this.prefs().register === 'written' && w.written;
     return { fa: written ? w.written : w.persian, lat: written ? w.writtenPhonetic : w.phonetic, en: w.english, num: w.digit != null ? this.faNum(w.digit) : null };
   }
-  conjTable(lessonId) {
-    const c = this.D.CONJ[lessonId]; if (!c) return null;
+  conjTable(lessonId, tense = 'present') {
+    const base = this.D.CONJ[lessonId], c = tense === 'past' ? base && { ...base, ...this.D.CONJ_PAST[lessonId] } : base;
+    if (!c || !c.rows) return null;
     const written = this.prefs().register === 'written';
     return { inf: c.inf, infFa: c.infFa, en: c.en, rows: c.rows.map(([sp, spLat, wr, wrLat, en], i) => {
       const [who, whoLat, whoFa] = this.D.PERSONS[i];
@@ -605,7 +606,7 @@ class App extends Component {
       const g = D.GRAMMAR[r.id], written = P.register === 'written';
       v.G = { title: g.title, fa: g.fa, intro: g.intro, sections: g.sections.map(sec => ({ ex: [], ...sec })),
         endings: (g.endings || []).map(([who, sp, wr]) => ({ who, end: written ? wr : sp })),
-        verbs: lessons.map(l => { const t = this.conjTable(l.id); return t && { ...t, lesson: l.title }; }).filter(Boolean) };
+        verbs: lessons.map(l => { const t = this.conjTable(l.id, g.tense); return t && { ...t, lesson: l.title }; }).filter(Boolean) };
     }
     // lesson
     if (view === 'lesson') {
@@ -616,7 +617,10 @@ class App extends Component {
         words: l.words.map(w => { const d = this.disp(w); const p = s.playing === w.key; const alt = !!w.written; const written = P.register === 'written';
           return { ...d, play: () => this.play(w), btnBorder: p ? 'var(--color-accent)' : 'var(--color-divider)', btnBg: p ? 'var(--color-accent-100)' : 'transparent', hasAlt: alt, altLabel: written ? 'Spoken' : 'Written', altFa: written ? w.persian : w.written, altLat: written ? w.phonetic : w.writtenPhonetic }; }) };
       v.L.conj = this.conjTable(l.id);
+      // Once the past tense page has been opened, every lesson card shows the past forms too
+      v.L.conjPast = (s.grammarSeen || {}).past ? this.conjTable(l.id, 'past') : null;
       v.L.openPresent = () => this.openGrammar('present', { name: 'lesson', id: l.id });
+      v.L.openPast = () => this.openGrammar('past', { name: 'lesson', id: l.id });
       v.noteOpen = s.noteOpen; v.noteRot = s.noteOpen ? '90deg' : '0deg'; v.toggleNote = () => this.setState({ noteOpen: !s.noteOpen });
     }
     v.registerLabel = P.register === 'written' ? 'written' : 'spoken';

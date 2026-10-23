@@ -364,6 +364,72 @@ export const CONJ = {
     ["می‌فهمین", "mifahmin", "می‌فهمید", "mifahmid", "you all understand"], ["می‌فهمن", "mifahman", "می‌فهمند", "mifahmand", "they understand"]] },
 };
 
+
+// The same verbs in the simple past: past stem + ending, no mi-. Same row shape as CONJ.
+// "to be" (hastan) has no past of its own and borrows budan.
+export const CONJ_PAST = {
+  greetings: { rows: [
+    ["خوب بودم", "khub budam", "خوب بودم", "khub budam", "I was well"], ["خوب بودی", "khub budi", "خوب بودی", "khub budi", "you were well"],
+    ["خوب بود", "khub bud", "خوب بود", "khub bud", "he/she was well"], ["خوب بودیم", "khub budim", "خوب بودیم", "khub budim", "we were well"],
+    ["خوب بودین", "khub budin", "خوب بودید", "khub budid", "you all were well"], ["خوب بودن", "khub budan", "خوب بودند", "khub budand", "they were well"]] },
+  expressions: { rows: [
+    ["بلد بودم", "balad budam", "بلد بودم", "balad budam", "I knew how"], ["بلد بودی", "balad budi", "بلد بودی", "balad budi", "you knew how"],
+    ["بلد بود", "balad bud", "بلد بود", "balad bud", "he/she knew how"], ["بلد بودیم", "balad budim", "بلد بودیم", "balad budim", "we knew how"],
+    ["بلد بودین", "balad budin", "بلد بودید", "balad budid", "you all knew how"], ["بلد بودن", "balad budan", "بلد بودند", "balad budand", "they knew how"]] },
+  numbers: { rows: [
+    ["داشتم", "daashtam", "داشتم", "daashtam", "I had"], ["داشتی", "daashti", "داشتی", "daashti", "you had"],
+    ["داشت", "daasht", "داشت", "daasht", "he/she had"], ["داشتیم", "daashtim", "داشتیم", "daashtim", "we had"],
+    ["داشتین", "daashtin", "داشتید", "daashtid", "you all had"], ["داشتن", "daashtan", "داشتند", "daashtand", "they had"]] },
+  colors: { rows: [
+    ["دیدم", "didam", "دیدم", "didam", "I saw"], ["دیدی", "didi", "دیدی", "didi", "you saw"],
+    ["دید", "did", "دید", "did", "he/she saw"], ["دیدیم", "didim", "دیدیم", "didim", "we saw"],
+    ["دیدین", "didin", "دیدید", "didid", "you all saw"], ["دیدن", "didan", "دیدند", "didand", "they saw"]] },
+  family: { rows: [
+    ["زندگی کردم", "zendegi kardam", "زندگی کردم", "zendegi kardam", "I lived"], ["زندگی کردی", "zendegi kardi", "زندگی کردی", "zendegi kardi", "you lived"],
+    ["زندگی کرد", "zendegi kard", "زندگی کرد", "zendegi kard", "he/she lived"], ["زندگی کردیم", "zendegi kardim", "زندگی کردیم", "zendegi kardim", "we lived"],
+    ["زندگی کردین", "zendegi kardin", "زندگی کردید", "zendegi kardid", "you all lived"], ["زندگی کردن", "zendegi kardan", "زندگی کردند", "zendegi kardand", "they lived"]] },
+  relationships: { rows: [
+    ["دوست داشتم", "doost daashtam", "دوست داشتم", "doost daashtam", "I liked"], ["دوست داشتی", "doost daashti", "دوست داشتی", "doost daashti", "you liked"],
+    ["دوست داشت", "doost daasht", "دوست داشت", "doost daasht", "he/she liked"], ["دوست داشتیم", "doost daashtim", "دوست داشتیم", "doost daashtim", "we liked"],
+    ["دوست داشتین", "doost daashtin", "دوست داشتید", "doost daashtid", "you all liked"], ["دوست داشتن", "doost daashtan", "دوست داشتند", "doost daashtand", "they liked"]] },
+  food: { rows: [
+    ["خوردم", "khordam", "خوردم", "khordam", "I ate"], ["خوردی", "khordi", "خوردی", "khordi", "you ate"],
+    ["خورد", "khord", "خورد", "khord", "he/she ate"], ["خوردیم", "khordim", "خوردیم", "khordim", "we ate"],
+    ["خوردین", "khordin", "خوردید", "khordid", "you all ate"], ["خوردن", "khordan", "خوردند", "khordand", "they ate"]] },
+  questions: { rows: [
+    ["خواستم", "khaastam", "خواستم", "khaastam", "I wanted"], ["خواستی", "khaasti", "خواستی", "khaasti", "you wanted"],
+    ["خواست", "khaast", "خواست", "khaast", "he/she wanted"], ["خواستیم", "khaastim", "خواستیم", "khaastim", "we wanted"],
+    ["خواستین", "khaastin", "خواستید", "khaastid", "you all wanted"], ["خواستن", "khaastan", "خواستند", "khaastand", "they wanted"]] },
+  pronouns: { inf: "budan", infFa: "بودن", en: "to be", rows: [
+    ["بودم", "budam", "بودم", "budam", "I was"], ["بودی", "budi", "بودی", "budi", "you were"],
+    ["بود", "bud", "بود", "bud", "he/she was"], ["بودیم", "budim", "بودیم", "budim", "we were"],
+    ["بودین", "budin", "بودید", "budid", "you all were"], ["بودن", "budan", "بودند", "budand", "they were"]] },
+  "home-life": { rows: [
+    ["خوابیدم", "khaabidam", "خوابیدم", "khaabidam", "I slept"], ["خوابیدی", "khaabidi", "خوابیدی", "khaabidi", "you slept"],
+    ["خوابید", "khaabid", "خوابید", "khaabid", "he/she slept"], ["خوابیدیم", "khaabidim", "خوابیدیم", "khaabidim", "we slept"],
+    ["خوابیدین", "khaabidin", "خوابیدید", "khaabidid", "you all slept"], ["خوابیدن", "khaabidan", "خوابیدند", "khaabidand", "they slept"]] },
+  "getting-around": { rows: [
+    ["رفتم", "raftam", "رفتم", "raftam", "I went"], ["رفتی", "rafti", "رفتی", "rafti", "you went"],
+    ["رفت", "raft", "رفت", "raft", "he/she went"], ["رفتیم", "raftim", "رفتیم", "raftim", "we went"],
+    ["رفتین", "raftin", "رفتید", "raftid", "you all went"], ["رفتن", "raftan", "رفتند", "raftand", "they went"]] },
+  clothing: { rows: [
+    ["پوشیدم", "pushidam", "پوشیدم", "pushidam", "I wore"], ["پوشیدی", "pushidi", "پوشیدی", "pushidi", "you wore"],
+    ["پوشید", "pushid", "پوشید", "pushid", "he/she wore"], ["پوشیدیم", "pushidim", "پوشیدیم", "pushidim", "we wore"],
+    ["پوشیدین", "pushidin", "پوشیدید", "pushidid", "you all wore"], ["پوشیدن", "pushidan", "پوشیدند", "pushidand", "they wore"]] },
+  days: { rows: [
+    ["اومدم", "umadam", "آمدم", "aamadam", "I came"], ["اومدی", "umadi", "آمدی", "aamadi", "you came"],
+    ["اومد", "umad", "آمد", "aamad", "he/she came"], ["اومدیم", "umadim", "آمدیم", "aamadim", "we came"],
+    ["اومدین", "umadin", "آمدید", "aamadid", "you all came"], ["اومدن", "umadan", "آمدند", "aamadand", "they came"]] },
+  verbs: { rows: [
+    ["گفتم", "goftam", "گفتم", "goftam", "I said"], ["گفتی", "gofti", "گفتی", "gofti", "you said"],
+    ["گفت", "goft", "گفت", "goft", "he/she said"], ["گفتیم", "goftim", "گفتیم", "goftim", "we said"],
+    ["گفتین", "goftin", "گفتید", "goftid", "you all said"], ["گفتن", "goftan", "گفتند", "goftand", "they said"]] },
+  slang: { rows: [
+    ["فهمیدم", "fahmidam", "فهمیدم", "fahmidam", "I understood"], ["فهمیدی", "fahmidi", "فهمیدی", "fahmidi", "you understood"],
+    ["فهمید", "fahmid", "فهمید", "fahmid", "he/she understood"], ["فهمیدیم", "fahmidim", "فهمیدیم", "fahmidim", "we understood"],
+    ["فهمیدین", "fahmidin", "فهمیدید", "fahmidid", "you all understood"], ["فهمیدن", "fahmidan", "فهمیدند", "fahmidand", "they understood"]] },
+};
+
 // Grammar topic pages, keyed by the path's grammar item ids. Topics without an entry stay inert.
 export const GRAMMAR = {
   present: {
@@ -378,6 +444,22 @@ export const GRAMMAR = {
       { h: "The verb goes last", p: "A Persian sentence ends with its verb: who, then what, then the verb.",
         ex: [{ fa: "مامانم تهران زندگی می‌کنه.", lat: "Maamaanam Tehroon zendegi mikone.", en: "My mom lives in Tehran." }] },
       { h: "Two verbs skip mi-", p: "daashtan (to have) and the verb “to be” never take mi- in the present: daaram, “I have”; hastam, “I am”. After an adjective, “to be” shrinks to just the ending: khubam, “I'm well”." },
+    ],
+  },
+  past: {
+    title: "Past tense: stem + ending", fa: "زمان گذشته", tense: "past",
+    intro: "To say what happened, take the verb's past stem and add the same personal endings you know from the present. No mi- this time.",
+    endings: [["I", "-am", "-am"], ["you", "-i", "-i"], ["he/she", "—", "—"], ["we", "-im", "-im"], ["you all", "-in", "-id"], ["they", "-an", "-and"]],
+    sections: [
+      { h: "Find the past stem", p: "Drop the -an from the infinitive: khordan → khord, raftan → raft, didan → did. Every past stem ends in d or t. Then add the ending: khord + am = khordam, “I ate”.",
+        ex: [{ fa: "خوردم", lat: "khordam", en: "I ate" }, { fa: "رفتیم", lat: "raftim", en: "we went" }] },
+      { h: "He/she is just the stem", p: "The he/she form has no ending at all, so it is the bare stem: raft, “he/she went”; goft, “he/she said”.",
+        ex: [{ fa: "علی رفت.", lat: "Ali raft.", en: "Ali left." }, { fa: "مامانم چی گفت؟", lat: "Maamaanam chi goft?", en: "What did my mom say?" }] },
+      { h: "Telling what happened", p: "Put the time first, then the story. In speech, where you went comes after the verb: raftam baazaar, “I went to the bazaar”.",
+        ex: [{ fa: "دیروز چی کار کردی؟", lat: "Diruz chi kaar kardi?", en: "What did you do yesterday?" }, { fa: "رفتم بازار، یه کم میوه خریدم.", lat: "Raftam baazaar, ye kam mive kharidam.", en: "I went to the bazaar and bought some fruit." }] },
+      { h: "“Was” comes from budan", p: "hastan has no past of its own, so “to be” borrows budan: budam, “I was”. After an adjective it stays a separate word: khub budam, “I was well”.",
+        ex: [{ fa: "دیشب خسته بودم.", lat: "Dishab khaste budam.", en: "I was tired last night." }] },
+      { h: "Listen for context", p: "In speech the “they” form sounds just like the infinitive: khordan is “to eat” or “they ate”. The sentence around it tells you which. Writing keeps them apart: خوردند khordand." },
     ],
   },
 };
@@ -410,7 +492,7 @@ export const SAY = {
   "کارت‌ها": "Kaart-haa", "شناخت": "Shenaakht", "شنیدن": "Shenidan", "جمله‌سازی": "Jomle-saazi", "گفتن": "Goftan", "گفتگو": "Goftegu",
   "پایه": "Paaye", "روزمره": "Ruzmarre", "تسلط": "Tasallot", "اختیاری": "Ekhtiyaari",
   "تاریخ": "Taarikh", "پرچم": "Parcham", "جغرافیا": "Joghraafiyaa", "جشن": "Jashn",
-  "دستور": "Dastoor", "زمان حال": "Zamaan-e haal", "واکه‌ها": "Vaake-haa",
+  "دستور": "Dastoor", "زمان حال": "Zamaan-e haal", "زمان گذشته": "Zamaan-e gozashte", "گذشته": "Gozashte", "واکه‌ها": "Vaake-haa",
   "سلام": "Salaam", "نوش جان": "Nooshe jaan", "۱۲۳": "Yek, do, se", "رنگ": "Rang", "خانواده": "Khaanevaade", "عشق": "Eshgh",
   "چای": "Chaai", "چی؟": "Chi?", "خانه": "Khaane", "شهر": "Shahr", "لباس": "Lebaas", "شنبه": "Shanbe", "رفتن": "Raftan", "ولش کن": "Velesh kon",
 };
