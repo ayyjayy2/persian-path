@@ -135,7 +135,7 @@ class App extends Component {
     const s = this.state; if (!sb || !navigator.onLine) return this.setState({ authMsg: "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.", authErr: true });
     this.setState({ authBusy: true, authMsg: null });
     const creds = { email: s.authEmail.trim(), password: s.authPassword };
-    const res = s.authMode === 'signin' ? await sb.auth.signInWithPassword(creds) : await sb.auth.signUp(creds);
+    const res = s.authMode === 'signin' ? await sb.auth.signInWithPassword(creds) : await sb.auth.signUp({ ...creds, options: { emailRedirectTo: location.origin + '/' } }); // the confirm link returns to this site (live, preview or local)
     if (res.error) return this.setState({ authBusy: false, authMsg: res.error.message, authErr: true });
     if (s.authMode === 'signup' && res.data.user && !res.data.session) return this.setState({ authBusy: false, authMsg: 'Check your email to confirm your account, then sign in.', authErr: false, authMode: 'signin', authPassword: '' });
     this.setState({ authBusy: false, sheet: null, authPassword: '', authMsg: null });
