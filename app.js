@@ -66,8 +66,11 @@ class App extends Component {
     window.addEventListener('resize', this._r);
     this._bip = e => { e.preventDefault(); this._deferred = e; };
     window.addEventListener('beforeinstallprompt', this._bip);
-    this._net = () => { this.setState({ online: navigator.onLine }); if (navigator.onLine) this.pushRemote(); };
+    this._net = () => { this.setState({ online: navigator.onLine }); if (navigator.onLine && this.state.user) this.pullRemote(this.state.user); };
     window.addEventListener('online', this._net); window.addEventListener('offline', this._net);
+    // An installed app resumed from the background isn't a new app open: pick up other devices' changes
+    this._vis = () => { const u = this.state.user; if (document.visibilityState === 'visible' && u && navigator.onLine && Date.now() - (this._pullAt || 0) > 60000) this.pullRemote(u); };
+    document.addEventListener('visibilitychange', this._vis);
     if (sb) sb.auth.onAuthStateChange((event, session) => {
       const user = session ? session.user : null;
       const was = this.state.user;
@@ -75,7 +78,7 @@ class App extends Component {
       if (user && (!was || was.id !== user.id)) setTimeout(() => this.pullRemote(user), 0);
     });
   }
-  componentWillUnmount() { window.removeEventListener('resize', this._r); window.removeEventListener('beforeinstallprompt', this._bip); window.removeEventListener('online', this._net); window.removeEventListener('offline', this._net); }
+  componentWillUnmount() { window.removeEventListener('resize', this._r); window.removeEventListener('beforeinstallprompt', this._bip); window.removeEventListener('online', this._net); window.removeEventListener('offline', this._net); document.removeEventListener('visibilitychange', this._vis); }
   componentDidUpdate(prevProps, prev) {
     if (!this.state.ready) return;
     const s = this.state;
@@ -100,6 +103,7 @@ class App extends Component {
   async pullRemote(user) {
     const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
     if (error) { console.warn('Sync failed', error.message); return; }
+    this._pulled = user.id; this._pullAt = Date.now();
     if (data) {
       this.setState(s => {
         const progress = { ...(data.completed_lessons || {}) };
@@ -113,10 +117,11 @@ class App extends Component {
     this.pushRemote();
   }
   pushRemote() {
-    const s = this.state; if (!sb || !s.user || !navigator.onLine) return;
+    const s = this.state; if (!sb || !s.user || !navigator.onLine || this._pulled !== s.user.id) return;
     clearTimeout(this._pushT);
     this._pushT = setTimeout(() => {
       const st = this.state, app_state = {}; SYNCED.forEach(k => { app_state[k] = st[k]; });
+      if (!st.user || this._pulled !== st.user.id) return;
       sb.from('profiles').upsert({ id: st.user.id, xp: st.xp, streak: st.streak, last_played_date: st.lastPlayedDate,
         completed_lessons: st.progress, app_state, updated_at: new Date().toISOString() }).then(({ error }) => { if (error) console.warn('Sync failed', error.message); });
     }, 600);
@@ -135,7 +140,7 @@ class App extends Component {
     this.setState({ sheet: null });
     try { await sb.auth.signOut(); } catch (e) {}
     // Back to a clean guest profile on this device
-    this._lastSaved = null;
+    this._lastSaved = null; this._pulled = null; clearTimeout(this._pushT);
     this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefsU: 0, deletedWords: {}, scriptSeen: false, vowelsSeen: false, grammarSeen: {}, tab: 'learn', route: null });
   }
 
@@ -366,7 +371,8 @@ class App extends Component {
     this.setState(s => {
       const srs = { ...s.srs }; delete srs[key];
       const imgs = { ...s.imgs }; delete imgs[id];
-      return { myWords: (s.myWords || []).filter(x => x.id !== id), srs, imgs, mistakes: s.mistakes.filter(k => k !== key), draft: null,
+      const mistakeAt = { ...s.mistakeAt }; delete mistakeAt[key];
+      return { myWords: (s.myWords || []).filter(x => x.id !== id), srs, imgs, mistakes: s.mistakes.filter(k => k !== key), mistakeAt, draft: null,
         deletedWords: { ...s.deletedWords, [id]: Date.now() } };
     });
     this.nav({ name: 'mywords' });
