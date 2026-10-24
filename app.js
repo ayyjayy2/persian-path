@@ -2,6 +2,7 @@
 import { h, render, Component } from './vendor/preact-htm.js';
 import * as D from './learn-data.js';
 import { view } from './view.js';
+import { mergeState, SYNCED } from './sync.js';
 
 // ===== SUPABASE =====
 const SUPABASE_URL = 'https://rpnwwtsdfclcyexdafks.supabase.co';
@@ -11,7 +12,7 @@ const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
 const V1_KEY = 'persian_app_state';
-const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords'];
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords', 'deletedWords'];
 const MIN = 60e3, DAY = 864e5;
 // Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
@@ -55,7 +56,7 @@ function rollDay(s) {
 class App extends Component {
   state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
     xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
-    progress: {}, srs: {}, mistakes: [], prefs: {}, grammarSeen: {}, myWords: [], imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
+    progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefs: {}, prefsU: 0, grammarSeen: {}, myWords: [], deletedWords: {}, imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
     online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
 
   componentDidMount() {
@@ -65,8 +66,11 @@ class App extends Component {
     window.addEventListener('resize', this._r);
     this._bip = e => { e.preventDefault(); this._deferred = e; };
     window.addEventListener('beforeinstallprompt', this._bip);
-    this._net = () => { this.setState({ online: navigator.onLine }); if (navigator.onLine) this.pushRemote(); };
+    this._net = () => { this.setState({ online: navigator.onLine }); if (navigator.onLine && this.state.user) this.pullRemote(this.state.user); };
     window.addEventListener('online', this._net); window.addEventListener('offline', this._net);
+    // An installed app resumed from the background isn't a new app open: pick up other devices' changes
+    this._vis = () => { const u = this.state.user; if (document.visibilityState === 'visible' && u && navigator.onLine && Date.now() - (this._pullAt || 0) > 60000) this.pullRemote(u); };
+    document.addEventListener('visibilitychange', this._vis);
     if (sb) sb.auth.onAuthStateChange((event, session) => {
       const user = session ? session.user : null;
       const was = this.state.user;
@@ -74,7 +78,7 @@ class App extends Component {
       if (user && (!was || was.id !== user.id)) setTimeout(() => this.pullRemote(user), 0);
     });
   }
-  componentWillUnmount() { window.removeEventListener('resize', this._r); window.removeEventListener('beforeinstallprompt', this._bip); window.removeEventListener('online', this._net); window.removeEventListener('offline', this._net); }
+  componentWillUnmount() { window.removeEventListener('resize', this._r); window.removeEventListener('beforeinstallprompt', this._bip); window.removeEventListener('online', this._net); window.removeEventListener('offline', this._net); document.removeEventListener('visibilitychange', this._vis); }
   componentDidUpdate(prevProps, prev) {
     if (!this.state.ready) return;
     const s = this.state;
@@ -94,28 +98,37 @@ class App extends Component {
   }
 
   // ---------- account sync ----------
-  // The profiles table (xp, streak, last_played_date, completed_lessons) predates v2; the review
-  // schedule, mistakes and preferences stay on the device.
+  // profiles keeps the v1 columns (xp, streak, last_played_date, completed_lessons) plus app_state,
+  // which holds everything else in SYNCED. sync.js decides how two devices' copies merge.
   async pullRemote(user) {
-    const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    if (error) { console.warn('Sync failed', error.message); return; }
+    this._pulled = user.id; this._pullAt = Date.now();
     if (data) {
       this.setState(s => {
         const progress = { ...(data.completed_lessons || {}) };
         Object.entries(s.progress).forEach(([id, p]) => { progress[id] = typeof p === 'object' ? { ...(progress[id] || {}), ...p } : p; });
         const remoteNewer = data.last_played_date && (!s.lastPlayedDate || new Date(data.last_played_date) > new Date(s.lastPlayedDate));
-        return rollDay({ ...s, progress, xp: Math.max(s.xp, data.xp || 0),
+        const merged = mergeState(s, { ...(data.app_state || {}), lastPlayedDate: data.last_played_date });
+        return rollDay({ ...s, ...merged, progress, xp: Math.max(s.xp, data.xp || 0),
           streak: remoteNewer ? (data.streak || 0) : s.streak, lastPlayedDate: remoteNewer ? data.last_played_date : s.lastPlayedDate });
-      });
+      }, () => this.loadImgs());
     }
     this.pushRemote();
   }
   pushRemote() {
-    const s = this.state; if (!sb || !s.user || !navigator.onLine) return;
+    const s = this.state; if (!sb || !s.user || !navigator.onLine || this._pulled !== s.user.id) return;
     clearTimeout(this._pushT);
-    this._pushT = setTimeout(() => {
-      sb.from('profiles').upsert({ id: s.user.id, xp: this.state.xp, streak: this.state.streak, last_played_date: this.state.lastPlayedDate,
-        completed_lessons: this.state.progress, updated_at: new Date().toISOString() }).then(({ error }) => { if (error) console.warn('Sync failed', error.message); });
-    }, 600);
+    this._pushT = setTimeout(() => this.pushNow(), 600);
+  }
+  // Resolves true once the account holds this device's current data
+  async pushNow() {
+    const st = this.state, app_state = {}; SYNCED.forEach(k => { app_state[k] = st[k]; });
+    if (!sb || !st.user || !navigator.onLine || this._pulled !== st.user.id) return false;
+    const { error } = await sb.from('profiles').upsert({ id: st.user.id, xp: st.xp, streak: st.streak, last_played_date: st.lastPlayedDate,
+      completed_lessons: st.progress, app_state, updated_at: new Date().toISOString() });
+    if (error) console.warn('Sync failed', error.message);
+    return !error;
   }
   async submitAuth(e) {
     e.preventDefault();
@@ -129,10 +142,14 @@ class App extends Component {
   }
   async signOut() {
     this.setState({ sheet: null });
+    // Save anything not yet uploaded. My words are cleared only once they're safe in the account
+    clearTimeout(this._pushT); const saved = await this.pushNow().catch(() => false);
     try { await sb.auth.signOut(); } catch (e) {}
     // Back to a clean guest profile on this device
-    this._lastSaved = null;
-    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], scriptSeen: false, vowelsSeen: false, grammarSeen: {}, tab: 'learn', route: null });
+    this._lastSaved = null; this._pulled = null;
+    const words = saved ? { myWords: [], imgs: {} } : {};
+    if (saved) (this.state.myWords || []).forEach(w => media.del(w.id).catch(() => {}));
+    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefsU: 0, deletedWords: {}, scriptSeen: false, vowelsSeen: false, grammarSeen: {}, ...words, tab: 'learn', route: null });
   }
 
   // ---------- refresh ----------
@@ -210,7 +227,7 @@ class App extends Component {
     const p = this.state.prefs || {}, pr = this.props;
     return { script: p.script ?? pr.scriptMode ?? 'both', register: p.register ?? pr.register ?? 'spoken', speed: p.speed ?? 1, mature: p.mature ?? pr.showMature ?? false };
   }
-  setPref(k, v) { this.setState(s => ({ prefs: { ...s.prefs, [k]: v } })); }
+  setPref(k, v) { this.setState(s => ({ prefs: { ...s.prefs, [k]: v }, prefsU: Date.now() })); }
   disp(w) {
     const written = this.prefs().register === 'written' && w.written;
     return { fa: written ? w.written : w.persian, lat: written ? w.writtenPhonetic : w.phonetic, en: w.english, num: w.digit != null ? this.faNum(w.digit) : null };
@@ -347,7 +364,7 @@ class App extends Component {
     const img = d.mode === 'photo' ? d.img : d.mode === 'draw' && this._drawn && this._cv ? this._cv.toDataURL('image/jpeg', 0.75) : null;
     const id = d.id || Date.now().toString(36);
     if (img) media.put(id, img).catch(() => {}); else media.del(id).catch(() => {});
-    const rec = { id, en: d.en.trim(), lat: d.lat.trim(), fa: d.fa.trim(), img: !!img };
+    const rec = { id, en: d.en.trim(), lat: d.lat.trim(), fa: d.fa.trim(), img: !!img, u: Date.now() };
     this.setState(s => {
       const list = s.myWords || [], old = list.find(x => x.id === id);
       const imgs = { ...s.imgs }; if (img) imgs[id] = img; else delete imgs[id];
@@ -362,7 +379,9 @@ class App extends Component {
     this.setState(s => {
       const srs = { ...s.srs }; delete srs[key];
       const imgs = { ...s.imgs }; delete imgs[id];
-      return { myWords: (s.myWords || []).filter(x => x.id !== id), srs, imgs, mistakes: s.mistakes.filter(k => k !== key), draft: null };
+      const mistakeAt = { ...s.mistakeAt }; delete mistakeAt[key];
+      return { myWords: (s.myWords || []).filter(x => x.id !== id), srs, imgs, mistakes: s.mistakes.filter(k => k !== key), mistakeAt, draft: null,
+        deletedWords: { ...s.deletedWords, [id]: Date.now() } };
     });
     this.nav({ name: 'mywords' });
   }
@@ -468,10 +487,11 @@ class App extends Component {
       const progress = { ...s.progress };
       if (lessonId && ex.kind !== 'review') progress[lessonId] = { ...(progress[lessonId] || {}), [ex.kind]: 1 };
       if (ex.kind === 'convo') progress['cp:' + ex.scId] = 1;
-      const mistakes = [...new Set([...ex.missed, ...s.mistakes])].slice(0, 40);
-      const srs = { ...s.srs }; ex.missed.forEach(k => { srs[k] = { b: 0, t: Date.now() }; });
+      const mistakes = [...new Set([...ex.missed, ...s.mistakes])].slice(0, 40), now = Date.now();
+      const mistakeAt = {}; mistakes.forEach(k => { mistakeAt[k] = ex.missed.includes(k) ? now : (s.mistakeAt || {})[k] || 0; });
+      const srs = { ...s.srs }; ex.missed.forEach(k => { srs[k] = { b: 0, t: now, u: now }; });
       const today = dayKey(), streak = s.lastPlayedDate === today ? s.streak : s.lastPlayedDate === dayKey(Date.now() - DAY) ? s.streak + 1 : 1;
-      return { progress, mistakes, srs, streak, lastPlayedDate: today, xp: s.xp + xpE, todayXp: (s.lastPlayedDate === today ? s.todayXp : 0) + xpE, result: { kind: ex.kind, scId: ex.scId, lessonId, correct: ex.correct, total, xp: xpE, missed: ex.missed }, route: { name: 'results' }, ex: null };
+      return { progress, mistakes, mistakeAt, srs, streak, lastPlayedDate: today, xp: s.xp + xpE, todayXp: (s.lastPlayedDate === today ? s.todayXp : 0) + xpE, result: { kind: ex.kind, scId: ex.scId, lessonId, correct: ex.correct, total, xp: xpE, missed: ex.missed }, route: { name: 'results' }, ex: null };
     });
     window.scrollTo(0, 0);
   }
@@ -654,7 +674,7 @@ class App extends Component {
         X.showBottomBar = true;
         if (k === 'review') {
           const rate = (lvl) => { const b = this.box(it.w); const nb = [0, 1, Math.max(2, Math.min(4, b + 1)), b >= 3 ? 4 : 3][lvl];
-            this.setState(st => ({ srs: { ...st.srs, [it.w.key]: { b: nb, t: Date.now() + INTERVALS[nb] } } })); this.next({ correct: ex.correct + (lvl > 0 ? 1 : 0), missed: lvl === 0 ? [...ex.missed, it.w.key] : ex.missed }); };
+            this.setState(st => ({ srs: { ...st.srs, [it.w.key]: { b: nb, t: Date.now() + INTERVALS[nb], u: Date.now() } } })); this.next({ correct: ex.correct + (lvl > 0 ? 1 : 0), missed: lvl === 0 ? [...ex.missed, it.w.key] : ex.missed }); };
           X.barBtns = ex.flipped ? [['Again', '1 min', 0], ['Hard', '1 day', 1], ['Good', '3 days', 2], ['Easy', '1 week', 3]].map(([label, sub, lvl]) => ({ label, sub, cls: lvl === 2 ? 'btn-primary' : 'btn-secondary', go: () => rate(lvl), disabled: false }))
             : [{ label: 'Show answer', sub: '', cls: 'btn-primary', go: X.flip, disabled: false }];
         } else {
