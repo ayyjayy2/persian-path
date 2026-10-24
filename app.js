@@ -210,7 +210,7 @@ class App extends Component {
     const p = this.state.prefs || {}, pr = this.props;
     return { script: p.script ?? pr.scriptMode ?? 'both', register: p.register ?? pr.register ?? 'spoken', speed: p.speed ?? 1, mature: p.mature ?? pr.showMature ?? false };
   }
-  setPref(k, v) { this.setState(s => ({ prefs: { ...s.prefs, [k]: v } })); }
+  setPref(k, v) { this.setState(s => ({ prefs: { ...s.prefs, [k]: v }, prefsU: Date.now() })); }
   disp(w) {
     const written = this.prefs().register === 'written' && w.written;
     return { fa: written ? w.written : w.persian, lat: written ? w.writtenPhonetic : w.phonetic, en: w.english, num: w.digit != null ? this.faNum(w.digit) : null };
@@ -347,7 +347,7 @@ class App extends Component {
     const img = d.mode === 'photo' ? d.img : d.mode === 'draw' && this._drawn && this._cv ? this._cv.toDataURL('image/jpeg', 0.75) : null;
     const id = d.id || Date.now().toString(36);
     if (img) media.put(id, img).catch(() => {}); else media.del(id).catch(() => {});
-    const rec = { id, en: d.en.trim(), lat: d.lat.trim(), fa: d.fa.trim(), img: !!img };
+    const rec = { id, en: d.en.trim(), lat: d.lat.trim(), fa: d.fa.trim(), img: !!img, u: Date.now() };
     this.setState(s => {
       const list = s.myWords || [], old = list.find(x => x.id === id);
       const imgs = { ...s.imgs }; if (img) imgs[id] = img; else delete imgs[id];
@@ -362,7 +362,8 @@ class App extends Component {
     this.setState(s => {
       const srs = { ...s.srs }; delete srs[key];
       const imgs = { ...s.imgs }; delete imgs[id];
-      return { myWords: (s.myWords || []).filter(x => x.id !== id), srs, imgs, mistakes: s.mistakes.filter(k => k !== key), draft: null };
+      return { myWords: (s.myWords || []).filter(x => x.id !== id), srs, imgs, mistakes: s.mistakes.filter(k => k !== key), draft: null,
+        deletedWords: { ...s.deletedWords, [id]: Date.now() } };
     });
     this.nav({ name: 'mywords' });
   }
@@ -468,10 +469,11 @@ class App extends Component {
       const progress = { ...s.progress };
       if (lessonId && ex.kind !== 'review') progress[lessonId] = { ...(progress[lessonId] || {}), [ex.kind]: 1 };
       if (ex.kind === 'convo') progress['cp:' + ex.scId] = 1;
-      const mistakes = [...new Set([...ex.missed, ...s.mistakes])].slice(0, 40);
-      const srs = { ...s.srs }; ex.missed.forEach(k => { srs[k] = { b: 0, t: Date.now() }; });
+      const mistakes = [...new Set([...ex.missed, ...s.mistakes])].slice(0, 40), now = Date.now();
+      const mistakeAt = {}; mistakes.forEach(k => { mistakeAt[k] = ex.missed.includes(k) ? now : (s.mistakeAt || {})[k] || 0; });
+      const srs = { ...s.srs }; ex.missed.forEach(k => { srs[k] = { b: 0, t: now, u: now }; });
       const today = dayKey(), streak = s.lastPlayedDate === today ? s.streak : s.lastPlayedDate === dayKey(Date.now() - DAY) ? s.streak + 1 : 1;
-      return { progress, mistakes, srs, streak, lastPlayedDate: today, xp: s.xp + xpE, todayXp: (s.lastPlayedDate === today ? s.todayXp : 0) + xpE, result: { kind: ex.kind, scId: ex.scId, lessonId, correct: ex.correct, total, xp: xpE, missed: ex.missed }, route: { name: 'results' }, ex: null };
+      return { progress, mistakes, mistakeAt, srs, streak, lastPlayedDate: today, xp: s.xp + xpE, todayXp: (s.lastPlayedDate === today ? s.todayXp : 0) + xpE, result: { kind: ex.kind, scId: ex.scId, lessonId, correct: ex.correct, total, xp: xpE, missed: ex.missed }, route: { name: 'results' }, ex: null };
     });
     window.scrollTo(0, 0);
   }
@@ -654,7 +656,7 @@ class App extends Component {
         X.showBottomBar = true;
         if (k === 'review') {
           const rate = (lvl) => { const b = this.box(it.w); const nb = [0, 1, Math.max(2, Math.min(4, b + 1)), b >= 3 ? 4 : 3][lvl];
-            this.setState(st => ({ srs: { ...st.srs, [it.w.key]: { b: nb, t: Date.now() + INTERVALS[nb] } } })); this.next({ correct: ex.correct + (lvl > 0 ? 1 : 0), missed: lvl === 0 ? [...ex.missed, it.w.key] : ex.missed }); };
+            this.setState(st => ({ srs: { ...st.srs, [it.w.key]: { b: nb, t: Date.now() + INTERVALS[nb], u: Date.now() } } })); this.next({ correct: ex.correct + (lvl > 0 ? 1 : 0), missed: lvl === 0 ? [...ex.missed, it.w.key] : ex.missed }); };
           X.barBtns = ex.flipped ? [['Again', '1 min', 0], ['Hard', '1 day', 1], ['Good', '3 days', 2], ['Easy', '1 week', 3]].map(([label, sub, lvl]) => ({ label, sub, cls: lvl === 2 ? 'btn-primary' : 'btn-secondary', go: () => rate(lvl), disabled: false }))
             : [{ label: 'Show answer', sub: '', cls: 'btn-primary', go: X.flip, disabled: false }];
         } else {
