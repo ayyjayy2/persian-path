@@ -2,6 +2,7 @@
 import { h, render, Component } from './vendor/preact-htm.js';
 import * as D from './learn-data.js';
 import { view } from './view.js';
+import { mergeState, SYNCED } from './sync.js';
 
 // ===== SUPABASE =====
 const SUPABASE_URL = 'https://rpnwwtsdfclcyexdafks.supabase.co';
@@ -94,18 +95,20 @@ class App extends Component {
   }
 
   // ---------- account sync ----------
-  // The profiles table (xp, streak, last_played_date, completed_lessons) predates v2; the review
-  // schedule, mistakes and preferences stay on the device.
+  // profiles keeps the v1 columns (xp, streak, last_played_date, completed_lessons) plus app_state,
+  // which holds everything else in SYNCED. sync.js decides how two devices' copies merge.
   async pullRemote(user) {
-    const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    if (error) { console.warn('Sync failed', error.message); return; }
     if (data) {
       this.setState(s => {
         const progress = { ...(data.completed_lessons || {}) };
         Object.entries(s.progress).forEach(([id, p]) => { progress[id] = typeof p === 'object' ? { ...(progress[id] || {}), ...p } : p; });
         const remoteNewer = data.last_played_date && (!s.lastPlayedDate || new Date(data.last_played_date) > new Date(s.lastPlayedDate));
-        return rollDay({ ...s, progress, xp: Math.max(s.xp, data.xp || 0),
+        const merged = mergeState(s, { ...(data.app_state || {}), lastPlayedDate: data.last_played_date });
+        return rollDay({ ...s, ...merged, progress, xp: Math.max(s.xp, data.xp || 0),
           streak: remoteNewer ? (data.streak || 0) : s.streak, lastPlayedDate: remoteNewer ? data.last_played_date : s.lastPlayedDate });
-      });
+      }, () => this.loadImgs());
     }
     this.pushRemote();
   }
@@ -113,8 +116,9 @@ class App extends Component {
     const s = this.state; if (!sb || !s.user || !navigator.onLine) return;
     clearTimeout(this._pushT);
     this._pushT = setTimeout(() => {
-      sb.from('profiles').upsert({ id: s.user.id, xp: this.state.xp, streak: this.state.streak, last_played_date: this.state.lastPlayedDate,
-        completed_lessons: this.state.progress, updated_at: new Date().toISOString() }).then(({ error }) => { if (error) console.warn('Sync failed', error.message); });
+      const st = this.state, app_state = {}; SYNCED.forEach(k => { app_state[k] = st[k]; });
+      sb.from('profiles').upsert({ id: st.user.id, xp: st.xp, streak: st.streak, last_played_date: st.lastPlayedDate,
+        completed_lessons: st.progress, app_state, updated_at: new Date().toISOString() }).then(({ error }) => { if (error) console.warn('Sync failed', error.message); });
     }, 600);
   }
   async submitAuth(e) {
