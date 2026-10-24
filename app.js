@@ -11,7 +11,7 @@ const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
 const V1_KEY = 'persian_app_state';
-const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'prefs', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords'];
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords', 'deletedWords'];
 const MIN = 60e3, DAY = 864e5;
 // Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
@@ -55,7 +55,7 @@ function rollDay(s) {
 class App extends Component {
   state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
     xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
-    progress: {}, srs: {}, mistakes: [], prefs: {}, grammarSeen: {}, myWords: [], imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
+    progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefs: {}, prefsU: 0, grammarSeen: {}, myWords: [], deletedWords: {}, imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
     online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
 
   componentDidMount() {
@@ -132,7 +132,7 @@ class App extends Component {
     try { await sb.auth.signOut(); } catch (e) {}
     // Back to a clean guest profile on this device
     this._lastSaved = null;
-    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], scriptSeen: false, vowelsSeen: false, grammarSeen: {}, tab: 'learn', route: null });
+    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefsU: 0, deletedWords: {}, scriptSeen: false, vowelsSeen: false, grammarSeen: {}, tab: 'learn', route: null });
   }
 
   // ---------- refresh ----------
