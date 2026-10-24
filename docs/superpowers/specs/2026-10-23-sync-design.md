@@ -34,6 +34,8 @@ The row-level security that already limits each user to their own `profiles` row
 
 `mistakeAt`, `prefsU` and `deletedWords` join `PERSISTED`, so they are also saved locally. The sign-out reset clears them.
 
+**Sign-out** (decided 2026-10-24, after review): first upload any pending changes. If that upload succeeds, also clear My words and delete their pictures from this device, so a different account signing in here doesn't inherit them. Until round 2, that removes those pictures for good. If the upload fails (e.g. offline), My words stay on the device.
+
 ## Writing the new timestamps
 
 - **srs:** every place that sets an entry also sets `u: Date.now()`. That's the review rating and the reset of missed words in `finish()`.
@@ -67,6 +69,7 @@ XP, streak, `lastPlayedDate` and `progress` keep today's rules in `pullRemote`: 
 - **Push** (`pushRemote`, debounced 600 ms, skipped offline): upsert the existing fields plus `app_state`.
 - **Offline:** unchanged. Changes save locally, and the existing `online` listener pushes on reconnect.
 - **Errors:** a failed pull or push logs a warning and leaves local data untouched, as today.
+- **Push only after pull:** a push replaces the account's whole `app_state`, so a device pushes only after this user's first successful pull. Reconnecting and bringing the app back into view (at most once a minute) pull, which then pushes the merged result. (Added after review.)
 
 ## Out of scope
 

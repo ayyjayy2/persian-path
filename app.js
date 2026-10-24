@@ -119,12 +119,16 @@ class App extends Component {
   pushRemote() {
     const s = this.state; if (!sb || !s.user || !navigator.onLine || this._pulled !== s.user.id) return;
     clearTimeout(this._pushT);
-    this._pushT = setTimeout(() => {
-      const st = this.state, app_state = {}; SYNCED.forEach(k => { app_state[k] = st[k]; });
-      if (!st.user || this._pulled !== st.user.id) return;
-      sb.from('profiles').upsert({ id: st.user.id, xp: st.xp, streak: st.streak, last_played_date: st.lastPlayedDate,
-        completed_lessons: st.progress, app_state, updated_at: new Date().toISOString() }).then(({ error }) => { if (error) console.warn('Sync failed', error.message); });
-    }, 600);
+    this._pushT = setTimeout(() => this.pushNow(), 600);
+  }
+  // Resolves true once the account holds this device's current data
+  async pushNow() {
+    const st = this.state, app_state = {}; SYNCED.forEach(k => { app_state[k] = st[k]; });
+    if (!sb || !st.user || !navigator.onLine || this._pulled !== st.user.id) return false;
+    const { error } = await sb.from('profiles').upsert({ id: st.user.id, xp: st.xp, streak: st.streak, last_played_date: st.lastPlayedDate,
+      completed_lessons: st.progress, app_state, updated_at: new Date().toISOString() });
+    if (error) console.warn('Sync failed', error.message);
+    return !error;
   }
   async submitAuth(e) {
     e.preventDefault();
@@ -138,10 +142,14 @@ class App extends Component {
   }
   async signOut() {
     this.setState({ sheet: null });
+    // Save anything not yet uploaded. My words are cleared only once they're safe in the account
+    clearTimeout(this._pushT); const saved = await this.pushNow().catch(() => false);
     try { await sb.auth.signOut(); } catch (e) {}
     // Back to a clean guest profile on this device
-    this._lastSaved = null; this._pulled = null; clearTimeout(this._pushT);
-    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefsU: 0, deletedWords: {}, scriptSeen: false, vowelsSeen: false, grammarSeen: {}, tab: 'learn', route: null });
+    this._lastSaved = null; this._pulled = null;
+    const words = saved ? { myWords: [], imgs: {} } : {};
+    if (saved) (this.state.myWords || []).forEach(w => media.del(w.id).catch(() => {}));
+    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefsU: 0, deletedWords: {}, scriptSeen: false, vowelsSeen: false, grammarSeen: {}, ...words, tab: 'learn', route: null });
   }
 
   // ---------- refresh ----------
