@@ -54,7 +54,7 @@ class App extends Component {
   state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
     xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
     progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefs: {}, prefsU: 0, grammarSeen: {}, myWords: [], deletedWords: {}, imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
-    online: navigator.onLine, user: lastUser(), authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
+    online: navigator.onLine, user: lastUser(), authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, authShowPw: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
 
   componentDidMount() {
     this.D = D;
@@ -134,7 +134,7 @@ class App extends Component {
     try { await (s.authMode === 'signin' ? signIn : signUp)(s.authEmail.trim(), s.authPassword); }
     catch (err) { return this.setState({ authBusy: false, authMsg: authMessage(err), authErr: true }); }
     // onUser picks up the new user and pulls their progress
-    this.setState({ authBusy: false, sheet: null, authPassword: '', authMsg: null });
+    this.setState({ authBusy: false, sheet: null, authPassword: '', authMsg: null, authShowPw: false });
   }
   async signOut() {
     this.setState({ sheet: null });
@@ -195,6 +195,8 @@ class App extends Component {
       user: ['M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2', { c: [12, 7, 4] }],
       vol: ['M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z', 'M16 9a5 5 0 0 1 0 6', 'M19.364 18.364a9 9 0 0 0 0-12.728'],
       mic: ['M12 19v3', 'M19 10v2a7 7 0 0 1-14 0v-2', { r: [9, 2, 6, 13, 3] }],
+      eye: ['M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0', { c: [12, 12, 3] }],
+      eyeOff: ['M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49', 'M14.084 14.158a3 3 0 0 1-4.242-4.242', 'M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143', 'm2 2 20 20'],
       back: ['m12 19-7-7 7-7', 'M19 12H5'], x: ['M18 6 6 18', 'm6 6 12 12'], check: ['M20 6 9 17l-5-5'], chev: ['m9 18 6-6-6-6'],
       flame: ['M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'],
       zap: ['M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'],
@@ -521,7 +523,7 @@ class App extends Component {
   renderVals() {
     const s = this.state;
     const I = (n, z, w) => this.icon(n, z, w);
-    const ic = { back: I('back', 22), x: I('x', 22), check: I('check', 18, 2), chev: I('chev', 18), flame: I('flame', 16), zap: I('zap', 16), vol: I('vol', 22), volSm: I('vol', 18), volLg: I('vol', 44, 1.3), bulb: I('bulb', 20), bulbSm: I('bulb', 16), refreshLg: I('review', 22), compass: I('compass', 22), play: I('play', 16), book: I('book', 22), download: I('download', 20), refresh: I('review', 10, 2), chat: I('chat', 20), plus: I('plus', 18), wand: I('sparkles', 16), trash: I('trash', 16), imageIc: I('image', 30, 1.3), pen: I('pen', 22) };
+    const ic = { eye: I('eye', 20), eyeOff: I('eyeOff', 20), back: I('back', 22), x: I('x', 22), check: I('check', 18, 2), chev: I('chev', 18), flame: I('flame', 16), zap: I('zap', 16), vol: I('vol', 22), volSm: I('vol', 18), volLg: I('vol', 44, 1.3), bulb: I('bulb', 20), bulbSm: I('bulb', 16), refreshLg: I('review', 22), compass: I('compass', 22), play: I('play', 16), book: I('book', 22), download: I('download', 20), refresh: I('review', 10, 2), chat: I('chat', 20), plus: I('plus', 18), wand: I('sparkles', 16), trash: I('trash', 16), imageIc: I('image', 30, 1.3), pen: I('pen', 22) };
     const mode = this.props.forceLayout || 'auto';
     const wide = mode === 'desktop' || (mode === 'auto' && s.w >= 900);
     const base = { ic, is: {}, show: { fa: true, lat: true }, tabs: [], showRail: false, showBottomTabs: false, showAppBar: false, wide };
@@ -842,6 +844,7 @@ class App extends Component {
     v.authMsg = s.authMsg || (s.online ? null : "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.");
     v.authMsgRule = s.authErr || !s.online ? 'var(--color-text)' : 'var(--color-accent)';
     v.setAuthEmail = e => this.setState({ authEmail: e.target.value }); v.setAuthPassword = e => this.setState({ authPassword: e.target.value });
+    v.authShowPw = s.authShowPw; v.toggleShowPw = () => this.setState({ authShowPw: !s.authShowPw });
     v.authPwAuto = s.authMode === 'signin' ? 'current-password' : 'new-password'; v.submitAuth = e => this.submitAuth(e); v.stop = e => e.stopPropagation();
     v.authTabs = [['signin', 'Sign in'], ['signup', 'Sign up']].map(([id, label], j) => ({ label, go: () => this.setState({ authMode: id, authMsg: null }), bl: j ? '1px solid var(--color-divider)' : '0', shadow: s.authMode === id ? 'inset 0 0 0 1px var(--color-accent)' : 'none', color: s.authMode === id ? 'var(--color-accent-700)' : 'var(--color-text)' }));
     v.authCta = s.authBusy ? 'One moment…' : s.authMode === 'signin' ? 'Sign in' : 'Create account';
