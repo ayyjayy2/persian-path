@@ -81,12 +81,14 @@ Firebase authorizes `localhost` and the project's `web.app`/`firebaseapp.com` do
 
 ## Hosting
 
-`firebase.json` replaces `netlify.toml`:
+`firebase.json` holds the hosting config. `netlify.toml` stays until the cutover is done, because Netlify builds this code once more so devices can upload from the old address. Every file gets `Cache-Control: no-cache`, as Netlify did, so the service worker never precaches a stale file.
+
+`firebase.json`:
 
 - **Public directory:** `.`
 - **Ignored:** `node_modules`, `docs`, `scripts`, `*.zip`, dotfiles, `firebase.json`, `firestore.rules`, `package*.json`
 - **Predeploy:** `node scripts/build-precache.js`
-- **Headers:** the same security headers as today, and `Cache-Control: no-cache` on `/sw.js` and `/precache-manifest.js`
+- **Headers:** the same security headers as today, and `Cache-Control: no-cache` on every file
 
 GitHub Actions use `FirebaseExtended/action-hosting-deploy`, authenticated with a service-account secret that `firebase init hosting:github` creates:
 
@@ -102,7 +104,7 @@ The README documents the setup, which closes #51. Once this is live, batched rel
 1. Merge the PR. Firebase Hosting goes live, and Netlify builds the same code one last time.
 2. On each device, open the old Netlify site and sign in with the new Firebase account. Local progress uploads.
 3. Open the new `*.web.app` address and sign in. Progress comes back. Reinstall the home screen app from there.
-4. Turn off Netlify auto-deploys. The Supabase project can be deleted.
+4. Turn off Netlify auto-deploys and delete `netlify.toml`. The Supabase project can be deleted.
 
 **Risk:** if Netlify credits are still exhausted, step 1's Netlify build is skipped and the old site can't upload. Check the Netlify status before merging.
 
