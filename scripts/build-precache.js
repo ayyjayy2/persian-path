@@ -1,15 +1,15 @@
 // Writes precache-manifest.js: every file the app needs offline, plus a content hash
 // so the service worker picks up a new cache whenever any of them change.
-// Run after changing app files or adding audio (Netlify runs it on every deploy).
+// Run after changing app files or adding audio (Firebase deploys run it).
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
 const root = path.join(__dirname, "..");
 const SHELL = [
-  "index.html", "app.js", "view.js", "learn-data.js", "culture.js", "style.css", "manifest.json",
+  "index.html", "app.js", "view.js", "learn-data.js", "sync.js", "backend.js", "auth-messages.js", "culture.js", "style.css", "manifest.json",
   "ds/classical.css",
-  "vendor/preact-htm.js", "vendor/supabase.js",
+  "vendor/preact-htm.js", "vendor/firebase.js",
   "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css",
 ];
 const dirs = ["images", "vendor/leaflet/images", "audio"];

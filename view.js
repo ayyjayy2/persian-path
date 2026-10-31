@@ -952,8 +952,8 @@ ${(v.showBottomTabs) ? html`
 ` : null}
 
 ${(v.sheetOpen) ? html`
-<div onClick=${v.closeSheet} style="position:fixed;inset:0;z-index:60;background:color-mix(in srgb, var(--color-neutral-900) 40%, transparent);display:flex;align-items:flex-end;justify-content:center;animation:plfade .2s ease">
-  <div onClick=${v.stop} style="width:100%;max-width:480px;background:var(--color-bg);border-radius:var(--radius-lg) var(--radius-lg) 0 0;box-shadow:var(--shadow-lg);padding:22px 22px;padding-bottom:max(22px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;animation:plup .25s ease">
+<div onClick=${v.closeSheet} style="position:fixed;inset:0;z-index:60;background:color-mix(in srgb, var(--color-neutral-900) 40%, transparent);display:flex;align-items:${v.sheetCenter ? 'center' : 'flex-end'};justify-content:center;padding:${v.sheetCenter ? '16px' : '0'};animation:plfade .2s ease">
+  <div onClick=${v.stop} style="width:100%;max-width:480px;max-height:${v.sheetCenter ? 'calc(100dvh - 32px)' : '100dvh'};overflow-y:auto;background:var(--color-bg);border-radius:${v.sheetCenter ? 'var(--radius-lg)' : 'var(--radius-lg) var(--radius-lg) 0 0'};box-shadow:var(--shadow-lg);padding:22px;padding-bottom:max(22px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;animation:plup .25s ease">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <h2 style="font-size:28px;margin:0">${v.sheetTitle}</h2>
       <button onClick=${v.closeSheet} aria-label="Close" style="width:44px;height:44px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-right:-10px">${v.ic.x}</button>
@@ -964,7 +964,7 @@ ${(v.sheetOpen) ? html`
       </div>
       <form onSubmit=${v.submitAuth} style="display:flex;flex-direction:column;gap:14px">
         <div class="field"><label for="auth-email">Email address</label><input id="auth-email" class="input" type="email" autocomplete="email" required value=${v.authEmail} onInput=${v.setAuthEmail} style="min-height:44px" /></div>
-        <div class="field"><label for="auth-password">Password</label><input id="auth-password" class="input" type="password" autocomplete=${v.authPwAuto} required minlength="6" placeholder="At least 6 characters" value=${v.authPassword} onInput=${v.setAuthPassword} style="min-height:44px" /></div>
+        <div class="field"><label for="auth-password">Password</label><div style="position:relative"><input id="auth-password" class="input" type=${v.authShowPw ? 'text' : 'password'} autocomplete=${v.authPwAuto} autocapitalize="off" autocorrect="off" spellcheck="false" required minlength="6" placeholder="At least 6 characters" value=${v.authPassword} onInput=${v.setAuthPassword} style="min-height:44px;width:100%;box-sizing:border-box;padding-right:48px" /><button type="button" onClick=${v.toggleShowPw} aria-label=${v.authShowPw ? 'Hide password' : 'Show password'} aria-pressed=${v.authShowPw} style="position:absolute;right:2px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:transparent;color:var(--color-neutral-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.authShowPw ? v.ic.eyeOff : v.ic.eye}</button></div></div>
         ${(v.authMsg) ? html`<p role="status" style="margin:0;font-size:13px;line-height:1.5;border-top:1px solid ${v.authMsgRule};padding-top:8px">${v.authMsg}</p>` : null}
         <button type="submit" class="btn btn-primary" disabled=${v.authBusy} style="min-height:50px;font-size:16px">${v.authCta}</button>
       </form>
