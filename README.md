@@ -58,11 +58,24 @@ After adding files or audio, run `node scripts/build-precache.js` so offline use
 | Command | What it does |
 |---|---|
 | `node scripts/build-precache.js` | Rewrites `precache-manifest.js` from the current files. Deploys run it automatically. |
-| `node scripts/test-sync.mjs` | Tests the sync merge rules in `sync.js`. |
-| `node scripts/test-auth-messages.mjs` | Tests the sign-in error wording in `auth-messages.js`. |
+| `npm test` | Runs every test: unit, regression and UI. |
+| `npm run test:unit` | Unit and regression tests that don't need a browser (Node's built-in runner). |
+| `npm run test:ui` | Browser tests with Playwright, at phone and desktop sizes, against a local server. Add `BASE_URL=<url>` to run them against a deployed copy. First run: `npx playwright install chromium`. |
 | `npm run build:firebase` | Rebuilds `vendor/firebase.js`. Only needed when upgrading Firebase (bump the pinned version in `package.json` first). |
 | `npm run generate-audio` | Generates missing word audio with OpenAI text-to-speech. Needs `OPENAI_API_KEY` in `.env` (copy `.env.example`). |
 | `node scripts/list-missing.js` | Lists v1 words with no audio file. |
+
+## Tests
+
+Every ticket ships with tests, and every PR runs them (`.github/workflows/tests.yml`).
+
+| Folder | What goes there |
+|---|---|
+| `tests/unit/` | Pure logic, one file per module: `<module>.test.mjs` (e.g. `sync.test.mjs`). |
+| `tests/ui/` | Flows in a real browser: `<area>.spec.mjs`. `smoke.spec.mjs` checks the app loads, serves this build and works offline. |
+| `tests/regression/` | One file per ticket, named after it (`PER-44-fixed-preview-link.test.mjs`, or `.spec.mjs` when it needs a browser). It reproduces the bug or locks in the change, so it can't quietly come back. |
+
+After each preview deploy, the UI tests also run against the preview link itself.
 
 ## Deploying
 

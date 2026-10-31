@@ -17,10 +17,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: node scripts/build-precache.js
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - id: deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PERSIAN_LEARNIN }}
           channelId: next
           expires: 30d
           projectId: persian-learnin
+      # Check the deployed preview itself: it loads, serves this build and hides repo-only files
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: UI tests on the preview link
+        run: npx playwright test tests/ui
+        env:
+          BASE_URL: ${{ steps.deploy.outputs.details_url }}

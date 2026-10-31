@@ -1,5 +1,5 @@
 // Merges the progress two devices hold for the same account. Pure: no DOM, Firebase or Preact,
-// so Node can test it (scripts/test-sync.mjs). Rules: docs/superpowers/specs/2026-10-23-sync-design.md
+// so Node can test it (tests/unit/sync.test.mjs). Rules: docs/superpowers/specs/2026-10-23-sync-design.md
 
 // State keys pushed to app_state in each learner's Firestore document (users/{uid})
 export const SYNCED = ['srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen',
