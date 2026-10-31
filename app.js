@@ -832,7 +832,8 @@ class App extends Component {
     if (view === 'addword' && !s.draft) { delete v.is.addword; v.is.mywords = true; }
 
     // sheet
-    v.sheetOpen = !!s.sheet; v.sheetAuth = s.sheet === 'auth'; v.sheetInstall = s.sheet === 'install'; v.sheetSignOut = s.sheet === 'signout'; v.sheetHoliday = s.sheet === 'holiday';
+    // Popups: a bottom sheet on phones, a centered dialog on tablets and up
+    v.sheetOpen = !!s.sheet; v.sheetCenter = s.w >= 600; v.sheetAuth = s.sheet === 'auth'; v.sheetInstall = s.sheet === 'install'; v.sheetSignOut = s.sheet === 'signout'; v.sheetHoliday = s.sheet === 'holiday';
     v.sheetTitle = s.sheet === 'install' ? 'Install Persian Learnin' : s.sheet === 'signout' ? 'Sign out?' : s.sheet === 'holiday' ? s.holiday.name : s.authMode === 'signin' ? 'Welcome back' : 'Create an account';
     v.H = s.sheet === 'holiday' ? s.holiday.detail : null;
     v.closeSheet = () => this.setState({ sheet: null, authMsg: null });

@@ -952,8 +952,8 @@ ${(v.showBottomTabs) ? html`
 ` : null}
 
 ${(v.sheetOpen) ? html`
-<div onClick=${v.closeSheet} style="position:fixed;inset:0;z-index:60;background:color-mix(in srgb, var(--color-neutral-900) 40%, transparent);display:flex;align-items:center;justify-content:center;padding:16px;animation:plfade .2s ease">
-  <div onClick=${v.stop} style="width:100%;max-width:480px;max-height:calc(100dvh - 32px);overflow-y:auto;background:var(--color-bg);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:22px;display:flex;flex-direction:column;gap:14px;animation:plup .25s ease">
+<div onClick=${v.closeSheet} style="position:fixed;inset:0;z-index:60;background:color-mix(in srgb, var(--color-neutral-900) 40%, transparent);display:flex;align-items:${v.sheetCenter ? 'center' : 'flex-end'};justify-content:center;padding:${v.sheetCenter ? '16px' : '0'};animation:plfade .2s ease">
+  <div onClick=${v.stop} style="width:100%;max-width:480px;max-height:${v.sheetCenter ? 'calc(100dvh - 32px)' : '100dvh'};overflow-y:auto;background:var(--color-bg);border-radius:${v.sheetCenter ? 'var(--radius-lg)' : 'var(--radius-lg) var(--radius-lg) 0 0'};box-shadow:var(--shadow-lg);padding:22px;padding-bottom:max(22px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;animation:plup .25s ease">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <h2 style="font-size:28px;margin:0">${v.sheetTitle}</h2>
       <button onClick=${v.closeSheet} aria-label="Close" style="width:44px;height:44px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-right:-10px">${v.ic.x}</button>
