@@ -300,10 +300,12 @@ ${(v.is.exercise) ? html`
           <span style="font-size:12px;color:var(--color-neutral-600);margin-top:8px">Tap to reveal</span>
         </div>
         <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg);border:1px solid var(--color-accent);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px;text-align:center">
+          ${(v.X.flipped) ? html`
           <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700)">English</span>
           <span style="font-family:var(--font-heading);font-size:32px;font-weight:600;line-height:1.1">${v.X.en}</span>
           <span style="width:40px;height:1px;background:var(--color-divider);margin:6px 0"></span>
           <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;color:var(--color-neutral-800)">${v.X.example}</span>
+          ` : null}
         </div>
       </div>
     </div>
