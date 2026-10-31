@@ -3,7 +3,7 @@
     "public": ".",
     "ignore": [
       "firebase.json", "firestore.rules", "netlify.toml", "README.md", "package.json", "package-lock.json",
-      "**/.*", "**/node_modules/**", "docs/**", "scripts/**", "*.zip", "*.log"
+      "**/.*", "**/node_modules/**", "docs/**", "scripts/**", "tests/**", "playwright.config.mjs", "test-results/**", "playwright-report/**", "*.zip", "*.log"
     ],
     "predeploy": ["node scripts/build-precache.js"],
     "headers": [
