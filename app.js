@@ -3,11 +3,8 @@ import { h, render, Component } from './vendor/preact-htm.js';
 import * as D from './learn-data.js';
 import { view } from './view.js';
 import { mergeState, SYNCED } from './sync.js';
-
-// ===== SUPABASE =====
-const SUPABASE_URL = 'https://rpnwwtsdfclcyexdafks.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_40HGCpUI6aogWTGhS8fGDA_B3Fozx_w';
-const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+import { onUser, signIn, signUp, signOutUser, loadDoc, saveDoc } from './backend.js';
+import { authMessage } from './auth-messages.js';
 
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
@@ -71,8 +68,7 @@ class App extends Component {
     // An installed app resumed from the background isn't a new app open: pick up other devices' changes
     this._vis = () => { const u = this.state.user; if (document.visibilityState === 'visible' && u && navigator.onLine && Date.now() - (this._pullAt || 0) > 60000) this.pullRemote(u); };
     document.addEventListener('visibilitychange', this._vis);
-    if (sb) sb.auth.onAuthStateChange((event, session) => {
-      const user = session ? session.user : null;
+    onUser(user => {
       const was = this.state.user;
       this.setState({ user });
       if (user && (!was || was.id !== user.id)) setTimeout(() => this.pullRemote(user), 0);
@@ -98,11 +94,11 @@ class App extends Component {
   }
 
   // ---------- account sync ----------
-  // profiles keeps the v1 columns (xp, streak, last_played_date, completed_lessons) plus app_state,
+  // Firestore users/{uid} keeps the v1 fields (xp, streak, last_played_date, completed_lessons) plus app_state,
   // which holds everything else in SYNCED. sync.js decides how two devices' copies merge.
   async pullRemote(user) {
-    const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
-    if (error) { console.warn('Sync failed', error.message); return; }
+    let data;
+    try { data = await loadDoc(user.id); } catch (e) { console.warn('Sync failed', e.message); return; }
     this._pulled = user.id; this._pullAt = Date.now();
     if (data) {
       this.setState(s => {
@@ -117,34 +113,34 @@ class App extends Component {
     this.pushRemote();
   }
   pushRemote() {
-    const s = this.state; if (!sb || !s.user || !navigator.onLine || this._pulled !== s.user.id) return;
+    const s = this.state; if (!s.user || !navigator.onLine || this._pulled !== s.user.id) return;
     clearTimeout(this._pushT);
     this._pushT = setTimeout(() => this.pushNow(), 600);
   }
   // Resolves true once the account holds this device's current data
   async pushNow() {
     const st = this.state, app_state = {}; SYNCED.forEach(k => { app_state[k] = st[k]; });
-    if (!sb || !st.user || !navigator.onLine || this._pulled !== st.user.id) return false;
-    const { error } = await sb.from('profiles').upsert({ id: st.user.id, xp: st.xp, streak: st.streak, last_played_date: st.lastPlayedDate,
-      completed_lessons: st.progress, app_state, updated_at: new Date().toISOString() });
-    if (error) console.warn('Sync failed', error.message);
-    return !error;
+    if (!st.user || !navigator.onLine || this._pulled !== st.user.id) return false;
+    try {
+      await saveDoc(st.user.id, { xp: st.xp, streak: st.streak, last_played_date: st.lastPlayedDate,
+        completed_lessons: st.progress, app_state, updated_at: new Date().toISOString() });
+      return true;
+    } catch (e) { console.warn('Sync failed', e.message); return false; }
   }
   async submitAuth(e) {
     e.preventDefault();
-    const s = this.state; if (!sb || !navigator.onLine) return this.setState({ authMsg: "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.", authErr: true });
+    const s = this.state; if (!navigator.onLine) return this.setState({ authMsg: authMessage({ code: 'auth/network-request-failed' }), authErr: true });
     this.setState({ authBusy: true, authMsg: null });
-    const creds = { email: s.authEmail.trim(), password: s.authPassword };
-    const res = s.authMode === 'signin' ? await sb.auth.signInWithPassword(creds) : await sb.auth.signUp({ ...creds, options: { emailRedirectTo: location.origin + '/' } }); // the confirm link returns to this site (live, preview or local)
-    if (res.error) return this.setState({ authBusy: false, authMsg: res.error.message, authErr: true });
-    if (s.authMode === 'signup' && res.data.user && !res.data.session) return this.setState({ authBusy: false, authMsg: 'Check your email to confirm your account, then sign in.', authErr: false, authMode: 'signin', authPassword: '' });
+    try { await (s.authMode === 'signin' ? signIn : signUp)(s.authEmail.trim(), s.authPassword); }
+    catch (err) { return this.setState({ authBusy: false, authMsg: authMessage(err), authErr: true }); }
+    // onUser picks up the new user and pulls their progress
     this.setState({ authBusy: false, sheet: null, authPassword: '', authMsg: null });
   }
   async signOut() {
     this.setState({ sheet: null });
     // Save anything not yet uploaded. My words are cleared only once they're safe in the account
     clearTimeout(this._pushT); const saved = await this.pushNow().catch(() => false);
-    try { await sb.auth.signOut(); } catch (e) {}
+    try { await signOutUser(); } catch (e) {}
     // Back to a clean guest profile on this device
     this._lastSaved = null; this._pulled = null;
     const words = saved ? { myWords: [], imgs: {} } : {};
