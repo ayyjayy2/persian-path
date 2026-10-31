@@ -1,5 +1,5 @@
 // UI and regression tests in a real browser. Run: npm run test:ui
-// Against a deployed copy instead of a local server: BASE_URL=https://persian-learnin--next-vpksurng.web.app npm run test:ui
+// Against a deployed copy instead of a local server: BASE_URL=<preview link> npm run test:ui
 import { defineConfig, devices } from '@playwright/test';
 
 const remote = process.env.BASE_URL;

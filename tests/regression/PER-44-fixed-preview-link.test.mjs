@@ -1,4 +1,4 @@
-// PER-44 (PR #61): every PR previews at one fixed link, https://persian-learnin--next-vpksurng.web.app
+// PER-44 (PR #61): every PR previews at one fixed link, the "next" channel
 // Locks in the workflow settings that keep that link from changing.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
