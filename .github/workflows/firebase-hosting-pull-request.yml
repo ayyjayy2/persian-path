@@ -1,10 +1,15 @@
-# Deploys each PR to its own preview channel and comments the URL on the PR.
+# Deploys every PR to one shared preview channel, "next", so the preview link never changes.
+# The channel shows whichever PR pushed last; work goes one ticket at a time.
+# Each deploy resets the 30-day expiry, so the link stays the same while work continues.
 name: Deploy preview
 on: pull_request
 permissions:
   checks: write
   contents: read
   pull-requests: write
+concurrency:
+  group: preview-next
+  cancel-in-progress: false
 jobs:
   preview:
     if: github.event.pull_request.head.repo.full_name == github.repository
@@ -16,5 +21,6 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PERSIAN_LEARNIN }}
-          expires: 14d
+          channelId: next
+          expires: 30d
           projectId: persian-learnin

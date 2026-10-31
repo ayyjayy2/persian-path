@@ -69,7 +69,7 @@ After adding files or audio, run `node scripts/build-precache.js` so offline use
 The site is on Firebase Hosting at <https://persian-learnin.web.app> (Firebase project `persian-learnin`).
 
 - **Live:** every push to `main` deploys (`.github/workflows/firebase-hosting-merge.yml`). There's no deploy limit, so merge whenever a change is ready.
-- **Previews:** every PR gets its own preview URL, posted as a comment on the PR (`.github/workflows/firebase-hosting-pull-request.yml`).
+- **Previews:** every PR deploys to one shared preview channel, `next`, so the link stays the same. It shows whichever PR pushed last, and the link is posted on each PR (`.github/workflows/firebase-hosting-pull-request.yml`). The channel expires 30 days after its last deploy.
 - **Both workflows** run `node scripts/build-precache.js` first, and authenticate with the `FIREBASE_SERVICE_ACCOUNT_PERSIAN_LEARNIN` secret (service account `github-deploy`).
 - **Firestore rules** don't deploy with the site. After changing `firestore.rules`, run `firebase deploy --only firestore:rules`.
 - **Manual deploy, if ever needed:** `firebase deploy --only hosting`.
