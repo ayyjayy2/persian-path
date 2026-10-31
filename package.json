@@ -4,12 +4,16 @@
   "description": "Persian language learning webapp",
   "scripts": {
     "generate-audio": "node scripts/generate-audio.js",
-    "build:firebase": "esbuild scripts/firebase-entry.js --bundle --format=esm --minify --legal-comments=eof --outfile=vendor/firebase.js"
+    "build:firebase": "esbuild scripts/firebase-entry.js --bundle --format=esm --minify --legal-comments=eof --outfile=vendor/firebase.js",
+    "test": "npm run test:unit && npm run test:ui",
+    "test:unit": "node --test 'tests/unit/*.test.mjs' 'tests/regression/*.test.mjs'",
+    "test:ui": "playwright test"
   },
   "dependencies": {
     "openai": "^4.47.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.56.1",
     "dotenv": "^16.4.5",
     "esbuild": "0.28.2",
     "firebase": "13.1.0"

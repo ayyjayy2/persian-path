@@ -1,8 +1,8 @@
-// Tests for auth-messages.js. Run: node scripts/test-auth-messages.mjs
+// Tests for auth-messages.js. Run: npm run test:unit
 import assert from 'node:assert/strict';
-import { authMessage } from '../auth-messages.js';
+import { authMessage } from '../../auth-messages.js';
 
-const t = (name, fn) => { try { fn(); console.log('ok  ', name); } catch (e) { console.log('FAIL', name); console.log(e.message); process.exitCode = 1; } };
+import { test as t } from 'node:test';
 
 t('wrong email or password, in every form Firebase reports it', () => {
   for (const code of ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-login-credentials'])
