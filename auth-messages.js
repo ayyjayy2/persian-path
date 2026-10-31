@@ -8,6 +8,9 @@ const MESSAGES = {
   'auth/invalid-email': 'Check the email address.',
   'auth/network-request-failed': OFFLINE,
   'auth/too-many-requests': 'Too many tries. Wait a minute and try again.',
+  'auth/missing-password': 'Enter your password.',
+  'auth/admin-restricted-operation': "New accounts are turned off. Sign in with your existing account.",
+  'auth/user-disabled': 'This account is turned off.',
 };
 
 export function authMessage(err) {

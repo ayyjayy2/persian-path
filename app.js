@@ -3,7 +3,7 @@ import { h, render, Component } from './vendor/preact-htm.js';
 import * as D from './learn-data.js';
 import { view } from './view.js';
 import { mergeState, SYNCED } from './sync.js';
-import { onUser, signIn, signUp, signOutUser, loadDoc, saveDoc } from './backend.js';
+import { onUser, lastUser, signIn, signUp, signOutUser, loadDoc, saveDoc } from './backend.js';
 import { authMessage } from './auth-messages.js';
 
 // ===== PERSISTENCE =====
@@ -54,7 +54,7 @@ class App extends Component {
   state = { ready: false, w: window.innerWidth, tab: 'learn', route: null, sheet: null, authMode: 'signin',
     xp: 0, streak: 0, todayXp: 0, goal: 30, lastPlayedDate: null,
     progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefs: {}, prefsU: 0, grammarSeen: {}, myWords: [], deletedWords: {}, imgs: {}, draft: null, ex: null, result: null, letterFilter: 'all', noteOpen: true, playing: null, wordQuery: '',
-    online: navigator.onLine, user: null, authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
+    online: navigator.onLine, user: lastUser(), authEmail: '', authPassword: '', authMsg: null, authErr: false, authBusy: false, refreshing: false, refreshNote: null, holiday: null, mapSection: null };
 
   componentDidMount() {
     this.D = D;
@@ -68,10 +68,10 @@ class App extends Component {
     // An installed app resumed from the background isn't a new app open: pick up other devices' changes
     this._vis = () => { const u = this.state.user; if (document.visibilityState === 'visible' && u && navigator.onLine && Date.now() - (this._pullAt || 0) > 60000) this.pullRemote(u); };
     document.addEventListener('visibilitychange', this._vis);
+    // Pull once per signed-in account; until then nothing pushes (see pushRemote)
     onUser(user => {
-      const was = this.state.user;
       this.setState({ user });
-      if (user && (!was || was.id !== user.id)) setTimeout(() => this.pullRemote(user), 0);
+      if (user && this._pulled !== user.id) setTimeout(() => this.pullRemote(user), 0);
     });
   }
   componentWillUnmount() { window.removeEventListener('resize', this._r); window.removeEventListener('beforeinstallprompt', this._bip); window.removeEventListener('online', this._net); window.removeEventListener('offline', this._net); document.removeEventListener('visibilitychange', this._vis); }

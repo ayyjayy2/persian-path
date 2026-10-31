@@ -3,7 +3,7 @@
     "public": ".",
     "ignore": [
       "firebase.json", "firestore.rules", "netlify.toml", "README.md", "package.json", "package-lock.json",
-      "**/.*", "**/node_modules/**", "docs/**", "scripts/**", "*.zip", "firebase-debug.log"
+      "**/.*", "**/node_modules/**", "docs/**", "scripts/**", "*.zip", "*.log"
     ],
     "predeploy": ["node scripts/build-precache.js"],
     "headers": [

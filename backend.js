@@ -21,8 +21,19 @@ const userDoc = id => doc(db, 'users', id);
 // The app only needs these two fields; keep Firebase's User object out of Preact state
 const toUser = u => (u ? { id: u.uid, email: u.email } : null);
 
-// Calls back with the signed-in user (or null) now and on every change
-export const onUser = cb => onAuthStateChanged(auth, u => cb(toUser(u)));
+// Firebase only reports a stored session after a network check, which can take a while on a weak
+// connection. The last known user lets the app show who's signed in straight away; app.js still
+// waits for onUser before syncing.
+const LAST_USER = 'pl_user';
+export function lastUser() {
+  try { return JSON.parse(localStorage.getItem(LAST_USER)); } catch (e) { return null; }
+}
+// Calls back with the signed-in user (or null) once Firebase knows, and on every change
+export const onUser = cb => onAuthStateChanged(auth, u => {
+  const user = toUser(u);
+  try { user ? localStorage.setItem(LAST_USER, JSON.stringify(user)) : localStorage.removeItem(LAST_USER); } catch (e) {}
+  cb(user);
+});
 export const signIn = (email, password) => signInWithEmailAndPassword(auth, email, password);
 // Signs the new account in straight away (no email confirmation)
 export const signUp = (email, password) => createUserWithEmailAndPassword(auth, email, password);

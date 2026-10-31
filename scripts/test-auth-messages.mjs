@@ -23,6 +23,11 @@ t('offline', () => {
 t('too many tries', () => {
   assert.equal(authMessage({ code: 'auth/too-many-requests' }), 'Too many tries. Wait a minute and try again.');
 });
+t('sign-up turned off, missing password, disabled account', () => {
+  assert.equal(authMessage({ code: 'auth/admin-restricted-operation' }), 'New accounts are turned off. Sign in with your existing account.');
+  assert.equal(authMessage({ code: 'auth/missing-password' }), 'Enter your password.');
+  assert.equal(authMessage({ code: 'auth/user-disabled' }), 'This account is turned off.');
+});
 t('unknown code falls back to the error message', () => {
   assert.equal(authMessage({ code: 'auth/something-new', message: 'Firebase: Something (auth/something-new).' }), 'Firebase: Something (auth/something-new).');
 });
