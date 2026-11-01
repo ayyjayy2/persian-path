@@ -289,8 +289,8 @@ ${(v.is.exercise) ? html`
   <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">${v.X.kindFa}</span>${say(v.X.kindFa)}</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.X.kindLabel}</span></span>
 
   ${(v.X.isFlash) ? html`
-  <div style="display:flex;flex-direction:column;gap:18px;align-items:center">
-    <div onClick=${v.X.flip} style="width:100%;max-width:460px;height:320px;perspective:1200px;cursor:pointer">
+  <div style="display:flex;flex-direction:column;gap:18px;align-items:center;overflow-x:clip;margin-inline:-20px;padding-inline:20px">
+    <div onClick=${v.X.flip} class="card-slide" style="width:100%;max-width:460px;height:320px;perspective:1200px;cursor:pointer;animation-name:${v.X.slide}">
       <div style="position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);transform:rotateY(${v.X.rot})">
         <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--color-divider);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px">
           <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-neutral-600)">Persian</span>
