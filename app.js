@@ -668,7 +668,8 @@ class App extends Component {
       if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
       v.exitEx = () => { const lid = ex.lessonId; this.setState({ ex: null }); this.nav(lid ? { name: 'lesson', id: lid } : null); };
       if (X.isFlash) {
-        X.rot = ex.flipped ? '180deg' : '0deg'; X.flip = () => this.exUpd({ flipped: !ex.flipped });
+        // X.flipped fills the card's back. It stays blank while a rated card turns back, so the next card's English never shows (#53)
+        X.rot = ex.flipped ? '180deg' : '0deg'; X.flipped = ex.flipped; X.flip = () => this.exUpd({ flipped: !ex.flipped });
         X.showBottomBar = true;
         if (k === 'review') {
           const rate = (lvl) => { const b = this.box(it.w); const nb = [0, 1, Math.max(2, Math.min(4, b + 1)), b >= 3 ? 4 : 3][lvl];
