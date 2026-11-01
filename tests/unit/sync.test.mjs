@@ -94,3 +94,9 @@ t('empty remote returns local values with defaults filled', () => {
 t('null remote is treated as empty', () => {
   assert.deepEqual(mergeState({ todayXp: 3 }, null).todayXp, 3);
 });
+
+t('numbersMixed: once either side has switched to mixed order, it stays mixed', () => {
+  assert.equal(mergeState({ numbersMixed: true }, {}).numbersMixed, true);
+  assert.equal(mergeState({}, { numbersMixed: true }).numbersMixed, true);
+  assert.equal(mergeState({}, {}).numbersMixed, false);
+});
