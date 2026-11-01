@@ -6,11 +6,12 @@ import { mergeState, SYNCED } from './sync.js';
 import { onUser, lastUser, signIn, signUp, signOutUser, loadDoc, saveDoc } from './backend.js';
 import { authMessage } from './auth-messages.js';
 import { EXAMPLES } from './example-data.js';
+import { numbersKnown, countingOrder } from './number-order.js';
 
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
 const V1_KEY = 'persian_app_state';
-const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords', 'deletedWords'];
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords', 'deletedWords', 'numbersMixed'];
 const MIN = 60e3, DAY = 864e5;
 // Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
@@ -434,10 +435,20 @@ class App extends Component {
     const l = ls.find(l => this.D.ACTIVITIES.some(a => !(p[l.id] || {})[a.id])) || ls[0];
     this.setState({ tab: 'learn', route: { name: 'lesson', id: l.id } }); window.scrollTo(0, 0);
   }
+  // Numbers come in counting order until every one is known, then mixed for good (#56)
+  numbersMixed() {
+    if (this.state.numbersMixed) return true;
+    if (!numbersKnown(this.D.LESSONS.find(l => l.id === 'numbers').words, this.state.srs)) return false;
+    this.setState({ numbersMixed: true });
+    return true;
+  }
   start(kind, lessonId, wordsOverride) {
     const D = this.D;
     const lesson = lessonId && D.LESSONS.find(l => l.id === lessonId);
-    const pool = wordsOverride || this.shuffle(lesson.words).slice(0, 10);
+    const ordered = !this.numbersMixed();
+    // In order, the Numbers lesson shows all of its numbers, one to a hundred
+    let pool = wordsOverride || (ordered && lessonId === 'numbers' ? [...lesson.words] : this.shuffle(lesson.words).slice(0, 10));
+    if (ordered) pool = countingOrder(pool);
     const all = this.allWords();
     const opts = w => this.shuffle([w, ...this.shuffle(all.filter(x => x.english !== w.english && x.persian !== w.persian)).slice(0, 3)]);
     let items;
