@@ -5,6 +5,7 @@ import { view } from './view.js';
 import { mergeState, SYNCED } from './sync.js';
 import { onUser, lastUser, signIn, signUp, signOutUser, loadDoc, saveDoc } from './backend.js';
 import { authMessage } from './auth-messages.js';
+import { EXAMPLES } from './example-data.js';
 
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
@@ -665,7 +666,7 @@ class App extends Component {
         kindLabel: { flashcard: 'Flashcards', quiz: 'Recognition', listen: 'Listening', build: 'Sentence builder', speak: 'Speaking', review: 'Spaced review', grammar: 'Grammar' }[k],
         kindFa: { flashcard: 'کارت‌ها', quiz: 'شناخت', listen: 'شنیدن', build: 'جمله‌سازی', speak: 'گفتن', review: 'مرور', grammar: 'دستور' }[k],
         isFlash: k === 'flashcard' || k === 'review', isChoice: k === 'quiz' || k === 'listen' || k === 'grammar', isBuild: k === 'build', isSpeak: k === 'speak' };
-      if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
+      if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, exParts: EXAMPLES[it.w.key] || null, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
       v.exitEx = () => { const lid = ex.lessonId; this.setState({ ex: null }); this.nav(lid ? { name: 'lesson', id: lid } : null); };
       if (X.isFlash) {
         // X.flipped fills the card's back. It stays blank while a rated card turns back, so the next card's English never shows (#53)

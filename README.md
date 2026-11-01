@@ -47,7 +47,7 @@ Plain ES modules with [Preact](https://preactjs.com/) and [htm](https://github.c
 
 ### Adding content
 
-- **A word:** add a tuple to `RAW` in `learn-data.js`: `[persian, phonetic, english, example, writtenForm?, writtenPhonetic?]`. Drop its `.wav` in `audio/` and add the file name, without `.wav`, to the `AUDIO` set. `audioFile(english, phonetic)` in `learn-data.js` gives the expected name.
+- **A word:** add a tuple to `RAW` in `learn-data.js`: `[persian, phonetic, english, example, writtenForm?, writtenPhonetic?]`. Add its example's translation and parts to `EXAMPLES` in `example-data.js` (the unit tests check every word has one and that the parts rebuild the sentence exactly). Drop its `.wav` in `audio/` and add the file name, without `.wav`, to the `AUDIO` set. `audioFile(english, phonetic)` in `learn-data.js` gives the expected name.
 - **A grammar page:** add an entry to `GRAMMAR` in `learn-data.js`.
 - **An app icon:** icon files carry a version suffix (`-v2`) because iOS caches home screen icons by URL. Bump the suffix in `images/`, `index.html` and `manifest.json` together.
 
