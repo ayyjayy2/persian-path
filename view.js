@@ -297,7 +297,7 @@ ${(v.is.exercise) ? html`
       <div style="position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);transform:rotateY(${v.X.rot})">
         <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--color-divider);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px">
           <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-neutral-600)">Persian</span>
-          ${(v.X.num) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:64px;line-height:1.1;color:var(--color-accent-700)">${v.X.num}</span>` : null}
+          ${(v.X.num) ? html`<span data-card-num style="font-family:'Noto Naskh Arabic',serif;font-size:64px;line-height:1.1;color:var(--color-accent-700)">${v.X.num}</span>` : null}
           ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:52px;direction:rtl;line-height:1.35;text-align:center">${v.X.fa}</span>` : null}
           ${(v.show.lat) ? html`<span style="font-style:italic;font-size:17px;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
           <span style="font-size:12px;color:var(--color-neutral-600);margin-top:8px">Tap to reveal</span>
