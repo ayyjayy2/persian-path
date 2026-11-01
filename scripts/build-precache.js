@@ -7,7 +7,7 @@ const crypto = require("crypto");
 
 const root = path.join(__dirname, "..");
 const SHELL = [
-  "index.html", "app.js", "view.js", "learn-data.js", "sync.js", "backend.js", "auth-messages.js", "culture.js", "style.css", "manifest.json",
+  "index.html", "app.js", "view.js", "learn-data.js", "example-data.js", "sync.js", "backend.js", "auth-messages.js", "culture.js", "style.css", "manifest.json",
   "ds/classical.css",
   "vendor/preact-htm.js", "vendor/firebase.js",
   "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css",

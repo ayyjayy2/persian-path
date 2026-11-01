@@ -304,7 +304,17 @@ ${(v.is.exercise) ? html`
           <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700)">English</span>
           <span style="font-family:var(--font-heading);font-size:32px;font-weight:600;line-height:1.1">${v.X.en}</span>
           <span style="width:40px;height:1px;background:var(--color-divider);margin:6px 0"></span>
-          <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;color:var(--color-neutral-800)">${v.X.example}</span>
+          ${(v.X.exParts) ? html`
+          <div dir="rtl" data-ex-parts style="display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:6px 8px;max-width:100%">
+            ${v.X.exParts.parts.map(([fa, en], i) => html`
+            <span data-hit=${i === v.X.exParts.hit ? 'true' : null} style="display:inline-flex;flex-direction:column;align-items:center;min-width:0">
+              <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.5;color:${i === v.X.exParts.hit ? 'var(--color-accent-700)' : 'var(--color-neutral-800)'};font-weight:${i === v.X.exParts.hit ? 600 : 400}">${fa}</span>
+              <span style="align-self:stretch;height:5px;margin:0 2px;border:1px solid ${i === v.X.exParts.hit ? 'var(--color-accent)' : 'var(--color-neutral-400)'};border-top:0;border-radius:0 0 3px 3px"></span>
+              <span dir="ltr" style="font-size:11px;line-height:1.3;margin-top:3px;text-align:center;color:${i === v.X.exParts.hit ? 'var(--color-accent-700)' : 'var(--color-neutral-600)'}">${en}</span>
+            </span>`)}
+          </div>
+          <span style="font-size:14px;font-style:italic;line-height:1.4;color:var(--color-neutral-700);margin-top:2px">${v.X.exParts.en}</span>
+          ` : html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;color:var(--color-neutral-800)">${v.X.example}</span>`}
           ` : null}
         </div>
       </div>
