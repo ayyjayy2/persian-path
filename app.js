@@ -677,8 +677,10 @@ class App extends Component {
           X.barBtns = ex.flipped ? [['Again', '1 min', 0], ['Hard', '1 day', 1], ['Good', '3 days', 2], ['Easy', '1 week', 3]].map(([label, sub, lvl]) => ({ label, sub, cls: lvl === 2 ? 'btn-primary' : 'btn-secondary', go: () => rate(lvl), disabled: false }))
             : [{ label: 'Show answer', sub: '', cls: 'btn-primary', go: X.flip, disabled: false }];
         } else {
-          X.barBtns = [{ label: 'Still learning', sub: '', cls: 'btn-secondary', go: () => this.next({ missed: [...ex.missed, it.w.key] }), disabled: false },
-                       { label: 'I know this', sub: '', cls: 'btn-primary', go: () => this.next({ correct: ex.correct + 1 }), disabled: false }];
+          // Like Review: rate only from the English side, so every card change flips back (#62)
+          X.barBtns = ex.flipped ? [{ label: 'Still learning', sub: '', cls: 'btn-secondary', go: () => this.next({ missed: [...ex.missed, it.w.key] }), disabled: false },
+                       { label: 'I know this', sub: '', cls: 'btn-primary', go: () => this.next({ correct: ex.correct + 1 }), disabled: false }]
+            : [{ label: 'Show answer', sub: '', cls: 'btn-primary', go: X.flip, disabled: false }];
         }
       }
       if (X.isChoice) {
