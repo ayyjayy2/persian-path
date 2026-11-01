@@ -669,7 +669,7 @@ class App extends Component {
       v.exitEx = () => { const lid = ex.lessonId; this.setState({ ex: null }); this.nav(lid ? { name: 'lesson', id: lid } : null); };
       if (X.isFlash) {
         // X.flipped fills the card's back. It stays blank while a rated card turns back, so the next card's English never shows (#53)
-        X.rot = ex.flipped ? '180deg' : '0deg'; X.flipped = ex.flipped; X.flip = () => this.exUpd({ flipped: !ex.flipped });
+        X.rot = ex.flipped ? '180deg' : '0deg'; X.flipped = ex.flipped; X.slide = ex.i % 2 ? 'cardInB' : 'cardInA'; X.flip = () => this.exUpd({ flipped: !ex.flipped });
         X.showBottomBar = true;
         if (k === 'review') {
           const rate = (lvl) => { const b = this.box(it.w); const nb = [0, 1, Math.max(2, Math.min(4, b + 1)), b >= 3 ? 4 : 3][lvl];
