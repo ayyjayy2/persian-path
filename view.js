@@ -8,7 +8,10 @@ import { SAY } from "./learn-data.js";
 const say = (fa, size = 12) => SAY[fa] ? html`<span style="font-family:var(--font-body);font-style:italic;font-size:${size}px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--color-neutral-700);direction:ltr;white-space:nowrap">${SAY[fa]}</span>` : null;
 // Persian words inside English text, set in the Persian font
 const faRuns = (text) => text.split(/([\u0600-\u06FF\u200C]+(?:\s+[\u0600-\u06FF\u200C]+)*)/).map((t, i) => i % 2 ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:1.2em">${t}</span>` : t);
-const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
+// A number word's digit, boxed and captioned ("digit 7") so it can't be mistaken for the word beside it (#55).
+// In quiz questions and choices, reveal = false keeps the caption to "digit" so it doesn't give the answer away.
+const westDigits = (s) => String(s).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+const digit = (num, reveal = true) => num ? html`<span data-digit aria-label=${reveal ? 'digit ' + westDigits(num) : 'digit'} style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin-inline-start:0.45em;padding:0.08em 0.3em 0.12em;border:1px solid var(--color-accent);border-radius:6px;line-height:1;color:var(--color-accent-700)"><span>${num}</span><span style="font-family:var(--font-body);font-size:max(9px,0.26em);letter-spacing:0.08em;text-transform:uppercase;color:var(--color-neutral-600);margin-top:0.25em;direction:ltr;white-space:nowrap"> digit${reveal ? ' ' + westDigits(num) : ''}</span></span>` : null;
 // A verb's command forms and how it's used, under its table
 const verbNotes = (t) => html`
   ${(t.imp) ? html`<div style="display:flex;flex-direction:column;gap:6px;padding-top:4px">
@@ -338,7 +341,7 @@ ${(v.is.exercise) ? html`
     ${(v.X.showPromptWord) ? html`
       <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:24px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative">
         ${(v.X.promptIsFa) ? html`
-          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}${digit(v.X.num)}</span>` : null}
+          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}${digit(v.X.num, false)}</span>` : null}
           ${(v.show.lat) ? html`<span style="font-style:italic;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
           <button onClick=${v.X.play} aria-label="Play" style="position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
         ` : null}
@@ -348,7 +351,7 @@ ${(v.is.exercise) ? html`
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
       ${(v.X.options || []).map((o) => html`
         <button onClick=${o.pick} style="min-height:64px;padding:12px 14px;border:1px solid ${o.border};border-radius:var(--radius-md);background:${o.bg};opacity:${o.op};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;transition:background .15s,border-color .15s" class="hv8">
-          ${(o.showFa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;line-height:1.35">${o.fa}${digit(o.num)}</span>` : null}
+          ${(o.showFa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;line-height:1.35">${o.fa}${digit(o.num, false)}</span>` : null}
           ${(o.showLat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${o.lat}</span>` : null}
           ${(o.showEn) ? html`<span style="font-size:15px">${o.en}</span>` : null}
         </button>
@@ -522,9 +525,9 @@ ${(v.is.results) ? html`
   <div style="width:100%;max-width:420px;text-align:left;display:flex;flex-direction:column">
     <h3 style="font-size:20px;margin:0 0 4px">Words to revisit</h3>
     ${(v.R.missed || []).map((w) => html`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider);gap:12px">
-        <span style="font-size:14px">${w.en}</span>
-        <span style="display:flex;align-items:center;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl">${w.fa}${digit(w.num)}</span><button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button></span>
+      <div data-revisit style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider);gap:12px">
+        <span style="font-size:14px;min-width:0">${w.en}</span>
+        <span style="display:flex;align-items:center;gap:10px"><span style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.4;direction:rtl">${w.fa}${digit(w.num)}</span>${(v.show.lat) ? html`<span data-lat style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}</span><button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button></span>
       </div>
     `)}
     <p style="margin:8px 0 0;font-size:12px;color:var(--color-neutral-700)">Added to your mistake notebook and your next review.</p>
