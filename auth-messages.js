@@ -1,4 +1,4 @@
-// Firebase sign-in errors in plain words. Pure, so Node can test it (scripts/test-auth-messages.mjs).
+// Firebase sign-in errors in plain words. Pure, so Node can test it (tests/unit/auth-messages.test.mjs).
 const OFFLINE = "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.";
 const WRONG = 'Wrong email or password.';
 const MESSAGES = {

@@ -5,6 +5,7 @@ import { view } from './view.js';
 import { mergeState, SYNCED } from './sync.js';
 import { onUser, lastUser, signIn, signUp, signOutUser, loadDoc, saveDoc } from './backend.js';
 import { authMessage } from './auth-messages.js';
+import { EXAMPLES } from './example-data.js';
 
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
@@ -665,10 +666,11 @@ class App extends Component {
         kindLabel: { flashcard: 'Flashcards', quiz: 'Recognition', listen: 'Listening', build: 'Sentence builder', speak: 'Speaking', review: 'Spaced review', grammar: 'Grammar' }[k],
         kindFa: { flashcard: 'کارت‌ها', quiz: 'شناخت', listen: 'شنیدن', build: 'جمله‌سازی', speak: 'گفتن', review: 'مرور', grammar: 'دستور' }[k],
         isFlash: k === 'flashcard' || k === 'review', isChoice: k === 'quiz' || k === 'listen' || k === 'grammar', isBuild: k === 'build', isSpeak: k === 'speak' };
-      if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
+      if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, exParts: EXAMPLES[it.w.key] || null, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
       v.exitEx = () => { const lid = ex.lessonId; this.setState({ ex: null }); this.nav(lid ? { name: 'lesson', id: lid } : null); };
       if (X.isFlash) {
-        X.rot = ex.flipped ? '180deg' : '0deg'; X.flip = () => this.exUpd({ flipped: !ex.flipped });
+        // X.flipped fills the card's back. It stays blank while a rated card turns back, so the next card's English never shows (#53)
+        X.rot = ex.flipped ? '180deg' : '0deg'; X.flipped = ex.flipped; X.slide = ex.i % 2 ? 'cardInB' : 'cardInA'; X.flip = () => this.exUpd({ flipped: !ex.flipped });
         X.showBottomBar = true;
         if (k === 'review') {
           const rate = (lvl) => { const b = this.box(it.w); const nb = [0, 1, Math.max(2, Math.min(4, b + 1)), b >= 3 ? 4 : 3][lvl];
@@ -676,8 +678,10 @@ class App extends Component {
           X.barBtns = ex.flipped ? [['Again', '1 min', 0], ['Hard', '1 day', 1], ['Good', '3 days', 2], ['Easy', '1 week', 3]].map(([label, sub, lvl]) => ({ label, sub, cls: lvl === 2 ? 'btn-primary' : 'btn-secondary', go: () => rate(lvl), disabled: false }))
             : [{ label: 'Show answer', sub: '', cls: 'btn-primary', go: X.flip, disabled: false }];
         } else {
-          X.barBtns = [{ label: 'Still learning', sub: '', cls: 'btn-secondary', go: () => this.next({ missed: [...ex.missed, it.w.key] }), disabled: false },
-                       { label: 'I know this', sub: '', cls: 'btn-primary', go: () => this.next({ correct: ex.correct + 1 }), disabled: false }];
+          // Like Review: rate only from the English side, so every card change flips back (#62)
+          X.barBtns = ex.flipped ? [{ label: 'Still learning', sub: '', cls: 'btn-secondary', go: () => this.next({ missed: [...ex.missed, it.w.key] }), disabled: false },
+                       { label: 'I know this', sub: '', cls: 'btn-primary', go: () => this.next({ correct: ex.correct + 1 }), disabled: false }]
+            : [{ label: 'Show answer', sub: '', cls: 'btn-primary', go: X.flip, disabled: false }];
         }
       }
       if (X.isChoice) {

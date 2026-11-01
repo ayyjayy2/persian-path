@@ -4,3 +4,5 @@ node_modules/
 .env
 .firebase/
 *.log
+test-results/
+playwright-report/

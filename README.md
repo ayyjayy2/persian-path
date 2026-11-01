@@ -47,7 +47,7 @@ Plain ES modules with [Preact](https://preactjs.com/) and [htm](https://github.c
 
 ### Adding content
 
-- **A word:** add a tuple to `RAW` in `learn-data.js`: `[persian, phonetic, english, example, writtenForm?, writtenPhonetic?]`. Drop its `.wav` in `audio/` and add the file name, without `.wav`, to the `AUDIO` set. `audioFile(english, phonetic)` in `learn-data.js` gives the expected name.
+- **A word:** add a tuple to `RAW` in `learn-data.js`: `[persian, phonetic, english, example, writtenForm?, writtenPhonetic?]`. Add its example's translation and parts to `EXAMPLES` in `example-data.js` (the unit tests check every word has one and that the parts rebuild the sentence exactly). Drop its `.wav` in `audio/` and add the file name, without `.wav`, to the `AUDIO` set. `audioFile(english, phonetic)` in `learn-data.js` gives the expected name.
 - **A grammar page:** add an entry to `GRAMMAR` in `learn-data.js`.
 - **An app icon:** icon files carry a version suffix (`-v2`) because iOS caches home screen icons by URL. Bump the suffix in `images/`, `index.html` and `manifest.json` together.
 
@@ -58,18 +58,31 @@ After adding files or audio, run `node scripts/build-precache.js` so offline use
 | Command | What it does |
 |---|---|
 | `node scripts/build-precache.js` | Rewrites `precache-manifest.js` from the current files. Deploys run it automatically. |
-| `node scripts/test-sync.mjs` | Tests the sync merge rules in `sync.js`. |
-| `node scripts/test-auth-messages.mjs` | Tests the sign-in error wording in `auth-messages.js`. |
+| `npm test` | Runs every test: unit, regression and UI. |
+| `npm run test:unit` | Unit and regression tests that don't need a browser (Node's built-in runner). |
+| `npm run test:ui` | Browser tests with Playwright, at phone and desktop sizes, against a local server. Add `BASE_URL=<url>` to run them against a deployed copy. First run: `npx playwright install chromium`. |
 | `npm run build:firebase` | Rebuilds `vendor/firebase.js`. Only needed when upgrading Firebase (bump the pinned version in `package.json` first). |
 | `npm run generate-audio` | Generates missing word audio with OpenAI text-to-speech. Needs `OPENAI_API_KEY` in `.env` (copy `.env.example`). |
 | `node scripts/list-missing.js` | Lists v1 words with no audio file. |
+
+## Tests
+
+Every ticket ships with tests, and every PR runs them (`.github/workflows/tests.yml`).
+
+| Folder | What goes there |
+|---|---|
+| `tests/unit/` | Pure logic, one file per module: `<module>.test.mjs` (e.g. `sync.test.mjs`). |
+| `tests/ui/` | Flows in a real browser: `<area>.spec.mjs`. `smoke.spec.mjs` checks the app loads, serves this build and works offline. |
+| `tests/regression/` | One file per ticket, named after it (`PER-44-fixed-preview-link.test.mjs`, or `.spec.mjs` when it needs a browser). It reproduces the bug or locks in the change, so it can't quietly come back. |
+
+After each preview deploy, the UI tests also run against the preview link itself.
 
 ## Deploying
 
 The site is on Firebase Hosting at <https://persian-learnin.web.app> (Firebase project `persian-learnin`).
 
 - **Live:** every push to `main` deploys (`.github/workflows/firebase-hosting-merge.yml`). There's no deploy limit, so merge whenever a change is ready.
-- **Previews:** every PR gets its own preview URL, posted as a comment on the PR (`.github/workflows/firebase-hosting-pull-request.yml`).
+- **Previews:** every PR deploys to one shared preview channel, `next`, so the link stays the same. It shows whichever PR pushed last, and the link is posted on each PR (`.github/workflows/firebase-hosting-pull-request.yml`). The channel expires 30 days after its last deploy.
 - **Both workflows** run `node scripts/build-precache.js` first, and authenticate with the `FIREBASE_SERVICE_ACCOUNT_PERSIAN_LEARNIN` secret (service account `github-deploy`).
 - **Firestore rules** don't deploy with the site. After changing `firestore.rules`, run `firebase deploy --only firestore:rules`.
 - **Manual deploy, if ever needed:** `firebase deploy --only hosting`.

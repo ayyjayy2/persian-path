@@ -1,0 +1,28 @@
+# Unit, regression and UI tests on every PR. UI tests run in Chromium at phone and desktop sizes
+# against a local server.
+name: Tests
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04  # Playwright 1.56 does not support ubuntu-latest (26.04) yet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/build-precache.js
+      - name: Unit and regression tests
+        run: npm run test:unit
+      - run: npx playwright install --with-deps chromium
+      - name: UI tests
+        run: npm run test:ui
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

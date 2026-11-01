@@ -8,7 +8,10 @@ import { SAY } from "./learn-data.js";
 const say = (fa, size = 12) => SAY[fa] ? html`<span style="font-family:var(--font-body);font-style:italic;font-size:${size}px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--color-neutral-700);direction:ltr;white-space:nowrap">${SAY[fa]}</span>` : null;
 // Persian words inside English text, set in the Persian font
 const faRuns = (text) => text.split(/([\u0600-\u06FF\u200C]+(?:\s+[\u0600-\u06FF\u200C]+)*)/).map((t, i) => i % 2 ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:1.2em">${t}</span>` : t);
-const digit = (num) => num ? html`<span style="color:var(--color-accent-700);margin-inline-start:0.35em">${num}</span>` : null;
+// A number word's digit, boxed and captioned ("digit 7") so it can't be mistaken for the word beside it (#55).
+// In quiz questions and choices, reveal = false keeps the caption to "digit" so it doesn't give the answer away.
+const westDigits = (s) => String(s).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+const digit = (num, reveal = true) => num ? html`<span data-digit aria-label=${reveal ? 'digit ' + westDigits(num) : 'digit'} style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin-inline-start:0.45em;padding:0.08em 0.3em 0.12em;border:1px solid var(--color-accent);border-radius:6px;line-height:1;color:var(--color-accent-700)"><span>${num}</span><span style="font-family:var(--font-body);font-size:max(9px,0.26em);letter-spacing:0.08em;text-transform:uppercase;color:var(--color-neutral-600);margin-top:0.25em;direction:ltr;white-space:nowrap"> digit${reveal ? ' ' + westDigits(num) : ''}</span></span>` : null;
 // A verb's command forms and how it's used, under its table
 const verbNotes = (t) => html`
   ${(t.imp) ? html`<div style="display:flex;flex-direction:column;gap:6px;padding-top:4px">
@@ -289,8 +292,8 @@ ${(v.is.exercise) ? html`
   <span style="display:flex;align-items:baseline;gap:8px;direction:rtl"><span style="display:inline-flex;align-items:baseline;gap:6px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:15px;color:var(--color-accent-700)">${v.X.kindFa}</span>${say(v.X.kindFa)}</span><span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.X.kindLabel}</span></span>
 
   ${(v.X.isFlash) ? html`
-  <div style="display:flex;flex-direction:column;gap:18px;align-items:center">
-    <div onClick=${v.X.flip} style="width:100%;max-width:460px;height:320px;perspective:1200px;cursor:pointer">
+  <div style="display:flex;flex-direction:column;gap:18px;align-items:center;overflow-x:clip;margin-inline:-20px;padding-inline:20px">
+    <div onClick=${v.X.flip} class="card-slide" style="width:100%;max-width:460px;height:320px;perspective:1200px;cursor:pointer;animation-name:${v.X.slide}">
       <div style="position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);transform:rotateY(${v.X.rot})">
         <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--color-divider);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px">
           <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-neutral-600)">Persian</span>
@@ -300,10 +303,22 @@ ${(v.is.exercise) ? html`
           <span style="font-size:12px;color:var(--color-neutral-600);margin-top:8px">Tap to reveal</span>
         </div>
         <div style="position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg);border:1px solid var(--color-accent);outline:6px solid var(--color-surface);outline-offset:-7px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px;text-align:center">
+          ${(v.X.flipped) ? html`
           <span style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent-700)">English</span>
           <span style="font-family:var(--font-heading);font-size:32px;font-weight:600;line-height:1.1">${v.X.en}</span>
           <span style="width:40px;height:1px;background:var(--color-divider);margin:6px 0"></span>
-          <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;color:var(--color-neutral-800)">${v.X.example}</span>
+          ${(v.X.exParts) ? html`
+          <div dir="rtl" data-ex-parts style="display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:6px 8px;max-width:100%">
+            ${v.X.exParts.parts.map(([fa, en], i) => html`
+            <span data-hit=${i === v.X.exParts.hit ? 'true' : null} style="display:inline-flex;flex-direction:column;align-items:center;min-width:0">
+              <span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.5;color:${i === v.X.exParts.hit ? 'var(--color-accent-700)' : 'var(--color-neutral-800)'};font-weight:${i === v.X.exParts.hit ? 600 : 400}">${fa}</span>
+              <span style="align-self:stretch;height:5px;margin:0 2px;border:1px solid ${i === v.X.exParts.hit ? 'var(--color-accent)' : 'var(--color-neutral-400)'};border-top:0;border-radius:0 0 3px 3px"></span>
+              <span dir="ltr" style="font-size:11px;line-height:1.3;margin-top:3px;text-align:center;color:${i === v.X.exParts.hit ? 'var(--color-accent-700)' : 'var(--color-neutral-600)'}">${en}</span>
+            </span>`)}
+          </div>
+          <span style="font-size:14px;font-style:italic;line-height:1.4;color:var(--color-neutral-700);margin-top:2px">${v.X.exParts.en}</span>
+          ` : html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;color:var(--color-neutral-800)">${v.X.example}</span>`}
+          ` : null}
         </div>
       </div>
     </div>
@@ -326,7 +341,7 @@ ${(v.is.exercise) ? html`
     ${(v.X.showPromptWord) ? html`
       <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:24px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative">
         ${(v.X.promptIsFa) ? html`
-          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}${digit(v.X.num)}</span>` : null}
+          ${(v.show.fa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:44px;direction:rtl;line-height:1.4">${v.X.fa}${digit(v.X.num, false)}</span>` : null}
           ${(v.show.lat) ? html`<span style="font-style:italic;color:var(--color-neutral-700)">${v.X.lat}</span>` : null}
           <button onClick=${v.X.play} aria-label="Play" style="position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button>
         ` : null}
@@ -336,7 +351,7 @@ ${(v.is.exercise) ? html`
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
       ${(v.X.options || []).map((o) => html`
         <button onClick=${o.pick} style="min-height:64px;padding:12px 14px;border:1px solid ${o.border};border-radius:var(--radius-md);background:${o.bg};opacity:${o.op};cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;transition:background .15s,border-color .15s" class="hv8">
-          ${(o.showFa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;line-height:1.35">${o.fa}${digit(o.num)}</span>` : null}
+          ${(o.showFa) ? html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:22px;direction:rtl;line-height:1.35">${o.fa}${digit(o.num, false)}</span>` : null}
           ${(o.showLat) ? html`<span style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${o.lat}</span>` : null}
           ${(o.showEn) ? html`<span style="font-size:15px">${o.en}</span>` : null}
         </button>
@@ -510,9 +525,9 @@ ${(v.is.results) ? html`
   <div style="width:100%;max-width:420px;text-align:left;display:flex;flex-direction:column">
     <h3 style="font-size:20px;margin:0 0 4px">Words to revisit</h3>
     ${(v.R.missed || []).map((w) => html`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider);gap:12px">
-        <span style="font-size:14px">${w.en}</span>
-        <span style="display:flex;align-items:center;gap:10px"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl">${w.fa}${digit(w.num)}</span><button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button></span>
+      <div data-revisit style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider);gap:12px">
+        <span style="font-size:14px;min-width:0">${w.en}</span>
+        <span style="display:flex;align-items:center;gap:10px"><span style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;line-height:1.4;direction:rtl">${w.fa}${digit(w.num)}</span>${(v.show.lat) ? html`<span data-lat style="font-size:12px;font-style:italic;color:var(--color-neutral-700)">${w.lat}</span>` : null}</span><button onClick=${w.play} aria-label="Play" style="width:40px;height:40px;border-radius:50%;border:1px solid var(--color-divider);background:transparent;color:var(--color-accent-700);display:flex;align-items:center;justify-content:center;cursor:pointer">${v.ic.volSm}</button></span>
       </div>
     `)}
     <p style="margin:8px 0 0;font-size:12px;color:var(--color-neutral-700)">Added to your mistake notebook and your next review.</p>

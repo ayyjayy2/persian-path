@@ -1,8 +1,8 @@
-// Tests for sync.js. Run: node scripts/test-sync.mjs
+// Tests for sync.js. Run: npm run test:unit
 import assert from 'node:assert/strict';
-import { mergeState } from '../sync.js';
+import { mergeState } from '../../sync.js';
 
-const t = (name, fn) => { try { fn(); console.log('ok  ', name); } catch (e) { console.log('FAIL', name); console.log(e.message); process.exitCode = 1; } };
+import { test as t } from 'node:test';
 
 t('srs: newer entry wins per key, tie keeps local', () => {
   const m = mergeState(
