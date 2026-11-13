@@ -87,7 +87,7 @@ The site is on Firebase Hosting at <https://persian-learnin.web.app> (Firebase p
 - **Firestore rules** don't deploy with the site. After changing `firestore.rules`, run `firebase deploy --only firestore:rules`.
 - **Manual deploy, if ever needed:** `firebase deploy --only hosting`.
 
-The app used to be on Netlify (persian-learnin.netlify.app) with Supabase. See [the Firebase move](docs/superpowers/specs/2026-10-31-firebase-design.md) for why it moved and how devices moved their progress.
+The app used to be on Netlify (persian-learnin.netlify.app) with Supabase. Netlify builds are now stopped and the old site is frozen; all devices moved on 2026-11-13. See [the Firebase move](docs/superpowers/specs/2026-10-31-firebase-design.md) for why it moved and how devices moved their progress.
 
 ## Working conventions
 
