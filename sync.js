@@ -3,7 +3,7 @@
 
 // State keys pushed to app_state in each learner's Firestore document (users/{uid})
 export const SYNCED = ['srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen',
-  'todayXp', 'lastPlayedDate', 'myWords', 'deletedWords'];
+  'todayXp', 'lastPlayedDate', 'myWords', 'deletedWords', 'numbersMixed'];
 
 const MAX_MISTAKES = 40;
 const u = x => (x && x.u) || 0;
@@ -47,6 +47,7 @@ export function mergeState(local, remote) {
     srs, mistakes, mistakeAt, myWords, deletedWords,
     prefs: remotePrefs ? (R.prefs || {}) : (L.prefs || {}), prefsU: Math.max(L.prefsU || 0, R.prefsU || 0),
     scriptSeen: !!(L.scriptSeen || R.scriptSeen), vowelsSeen: !!(L.vowelsSeen || R.vowelsSeen),
+    numbersMixed: !!(L.numbersMixed || R.numbersMixed),
     grammarSeen: { ...(L.grammarSeen || {}), ...(R.grammarSeen || {}) },
     todayXp,
   };

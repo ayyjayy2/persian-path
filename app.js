@@ -6,11 +6,13 @@ import { mergeState, SYNCED } from './sync.js';
 import { onUser, lastUser, signIn, signUp, signOutUser, loadDoc, saveDoc } from './backend.js';
 import { authMessage } from './auth-messages.js';
 import { EXAMPLES } from './example-data.js';
+import { numbersKnown, countingOrder } from './number-order.js';
+import { buildRepliesDrill, pairsFor, pairedPool, replyTo } from './pairs-data.js';
 
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
 const V1_KEY = 'persian_app_state';
-const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords', 'deletedWords'];
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords', 'deletedWords', 'numbersMixed'];
 const MIN = 60e3, DAY = 864e5;
 // Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
@@ -268,10 +270,18 @@ class App extends Component {
       return { ...st, doneCount, total: playable.length, cpDone, complete, unlocked, playableCp: unlocked && !!this.D.SCENARIOS[st.checkpoint.id] };
     });
   }
-  startConvo(id) {
-    const sc = this.D.SCENARIOS[id]; if (!sc) return;
-    const ex = this.advanceNpc({ kind: 'convo', scId: id, sc, items: sc.turns, i: 0, step: 0, log: [], wrongMsg: null, turnWrong: false, correct: 0, total: sc.turns.filter(t => t.who === 'you').length, missed: [], picked: [], showEn: true, lessonId: null });
+  // Runs a scenario ({ title, setting, npc, turns }) on the conversation screen
+  openConvo(sc, extra) {
+    const ex = this.advanceNpc({ kind: 'convo', sc, items: sc.turns, i: 0, step: 0, log: [], wrongMsg: null, turnWrong: false, correct: 0, total: sc.turns.filter(t => t.who === 'you').length, missed: [], picked: [], showEn: true, lessonId: null, ...extra });
     this.setState({ ex, route: { name: 'exercise' } }); window.scrollTo(0, 0);
+  }
+  startConvo(id) {
+    const sc = this.D.SCENARIOS[id]; if (sc) this.openConvo(sc, { scId: id });
+  }
+  // Quick replies (#57): the lesson's call-and-response pairs as a conversation
+  startReplies(lessonId) {
+    const sc = buildRepliesDrill(lessonId, a => this.shuffle(a));
+    if (sc.turns.length) this.openConvo(sc, { act: 'replies', lessonId });
   }
   advanceNpc(ex) {
     const t = ex.sc.turns; let step = ex.step, last = null; const log = [...ex.log];
@@ -431,13 +441,27 @@ class App extends Component {
   }
   openNextLesson() {
     const p = this.state.progress, ls = this.lessons();
-    const l = ls.find(l => this.D.ACTIVITIES.some(a => !(p[l.id] || {})[a.id])) || ls[0];
+    const l = ls.find(l => this.D.activitiesFor(l.id).some(a => !(p[l.id] || {})[a.id])) || ls[0];
     this.setState({ tab: 'learn', route: { name: 'lesson', id: l.id } }); window.scrollTo(0, 0);
   }
+  // Numbers come in counting order until every one is known, then mixed for good (#56)
+  numbersMixed() {
+    if (this.state.numbersMixed) return true;
+    if (!numbersKnown(this.D.LESSONS.find(l => l.id === 'numbers').words, this.state.srs)) return false;
+    this.setState({ numbersMixed: true });
+    return true;
+  }
   start(kind, lessonId, wordsOverride) {
+    if (kind === 'replies') return this.startReplies(lessonId);
     const D = this.D;
     const lesson = lessonId && D.LESSONS.find(l => l.id === lessonId);
-    const pool = wordsOverride || this.shuffle(lesson.words).slice(0, 10);
+    const ordered = !this.numbersMixed();
+    // In order, the Numbers lesson shows all of its numbers, one to a hundred.
+    // In lessons with call-and-response pairs, a reply always comes right after its call (#57)
+    const paired = lesson && pairsFor(lessonId).length;
+    let pool = wordsOverride || (ordered && lessonId === 'numbers' ? [...lesson.words]
+      : paired ? pairedPool(lesson.words, lessonId, a => this.shuffle(a), 10) : this.shuffle(lesson.words).slice(0, 10));
+    if (ordered) pool = countingOrder(pool);
     const all = this.allWords();
     const opts = w => this.shuffle([w, ...this.shuffle(all.filter(x => x.english !== w.english && x.persian !== w.persian)).slice(0, 3)]);
     let items;
@@ -484,13 +508,13 @@ class App extends Component {
     const lessonId = ex.lessonId;
     this.setState(s => {
       const progress = { ...s.progress };
-      if (lessonId && ex.kind !== 'review') progress[lessonId] = { ...(progress[lessonId] || {}), [ex.kind]: 1 };
-      if (ex.kind === 'convo') progress['cp:' + ex.scId] = 1;
+      if (lessonId && ex.kind !== 'review') progress[lessonId] = { ...(progress[lessonId] || {}), [ex.act || ex.kind]: 1 };
+      if (ex.kind === 'convo' && ex.scId) progress['cp:' + ex.scId] = 1;
       const mistakes = [...new Set([...ex.missed, ...s.mistakes])].slice(0, 40), now = Date.now();
       const mistakeAt = {}; mistakes.forEach(k => { mistakeAt[k] = ex.missed.includes(k) ? now : (s.mistakeAt || {})[k] || 0; });
       const srs = { ...s.srs }; ex.missed.forEach(k => { srs[k] = { b: 0, t: now, u: now }; });
       const today = dayKey(), streak = s.lastPlayedDate === today ? s.streak : s.lastPlayedDate === dayKey(Date.now() - DAY) ? s.streak + 1 : 1;
-      return { progress, mistakes, mistakeAt, srs, streak, lastPlayedDate: today, xp: s.xp + xpE, todayXp: (s.lastPlayedDate === today ? s.todayXp : 0) + xpE, result: { kind: ex.kind, scId: ex.scId, lessonId, correct: ex.correct, total, xp: xpE, missed: ex.missed }, route: { name: 'results' }, ex: null };
+      return { progress, mistakes, mistakeAt, srs, streak, lastPlayedDate: today, xp: s.xp + xpE, todayXp: (s.lastPlayedDate === today ? s.todayXp : 0) + xpE, result: { kind: ex.kind, act: ex.act, scId: ex.scId, lessonId, correct: ex.correct, total, xp: xpE, missed: ex.missed }, route: { name: 'results' }, ex: null };
     });
     window.scrollTo(0, 0);
   }
@@ -573,14 +597,15 @@ class App extends Component {
       const today = i === todayIdx;
       return { fa, en: ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'][i], lat: today && dayW ? dayW.phonetic : null, border: done || today ? 'var(--color-accent)' : 'var(--color-divider)', bg: done ? 'var(--color-accent-100)' : 'transparent', color: done ? 'var(--color-accent-800)' : 'var(--color-neutral-600)' };
     });
-    const nextL = lessons.find(l => D.ACTIVITIES.some(a => !prog(l.id)[a.id])) || lessons[0];
-    const nextA = D.ACTIVITIES.find(a => !prog(nextL.id)[a.id]) || D.ACTIVITIES[0];
+    const nextL = lessons.find(l => D.activitiesFor(l.id).some(a => !prog(l.id)[a.id])) || lessons[0];
+    const nextActs = D.activitiesFor(nextL.id);
+    const nextA = nextActs.find(a => !prog(nextL.id)[a.id]) || nextActs[0];
     const ln = l => lessons.indexOf(l) + 1;
-    v.cont = { n: ln(nextL), title: nextL.title, glyph: nextL.glyph, next: nextA.title, pct: Math.round(D.ACTIVITIES.filter(a => prog(nextL.id)[a.id]).length / D.ACTIVITIES.length * 100) + '%', open: () => this.nav({ name: 'lesson', id: nextL.id }) };
+    v.cont = { n: ln(nextL), title: nextL.title, glyph: nextL.glyph, next: nextA.title, pct: Math.round(nextActs.filter(a => prog(nextL.id)[a.id]).length / nextActs.length * 100) + '%', open: () => this.nav({ name: 'lesson', id: nextL.id }) };
     const wodPool = lessons.flatMap(l => l.words), wodW = wodPool[Math.floor(now / DAY) % wodPool.length]; const wd = this.disp(wodW);
     v.wod = { fa: wd.fa, num: wd.num, lat: wd.lat, en: wd.en, play: () => this.play(wodW) };
     v.chapters = lessons.map((l, i) => ({ n: i + 1, nFa: this.faNum(i + 1), title: l.title, desc: l.description, count: l.words.length, glyph: l.glyph,
-      marks: D.ACTIVITIES.map(a => ({ bg: prog(l.id)[a.id] ? 'var(--color-accent)' : 'var(--color-divider)' })), open: () => this.nav({ name: 'lesson', id: l.id }) }));
+      marks: D.activitiesFor(l.id).map(a => ({ bg: prog(l.id)[a.id] ? 'var(--color-accent)' : 'var(--color-divider)' })), open: () => this.nav({ name: 'lesson', id: l.id }) }));
     // plan / stages
     const SI = this.stageInfo();
     const cur = SI.find(st => st.unlocked && !st.complete) || SI[SI.length - 1];
@@ -599,7 +624,7 @@ class App extends Component {
       if (it.kind === 'lesson') {
         const l = D.LESSONS.find(x => x.id === it.id); if (!l || (l.mature && !P.mature)) return null; const n = ln(l);
         return { isLesson: true, n, nFa: this.faNum(n), title: l.title, desc: `${l.description} · ${l.words.length} words`, glyph: l.glyph,
-          marks: D.ACTIVITIES.map(a => ({ bg: prog(l.id)[a.id] ? 'var(--color-accent)' : 'var(--color-divider)' })),
+          marks: D.activitiesFor(l.id).map(a => ({ bg: prog(l.id)[a.id] ? 'var(--color-accent)' : 'var(--color-divider)' })),
           op: locked ? 0.5 : 1, cursor: locked ? 'default' : 'pointer', endIcon: locked ? I('lock', 14) : this.lessonDone(l.id) ? I('check', 16, 2) : ic.chev, endColor: this.lessonDone(l.id) ? 'var(--color-accent-700)' : 'var(--color-neutral-500)',
           open: locked ? noop : () => this.nav({ name: 'lesson', id: l.id }) };
       }
@@ -630,7 +655,7 @@ class App extends Component {
       cpTitle: st.checkpoint.title, cpDesc: st.checkpoint.desc, cpBorder: st.playableCp ? 'var(--color-accent)' : 'var(--color-divider)', cpCursor: st.playableCp ? 'pointer' : 'default',
       cpIcon: st.cpDone ? I('check', 16, 2) : st.playableCp ? ic.chev : I('lock', 14), cpOpen: st.playableCp ? () => this.startConvo(st.checkpoint.id) : noop }));
 
-    v.chapterCount = lessons.length; v.chaptersDone = lessons.filter(l => D.ACTIVITIES.every(a => prog(l.id)[a.id])).length;
+    v.chapterCount = lessons.length; v.chaptersDone = lessons.filter(l => D.activitiesFor(l.id).every(a => prog(l.id)[a.id])).length;
 
     if (view === 'grammar') {
       const g = D.GRAMMAR[r.id], written = P.register === 'written';
@@ -647,7 +672,7 @@ class App extends Component {
       const l = D.LESSONS.find(x => x.id === r.id); const note = D.NOTES[l.id];
       const stg = D.STAGES.find(st => st.items.some(i => i.id === l.id));
       v.L = { n: ln(l), where: stg ? `Stage ${stg.n} · ${stg.name}` : 'Elective', cando: D.CANDO[l.id], title: l.title, desc: l.description, glyph: l.glyph, count: l.words.length, noteT: note.t, noteB: note.b,
-        acts: D.ACTIVITIES.map(a => ({ ...a, icon: I(a.icon, 20), done: !!prog(l.id)[a.id], border: prog(l.id)[a.id] ? 'color-mix(in srgb, var(--color-accent) 55%, transparent)' : 'var(--color-divider)', start: () => this.start(a.id, l.id) })),
+        acts: D.activitiesFor(l.id).map(a => ({ ...a, icon: I(a.icon, 20), done: !!prog(l.id)[a.id], border: prog(l.id)[a.id] ? 'color-mix(in srgb, var(--color-accent) 55%, transparent)' : 'var(--color-divider)', start: () => this.start(a.id, l.id) })),
         words: l.words.map(w => { const d = this.disp(w); const p = s.playing === w.key; const alt = !!w.written; const written = P.register === 'written';
           return { ...d, play: () => this.play(w), btnBorder: p ? 'var(--color-accent)' : 'var(--color-divider)', btnBg: p ? 'var(--color-accent-100)' : 'transparent', hasAlt: alt, altLabel: written ? 'Spoken' : 'Written', altFa: written ? w.persian : w.written, altLat: written ? w.phonetic : w.writtenPhonetic }; }) };
       v.L.conj = this.conjTable(l.id);
@@ -667,6 +692,7 @@ class App extends Component {
         kindFa: { flashcard: 'کارت‌ها', quiz: 'شناخت', listen: 'شنیدن', build: 'جمله‌سازی', speak: 'گفتن', review: 'مرور', grammar: 'دستور' }[k],
         isFlash: k === 'flashcard' || k === 'review', isChoice: k === 'quiz' || k === 'listen' || k === 'grammar', isBuild: k === 'build', isSpeak: k === 'speak' };
       if (it.w) { const d = this.disp(it.w); Object.assign(X, d, { example: it.w.example, exParts: EXAMPLES[it.w.key] || null, play: () => this.play(it.w), playSlow: () => this.play(it.w, true) }); }
+      X.replyTo = it.w ? replyTo(it.w.key) : null;
       v.exitEx = () => { const lid = ex.lessonId; this.setState({ ex: null }); this.nav(lid ? { name: 'lesson', id: lid } : null); };
       if (X.isFlash) {
         // X.flipped fills the card's back. It stays blank while a rated card turns back, so the next card's English never shows (#53)
@@ -716,9 +742,9 @@ class App extends Component {
       }
       if (k === 'convo') {
         const t = ex.sc.turns, youDone = ex.log.filter(m => m.who === 'you').length;
-        Object.assign(X, { isConvo: true, kindLabel: 'Conversation checkpoint', kindFa: 'گفتگو', pct: Math.round(ex.step / t.length * 100) + '%', counter: `${youDone} / ${ex.total}`,
+        Object.assign(X, { isConvo: true, kindLabel: ex.act === 'replies' ? 'Quick replies' : 'Conversation checkpoint', kindFa: 'گفتگو', pct: Math.round(ex.step / t.length * 100) + '%', counter: `${youDone} / ${ex.total}`,
           title: ex.sc.title, setting: ex.sc.setting, showEn: ex.showEn, enLabel: ex.showEn ? 'Hide English' : 'Show English', toggleEn: () => this.exUpd({ showEn: !ex.showEn }),
-          log: ex.log.map((m, j) => { const you = m.who === 'you'; return { ...m, name: you ? 'You' : ex.sc.npc, align: you ? 'flex-end' : 'flex-start', ta: you ? 'right' : 'left', border: you ? 'var(--color-accent)' : 'var(--color-divider)', tip: you ? m.tip : null, play: () => this.play({ persian: m.fa, key: 'log' + j }) }; }),
+          log: ex.log.map((m, j) => { const you = m.who === 'you'; return { ...m, name: you ? 'You' : m.speaker || ex.sc.npc, align: you ? 'flex-end' : 'flex-start', ta: you ? 'right' : 'left', border: you ? 'var(--color-accent)' : 'var(--color-divider)', tip: you ? m.tip : null, play: () => this.play({ persian: m.fa, key: 'log' + j }) }; }),
           wrongMsg: ex.wrongMsg, awaiting: !!(t[ex.step] && t[ex.step].who === 'you'), convoDone: !!ex.done, finishConvo: () => this.finish(ex),
           choices: t[ex.step] && t[ex.step].who === 'you' ? t[ex.step].choices.map(c => { const used = ex.picked.includes(c.fa); return { ...c, pick: () => !used && this.choose(c), border: used ? 'var(--color-text)' : 'var(--color-divider)', op: used ? 0.45 : 1 }; }) : [] });
       }
@@ -743,6 +769,7 @@ class App extends Component {
         primaryLabel: R.lessonId ? 'Back to chapter' : 'Done', primary: () => this.back(), again: () => this.start(R.kind, R.lessonId, R.lessonId ? null : this.shuffle(this.due()).slice(0, 10)) };
       if (R.lessonId && R.kind !== 'review') v.R.again = () => this.start(R.kind, R.lessonId);
       if (R.kind === 'convo') { v.R.kicker = 'Checkpoint complete'; v.R.again = () => this.startConvo(R.scId); v.R.primaryLabel = 'Back to your path'; }
+      if (R.act === 'replies') { v.R.kicker = 'Quick replies complete'; v.R.again = () => this.startReplies(R.lessonId); v.R.primaryLabel = 'Back to chapter'; }
     }
 
     // review

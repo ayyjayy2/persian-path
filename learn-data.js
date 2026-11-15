@@ -3,23 +3,32 @@
 const RAW = [
   ["greetings","Greetings","Hello, goodbye, and everyday courtesies","سلام",[
     ["سلام","Salaam","Hello","سلام! چطوری؟"],
+    ["سلام علیکم","Salaam Aleykom","Peace be upon you (formal hello)","سلام علیکم، حالتون چطوره؟"],
+    ["علیکم السلام","Aleykom Salaam","And upon you, peace","علیکم السلام، خوش اومدید."],
     ["خدا","Khodaa","God","خدا حافظت باشه."],
     ["حافظ","Haafez","Protector / Memorizer","حافظ شیرازی شاعر بزرگیه."],
     ["خداحافظ","Khodaa Haafez","Goodbye (lit: May God protect you)","خداحافظ! فردا می‌بینمت."],
+    ["به سلامت","Be Salaamat","Go safely","خداحافظ! به سلامت."],
     ["صبح به خیر","Sob Bekheyr","Good Morning","صبح به خیر! خوب خوابیدی؟"],
     ["شب به خیر","Shab Bekheyr","Good Night","شب به خیر، خواب خوش."],
     ["خوش اومدید","Khosh Umadid","Welcome (lit: You came well)","خوش اومدید به خونه‌مون.","خوش آمدید","Khosh Aamadid"],
     ["خوشبختم","Khoshbakhtam","Nice to meet you (lit: I'm fortunate)","خوشبختم از آشناییتون."],
+    ["همچنین","Hamchenin","Likewise","همچنین، خوشبختم."],
     ["ممنون","Mamnoon","Thank You / Grateful","ممنون از کمکت."],
     ["خواهش میکنم","Khaahesh Mikonam","You're Welcome (lit: I beg you to stop)","خواهش میکنم، مشکلی نیست."],
     ["لطفاً","Lotfan","Please","لطفاً صبر کن."],
     ["ببخشید","Bebakhshid","Sorry / Excuse Me","ببخشید، می‌تونید کمک کنید؟"],
+    ["عیب نداره","Eyb Nadaare","No problem (lit: it has no fault)","عیب نداره، اتفاق میفته.","عیبی ندارد","Eybi Nadaarad"],
     ["باشه","Baashe","Okay","باشه، بریم.","باشد","Baashad"],
     ["بفرمایید","Befarmaaeid","Here You Go / Go Ahead","بفرمایید، بنشینید."]]],
   ["expressions","Expressions","Toasts, celebrations, and everyday phrases","نوش جان",[
+    ["چه خبر؟","Che Khabar?","What's new?","سلام! چه خبر؟"],
     ["سلامتی","Salaamati","Cheers / Health","سلامتی! به سلامت همه."],
+    ["دستت درد نکنه","Dastet Dard Nakone","Thank you (lit: may your hand not hurt)","غذا خیلی خوب بود، دستت درد نکنه.","دستت درد نکند","Dastat Dard Nakonad"],
     ["نوش جان","Nooshe Jaan","Bon Appétit (lit: May your soul enjoy it)","نوش جان! غذا خوشمزه‌ست."],
     ["خسته نباشی","Khaste Nabashi","Good Job / Hang In There (lit: May you not be tired)","خسته نباشی، کار خوبی کردی."],
+    ["سلامت باشی","Salaamat Baashi","May you be healthy","ممنون، سلامت باشی."],
+    ["عافیت باشه","Aafiyat Baashe","Bless you (after a sneeze)","عافیت باشه! سرما خوردی؟","عافیت باشد","Aafiyat Baashad"],
     ["تولدت مبارک","Tavalodet Mobarak","Happy Birthday","تولدت مبارک عزیزم!"],
     ["چطوری؟","Chetori?","How Are You? (informal)","سلام! چطوری؟"],
     ["خوبم","Khubam","I'm Well","خوبم، ممنون. تو چطوری؟"],
@@ -83,7 +92,7 @@ const RAW = [
     ["جوراب","Jooraab","Socks","جورابم گم شد."],["کلاه","Kolaah","Hat","کلاه سرت بذار."],["کیف","Kif","Bag / Purse","کیفم رو دیدی؟"],
     ["عینک","Eynak","Glasses","عینکم رو نمی‌بینم."],["ساعت","Saa'at","Watch / Clock / Hour","ساعت چنده؟"]]],
   ["days","Days of the Week","Days, months, and time expressions","شنبه",[
-    ["شنبه","Shanbe","Saturday","شنبه تعطیله."],["یکشنبه","Yekshanbe","Sunday","یکشنبه بریم؟"],["دوشنبه","Doshanbe","Monday","دوشنبه کلاس دارم."],
+    ["شنبه","Shanbe","Saturday","شنبه سر کارم."],["یکشنبه","Yekshanbe","Sunday","یکشنبه بریم؟"],["دوشنبه","Doshanbe","Monday","دوشنبه کلاس دارم."],
     ["سه‌شنبه","Seshanbe","Tuesday","سه‌شنبه می‌ام."],["چهارشنبه","Chahaarshanbe","Wednesday","چهارشنبه جلسه دارم."],
     ["پنجشنبه","Panjshanbe","Thursday","پنجشنبه آزادم."],["جمعه","Jom'e","Friday","جمعه تعطیله."],["امروز","Emruz","Today","امروز خوبه."],
     ["فردا","Fardaa","Tomorrow","فردا می‌بینمت."],["دیروز","Diruz","Yesterday","دیروز رفتم."],["هفته","Hafte","Week","این هفته مشغولم."],["ماه","Maah","Month / Moon","این ماه بریم."]]],
@@ -225,10 +234,13 @@ export const ACTIVITIES = [
   { id: "flashcard", title: "Flashcards", desc: "Meet each word with native audio", mins: 3, icon: "layers" },
   { id: "quiz", title: "Recognition", desc: "Both directions — Persian to English and back", mins: 4, icon: "list" },
   { id: "listen", title: "Listening", desc: "Hear it, then pick the meaning", mins: 3, icon: "headphones" },
+  { id: "replies", title: "Quick replies", desc: "Answer everyday phrases the way Iranians do", mins: 2, icon: "chat", isNew: true, only: ["greetings", "expressions"] },
   { id: "build", title: "Sentence builder", desc: "Put words in Persian order — verb last", mins: 4, icon: "blocks", isNew: true },
   { id: "speak", title: "Speaking", desc: "Shadow a native speaker, then compare", mins: 3, icon: "mic", isNew: true },
   { id: "grammar", title: "Grammar", desc: "Pick the right verb form — I eat, you eat…", mins: 2, icon: "blocks", isNew: true },
 ];
+// The activities a lesson offers: everything, except those limited to certain lessons
+export const activitiesFor = lessonId => ACTIVITIES.filter(a => !a.only || a.only.includes(lessonId));
 
 export const SENTENCES = [
   { en: "I am Iranian.", tiles: [["من","man"],["ایرانی","irani"],["هستم","hastam"]], extra: [["تو","to"]], tip: "The verb hastam (I am) goes at the very end." },
