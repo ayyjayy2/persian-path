@@ -4,5 +4,6 @@ export { initializeApp } from 'firebase/app';
 export {
   initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, onAuthStateChanged,
   signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
+  EmailAuthProvider, reauthenticateWithCredential, deleteUser,
 } from 'firebase/auth';
-export { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore/lite';
+export { getFirestore, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore/lite';

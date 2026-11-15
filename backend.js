@@ -3,6 +3,7 @@
 import {
   initializeApp, initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, onAuthStateChanged,
   signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, getFirestore, doc, getDoc, setDoc,
+  EmailAuthProvider, reauthenticateWithCredential, deleteUser, deleteDoc,
 } from './vendor/firebase.js';
 
 const app = initializeApp({
@@ -38,6 +39,15 @@ export const signIn = (email, password) => signInWithEmailAndPassword(auth, emai
 // Signs the new account in straight away (no email confirmation)
 export const signUp = (email, password) => createUserWithEmailAndPassword(auth, email, password);
 export const signOutUser = () => signOut(auth);
+// Deletes the signed-in account and its synced document (#77). The password re-checks the sign-in,
+// which Firebase requires before deleting; a wrong one throws before anything is deleted.
+export async function deleteAccount(password) {
+  const u = auth.currentUser;
+  if (!u) throw Object.assign(new Error('Not signed in'), { code: 'auth/no-current-user' });
+  await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, password));
+  await deleteDoc(userDoc(u.uid));
+  await deleteUser(u);
+}
 
 // The user's synced fields, or null before their first upload
 export async function loadDoc(id) {
