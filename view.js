@@ -1082,7 +1082,7 @@ function richSection(s, v) {
     <div style="display:flex;flex-direction:column;gap:18px">
       ${s.flags.map((f) => html`
         <figure style="margin:0;display:grid;grid-template-columns:minmax(0,140px) minmax(0,1fr);gap:16px;align-items:start">
-          <img class="plate" src=${f.image} alt=${f.name} loading="lazy" style="width:100%;aspect-ratio:7/4;object-fit:${f.crop ? 'cover' : 'contain'};background:var(--color-surface)" />
+          <img class="plate" src=${f.image} alt=${f.name} loading="lazy" style="width:100%;aspect-ratio:7/4;object-fit:cover;border:0;background:var(--color-surface)" />
           <figcaption style="display:flex;flex-direction:column;gap:3px">
             <span style="${kicker};font-feature-settings:'tnum'">${f.era} · ${f.badge}</span>
             <span style=${cardTitle}>${f.name}</span>
