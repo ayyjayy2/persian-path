@@ -4,6 +4,11 @@
 // Translations were written by Claude; a native speaker should review them.
 export const EXAMPLES = {
   "greetings:Salaam": { en: "Hello! How are you?", parts: [["سلام!", "hello!"], ["چطوری؟", "how are you?"]], hit: 0 },
+  "greetings:Salaam Aleykom": { en: "Peace be upon you, how are you?", parts: [["سلام علیکم،", "peace be upon you"], ["حالتون", "your health"], ["چطوره؟", "how is it?"]], hit: 0 },
+  "greetings:Aleykom Salaam": { en: "And upon you, peace. Welcome.", parts: [["علیکم السلام،", "and upon you, peace"], ["خوش اومدید.", "welcome"]], hit: 0 },
+  "greetings:Be Salaamat": { en: "Goodbye! Go safely.", parts: [["خداحافظ!", "goodbye!"], ["به سلامت.", "go safely"]], hit: 1 },
+  "greetings:Hamchenin": { en: "Likewise, nice to meet you.", parts: [["همچنین،", "likewise"], ["خوشبختم.", "nice to meet you"]], hit: 0 },
+  "greetings:Eyb Nadaare": { en: "No problem, it happens.", parts: [["عیب نداره،", "no problem"], ["اتفاق میفته.", "it happens"]], hit: 0 },
   "greetings:Khodaa": { en: "Goodbye. (lit. May God be your protector)", parts: [["خدا", "God"], ["حافظت", "your protector"], ["باشه.", "may (it) be"]], hit: 0 },
   "greetings:Haafez": { en: "Hafez of Shiraz is a great poet.", parts: [["حافظ", "Hafez"], ["شیرازی", "of Shiraz"], ["شاعر بزرگیه.", "is a great poet"]], hit: 0 },
   "greetings:Khodaa Haafez": { en: "Goodbye! See you tomorrow.", parts: [["خداحافظ!", "goodbye!"], ["فردا", "tomorrow"], ["می‌بینمت.", "I'll see you"]], hit: 0 },
@@ -18,6 +23,10 @@ export const EXAMPLES = {
   "greetings:Baashe": { en: "Okay, let's go.", parts: [["باشه،", "okay"], ["بریم.", "let's go"]], hit: 0 },
   "greetings:Befarmaaeid": { en: "Please, have a seat.", parts: [["بفرمایید،", "please (go ahead)"], ["بنشینید.", "sit down"]], hit: 0 },
   "expressions:Salaamati": { en: "Cheers! To everyone's health.", parts: [["سلامتی!", "cheers!"], ["به سلامت همه.", "to everyone's health"]], hit: 0 },
+  "expressions:Che Khabar?": { en: "Hi! What's new?", parts: [["سلام!", "hi!"], ["چه خبر؟", "what's new?"]], hit: 1 },
+  "expressions:Dastet Dard Nakone": { en: "The food was really good, thank you.", parts: [["غذا", "the food"], ["خیلی خوب بود،", "was very good"], ["دستت درد نکنه.", "thank you"]], hit: 2 },
+  "expressions:Salaamat Baashi": { en: "Thanks, may you be healthy.", parts: [["ممنون،", "thanks"], ["سلامت باشی.", "may you be healthy"]], hit: 1 },
+  "expressions:Aafiyat Baashe": { en: "Bless you! Did you catch a cold?", parts: [["عافیت باشه!", "bless you!"], ["سرما خوردی؟", "did you catch a cold?"]], hit: 0 },
   "expressions:Nooshe Jaan": { en: "Enjoy! The food is delicious. (lit. may it nourish your soul)", parts: [["نوش جان!", "enjoy!"], ["غذا", "the food"], ["خوشمزه‌ست.", "is delicious"]], hit: 0 },
   "expressions:Khaste Nabashi": { en: "Well done, you did a good job. (lit. may you not be tired)", parts: [["خسته نباشی،", "well done"], ["کار خوبی کردی.", "you did a good job"]], hit: 0 },
   "expressions:Tavalodet Mobarak": { en: "Happy birthday, my dear!", parts: [["تولدت مبارک", "happy birthday"], ["عزیزم!", "my dear!"]], hit: 0 },
