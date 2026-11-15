@@ -90,7 +90,7 @@ Greetings: 5 rounds. Expressions: 5 informal + 4 polite = 9 rounds.
 - New `activitiesFor(lesson)` returns the activities that apply to a lesson. It replaces direct uses of `D.ACTIVITIES` for lesson cards, progress dots, percentages, "next activity" and lesson completion in `app.js`.
 - `start('replies', lessonId)` builds the drill and opens it with the existing `convo` exercise (`lessonId` set). Finishing marks `progress[lessonId].replies = 1` instead of `cp:<id>`. The results screen says "Quick replies complete" and "Back to lesson".
 - The conversation view shows `turn.speaker` when present, otherwise the scenario's `npc`.
-- Flashcard and quiz pools for Greetings and Expressions go through `pairOrder`, so each reply follows its call. Shuffled quizzes keep each pair adjacent.
+- Flashcard and quiz pools for Greetings and Expressions go through `pairedPool`, so each reply follows its call. Shuffled quizzes keep each pair adjacent.
 - Flashcard English side for a reply shows "Reply to *Che khabar?*" under the meaning.
 - `node scripts/build-precache.js` picks up `pairs-data.js`.
 
