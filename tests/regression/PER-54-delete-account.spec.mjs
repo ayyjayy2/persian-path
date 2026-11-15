@@ -45,7 +45,7 @@ test('a wrong password deletes nothing and keeps you signed in', async ({ page }
   await expect(page.getByRole('heading', { name: 'Delete your account?' })).toBeVisible();
   await page.getByLabel('Enter your password to confirm').fill('nope');
   await page.locator('[data-delete-confirm]').click();
-  await expect(page.getByRole('status')).toContainText(/password/i);
+  await expect(page.getByText("That password isn't right.")).toBeVisible();
   await expect(page.getByText('learner@example.com').first()).toBeVisible();
 });
 
@@ -54,7 +54,6 @@ test('the right password deletes the account, clears this device, and uploads no
   await expect(page.getByText('250').first()).toBeVisible();
   await page.getByRole('button', { name: 'Delete account' }).click();
   await page.getByLabel('Enter your password to confirm').fill('right-pass');
-  const savesBefore = (await calls(page, 'saveDoc')).length;
   await page.locator('[data-delete-confirm]').click();
   await expect(page.getByText('Your account has been deleted.')).toBeVisible();
   expect(await calls(page, 'deleteAccount')).toEqual([['deleteAccount', 'right-pass']]);
@@ -62,12 +61,16 @@ test('the right password deletes the account, clears this device, and uploads no
   await expect(page.getByRole('button', { name: 'Sign in' }).first()).toBeVisible();
   await expect(page.getByText('250')).toHaveCount(0);
   await page.waitForTimeout(1500);
-  expect((await calls(page, 'saveDoc')).length).toBe(savesBefore);
+  // Nothing is uploaded once the delete has started
+  const log = await page.evaluate(() => window.__backend.calls.map(c => c[0]));
+  expect(log.slice(log.indexOf('deleteAccount'))).not.toContain('saveDoc');
 });
 
 test('offline, the delete button is disabled', async ({ page, context }) => {
   await openProfile(page);
   await page.getByRole('button', { name: 'Delete account' }).click();
+  await page.getByLabel('Enter your password to confirm').fill('right-pass');
+  await expect(page.locator('[data-delete-confirm]')).toBeEnabled();
   await context.setOffline(true);
   await expect(page.getByText('Connect to the internet to delete your account.')).toBeVisible();
   await expect(page.locator('[data-delete-confirm]')).toBeDisabled();

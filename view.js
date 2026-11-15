@@ -885,7 +885,9 @@ ${(v.is.profile) ? html`
     <span style="display:flex;flex-direction:column;min-width:0"><span style="font-family:var(--font-heading);font-size:19px;font-weight:600">Signed in</span><span style="font-size:12px;color:var(--color-neutral-700);overflow-wrap:anywhere">${v.userEmail} · progress syncs to your account</span></span>
     <button class="btn btn-secondary" onClick=${v.openSignOut} style="min-height:44px;padding-inline:20px">Sign out</button>
   </section>
+  <button onClick=${v.openDelete} style="align-self:flex-start;margin-top:-16px;min-height:44px;padding:0;border:0;background:transparent;cursor:pointer;font-size:13px;color:var(--color-neutral-700);text-decoration:underline;text-underline-offset:3px">Delete account</button>
   `}
+  ${(v.notice) ? html`<p role="status" style="margin:-12px 0 0;font-size:13px;line-height:1.5;color:var(--color-neutral-800)">${v.notice}</p>` : null}
   <section style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
     ${(v.pStats || []).map((s) => html`
       <div style="padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;border-left:${s.bl}"><span style="font-family:var(--font-heading);font-size:28px;font-feature-settings:'tnum'">${s.v}</span><span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-neutral-700);text-align:center">${s.l}</span></div>
@@ -993,6 +995,17 @@ ${(v.sheetOpen) ? html`
         <button class="btn btn-secondary" onClick=${v.closeSheet} style="flex:1;min-height:50px;font-size:16px">Cancel</button>
         <button class="btn btn-primary" onClick=${v.doSignOut} style="flex:1;min-height:50px;font-size:16px">Sign out</button>
       </div>
+    ` : null}
+    ${(v.sheetDelete) ? html`
+      <form onSubmit=${v.doDelete} style="display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:14px;line-height:1.6">This deletes your account (<strong style="overflow-wrap:anywhere">${v.userEmail}</strong>), the progress saved to it, and the progress on this device. It can't be undone.</p>
+        <div class="field"><label for="del-password">Enter your password to confirm</label><input id="del-password" class="input" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required value=${v.delPassword} onInput=${v.setDelPassword} style="min-height:44px" /></div>
+        ${(v.delMsg) ? html`<p role="status" style="margin:0;font-size:13px;line-height:1.5;border-top:1px solid var(--color-text);padding-top:8px">${v.delMsg}</p>` : null}
+        <div style="display:flex;gap:10px">
+          <button type="button" class="btn btn-secondary" onClick=${v.closeSheet} style="flex:1;min-height:50px;font-size:16px">Cancel</button>
+          <button type="submit" data-delete-confirm class="btn btn-primary" disabled=${v.delDisabled} style="flex:1;min-height:50px;font-size:16px">${v.delCta}</button>
+        </div>
+      </form>
     ` : null}
     ${(v.sheetHoliday) ? html`
       <div style="display:flex;flex-direction:column;gap:16px;max-height:70vh;overflow-y:auto;margin-right:-8px;padding-right:8px">

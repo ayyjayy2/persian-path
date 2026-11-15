@@ -3,7 +3,7 @@ import { h, render, Component } from './vendor/preact-htm.js';
 import * as D from './learn-data.js';
 import { view } from './view.js';
 import { mergeState, SYNCED } from './sync.js';
-import { onUser, lastUser, signIn, signUp, signOutUser, loadDoc, saveDoc } from './backend.js';
+import { onUser, lastUser, signIn, signUp, signOutUser, loadDoc, saveDoc, deleteAccount } from './backend.js';
 import { authMessage } from './auth-messages.js';
 import { EXAMPLES } from './example-data.js';
 import { numbersKnown, countingOrder } from './number-order.js';
@@ -18,6 +18,7 @@ const MIN = 60e3, DAY = 864e5;
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
 
 const dayKey = (t = Date.now()) => new Date(t).toDateString();
+const DEL_OFFLINE = 'Connect to the internet to delete your account.';
 
 // Pictures for My words live in IndexedDB: as data URLs in localStorage they would soon fill its
 // ~5 MB quota, and then progress would stop saving.
@@ -144,11 +145,30 @@ class App extends Component {
     // Save anything not yet uploaded. My words are cleared only once they're safe in the account
     clearTimeout(this._pushT); const saved = await this.pushNow().catch(() => false);
     try { await signOutUser(); } catch (e) {}
-    // Back to a clean guest profile on this device
+    this.resetToGuest(saved);
+  }
+  // Back to a clean guest profile on this device. My words go too when `clearWords` (they're safe
+  // in the account, or the account is gone).
+  resetToGuest(clearWords, extra = {}) {
     this._lastSaved = null; this._pulled = null;
-    const words = saved ? { myWords: [], imgs: {} } : {};
-    if (saved) (this.state.myWords || []).forEach(w => media.del(w.id).catch(() => {}));
-    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefsU: 0, deletedWords: {}, scriptSeen: false, vowelsSeen: false, grammarSeen: {}, ...words, tab: 'learn', route: null });
+    const words = clearWords ? { myWords: [], imgs: {} } : {};
+    if (clearWords) (this.state.myWords || []).forEach(w => media.del(w.id).catch(() => {}));
+    this.setState({ user: null, xp: 0, streak: 0, todayXp: 0, lastPlayedDate: null, progress: {}, srs: {}, mistakes: [], mistakeAt: {}, prefsU: 0, deletedWords: {}, scriptSeen: false, vowelsSeen: false, grammarSeen: {}, ...words, tab: 'learn', route: null, ...extra });
+  }
+  // Deletes the account, its synced copy and this device's progress (#77)
+  async deleteAccount() {
+    const s = this.state;
+    if (!s.user || !navigator.onLine || s.delBusy) return;
+    // Nothing may be uploaded while (or after) the account is deleted
+    clearTimeout(this._pushT); const pulled = this._pulled; this._pulled = null;
+    this.setState({ delBusy: true, delMsg: null });
+    try { await deleteAccount(s.delPassword); }
+    catch (err) {
+      this._pulled = pulled;
+      const msg = { 'auth/invalid-credential': "That password isn't right.", 'auth/wrong-password': "That password isn't right.", 'auth/network-request-failed': DEL_OFFLINE }[err.code] || authMessage(err);
+      return this.setState({ delBusy: false, delMsg: msg });
+    }
+    this.resetToGuest(true, { sheet: null, delBusy: false, delPassword: '', delMsg: null, tab: 'profile', notice: 'Your account has been deleted.' });
   }
 
   // ---------- refresh ----------
@@ -417,7 +437,7 @@ class App extends Component {
   }
 
   // ---------- navigation ----------
-  go(tab) { this.setState({ tab, route: null }); window.scrollTo(0, 0); }
+  go(tab) { this.setState({ tab, route: null, notice: null }); window.scrollTo(0, 0); }
   openVowels() {
     this.setState({ tab: 'script', route: null, vowelsSeen: true });
     setTimeout(() => { const el = document.getElementById('vowels'); if (el) el.scrollIntoView({ block: 'start' }); }, 60);
@@ -866,11 +886,19 @@ class App extends Component {
 
     // sheet
     // Popups: a bottom sheet on phones, a centered dialog on tablets and up
-    v.sheetOpen = !!s.sheet; v.sheetCenter = s.w >= 600; v.sheetAuth = s.sheet === 'auth'; v.sheetInstall = s.sheet === 'install'; v.sheetSignOut = s.sheet === 'signout'; v.sheetHoliday = s.sheet === 'holiday';
-    v.sheetTitle = s.sheet === 'install' ? 'Install Persian Learnin' : s.sheet === 'signout' ? 'Sign out?' : s.sheet === 'holiday' ? s.holiday.name : s.authMode === 'signin' ? 'Welcome back' : 'Create an account';
+    v.sheetOpen = !!s.sheet; v.sheetCenter = s.w >= 600; v.sheetAuth = s.sheet === 'auth'; v.sheetInstall = s.sheet === 'install'; v.sheetSignOut = s.sheet === 'signout'; v.sheetDelete = s.sheet === 'delete'; v.sheetHoliday = s.sheet === 'holiday';
+    v.sheetTitle = s.sheet === 'install' ? 'Install Persian Learnin' : s.sheet === 'signout' ? 'Sign out?' : s.sheet === 'delete' ? 'Delete your account?' : s.sheet === 'holiday' ? s.holiday.name : s.authMode === 'signin' ? 'Welcome back' : 'Create an account';
     v.H = s.sheet === 'holiday' ? s.holiday.detail : null;
     v.closeSheet = () => this.setState({ sheet: null, authMsg: null });
     v.isGuest = !s.user; v.userEmail = s.user ? s.user.email : ''; v.openSignOut = () => this.setState({ sheet: 'signout' }); v.doSignOut = () => this.signOut();
+    // Delete account (#77)
+    v.notice = s.notice;
+    v.openDelete = () => this.setState({ sheet: 'delete', delPassword: '', delMsg: null, notice: null });
+    v.delPassword = s.delPassword || ''; v.setDelPassword = e => this.setState({ delPassword: e.target.value });
+    v.delMsg = s.delMsg || (s.online ? null : DEL_OFFLINE);
+    v.delDisabled = !s.online || !!s.delBusy || !(s.delPassword || '').length;
+    v.delCta = s.delBusy ? 'Deleting…' : 'Delete account';
+    v.doDelete = e => { e.preventDefault(); this.deleteAccount(); };
     v.authEmail = s.authEmail; v.authPassword = s.authPassword; v.authBusy = s.authBusy || !s.online;
     v.authMsg = s.authMsg || (s.online ? null : "You're offline. Sign in once you're connected — your progress is saved on this device meanwhile.");
     v.authMsgRule = s.authErr || !s.online ? 'var(--color-text)' : 'var(--color-accent)';
