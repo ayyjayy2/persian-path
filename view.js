@@ -937,6 +937,7 @@ ${(v.is.profile) ? html`
       `)}
     </div>
   </section>
+  <a href="/privacy.html" style="align-self:flex-start;min-height:44px;display:inline-flex;align-items:center;font-size:13px;color:var(--color-neutral-700);text-underline-offset:3px">Privacy policy</a>
 </div>
 ` : null}
 
@@ -988,6 +989,7 @@ ${(v.sheetOpen) ? html`
         <button type="submit" class="btn btn-primary" disabled=${v.authBusy} style="min-height:50px;font-size:16px">${v.authCta}</button>
       </form>
       <p style="margin:0;font-size:12px;color:var(--color-neutral-700);text-align:center">Your local progress will sync to your account on sign in.</p>
+      ${(v.isSignup) ? html`<p style="margin:-6px 0 0;font-size:12px;color:var(--color-neutral-700);text-align:center">By creating an account you agree to the <a href="/privacy.html" style="color:var(--color-accent-700);text-underline-offset:3px">privacy policy</a>.</p>` : null}
     ` : null}
     ${(v.sheetSignOut) ? html`
       <p style="margin:0;font-size:14px;line-height:1.6">Your progress is saved to your account. This device will go back to guest mode.</p>
