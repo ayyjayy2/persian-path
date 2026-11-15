@@ -12,7 +12,7 @@ import { buildRepliesDrill, pairsFor, pairedPool, replyTo } from './pairs-data.j
 // ===== PERSISTENCE =====
 const STORE_KEY = 'pl_state_v2';
 const V1_KEY = 'persian_app_state';
-const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords', 'deletedWords', 'numbersMixed'];
+const PERSISTED = ['xp', 'streak', 'todayXp', 'lastPlayedDate', 'progress', 'srs', 'mistakes', 'mistakeAt', 'prefs', 'prefsU', 'scriptSeen', 'vowelsSeen', 'grammarSeen', 'myWords', 'deletedWords', 'numbersMixed', 'signinHintOff'];
 const MIN = 60e3, DAY = 864e5;
 // Review intervals per Leitner box: today, 1 day, 3 days, 1 week, 1 month
 const INTERVALS = [MIN, DAY, 3 * DAY, 7 * DAY, 30 * DAY];
@@ -849,7 +849,10 @@ class App extends Component {
     v.achievements = D.ACHIEVEMENTS.map(a => ({ ...a, op: unlocked[a.id] ? 1 : 0.55, border: unlocked[a.id] ? 'var(--color-accent)' : 'var(--color-divider)', icon: unlocked[a.id] ? I('check', 16, 2) : I('lock', 14) }));
     v.refreshApp = () => this.refreshApp(); v.refreshing = s.refreshing; v.refreshSpin = s.refreshing ? 'plspin 1s linear infinite' : 'none';
     v.refreshMsg = s.refreshing ? 'Checking for updates…' : s.refreshNote || 'Load the latest version';
-    v.openWords = () => this.nav({ name: 'words' }); v.openAuth = () => this.setState({ sheet: 'auth' }); v.openInstall = () => this.setState({ sheet: 'install' });
+    v.openWords = () => this.nav({ name: 'words' }); v.openAuth = () => this.setState({ sheet: 'auth' });
+    // A fresh install (e.g. an iPhone home-screen app) starts signed out and empty: point to sign-in (#82)
+    v.signinHint = !s.user && !s.signinHintOff && !s.xp && !Object.keys(s.progress || {}).length && !Object.keys(s.srs || {}).length;
+    v.openSignin = () => this.setState({ sheet: 'auth', authMode: 'signin', authMsg: null }); v.closeSigninHint = () => this.setState({ signinHintOff: true }); v.openInstall = () => this.setState({ sheet: 'install' });
     v.wordQuery = s.wordQuery; v.setWordQuery = e => this.setState({ wordQuery: e.target.value });
     const q = s.wordQuery.trim().toLowerCase();
     v.collection = L.filter(w => !q || w.english.toLowerCase().includes(q) || w.phonetic.toLowerCase().includes(q) || w.persian.includes(q)).map(w => ({ ...this.disp(w), lesson: w.lessonTitle, box: Math.min(4, this.box(w)) + 1, play: () => this.play(w) }));

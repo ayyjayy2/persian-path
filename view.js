@@ -75,6 +75,13 @@ ${(v.showAppBar) ? html`
 
 ${(v.is.learn) ? html`
 <div style="display:flex;flex-direction:column;gap:28px;animation:plfade .25s ease">
+  ${(v.signinHint) ? html`
+  <section data-signin-hint style="border:1px solid var(--color-accent);border-radius:var(--radius-md);padding:12px 8px 12px 16px;display:flex;align-items:center;gap:10px">
+    <span style="flex:1;min-width:0;font-size:14px;line-height:1.45">Have an account? Sign in to get your progress back.</span>
+    <button class="btn btn-primary" onClick=${v.openSignin} style="min-height:40px;padding-inline:16px;flex:none">Sign in</button>
+    <button onClick=${v.closeSigninHint} aria-label="Close" style="width:40px;height:40px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;color:var(--color-neutral-700)">${v.ic.x}</button>
+  </section>
+  ` : null}
   <section style="display:flex;flex-direction:column;gap:6px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
       <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-accent-700)">${v.dateEn}</span>
