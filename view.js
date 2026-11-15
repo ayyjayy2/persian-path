@@ -317,6 +317,7 @@ ${(v.is.exercise) ? html`
             </span>`)}
           </div>
           <span style="font-size:14px;font-style:italic;line-height:1.4;color:var(--color-neutral-700);margin-top:2px">${v.X.exParts.en}</span>
+          ${(v.X.exParts.parts.every(p => p[2])) ? html`<span data-ex-lat style="font-size:13px;font-style:italic;line-height:1.4;color:var(--color-neutral-600)">${v.X.exParts.parts.map((p, i) => html`${i ? ' ' : ''}${i === v.X.exParts.hit ? html`<b data-hit-lat style="font-weight:700;color:var(--color-text)">${p[2]}</b>` : p[2]}`)}</span>` : null}
           ` : html`<span style="font-family:'Noto Naskh Arabic',serif;font-size:20px;direction:rtl;color:var(--color-neutral-800)">${v.X.example}</span>`}
           ` : null}
         </div>

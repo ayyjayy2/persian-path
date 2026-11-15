@@ -83,7 +83,7 @@ const RAW = [
     ["جوراب","Jooraab","Socks","جورابم گم شد."],["کلاه","Kolaah","Hat","کلاه سرت بذار."],["کیف","Kif","Bag / Purse","کیفم رو دیدی؟"],
     ["عینک","Eynak","Glasses","عینکم رو نمی‌بینم."],["ساعت","Saa'at","Watch / Clock / Hour","ساعت چنده؟"]]],
   ["days","Days of the Week","Days, months, and time expressions","شنبه",[
-    ["شنبه","Shanbe","Saturday","شنبه تعطیله."],["یکشنبه","Yekshanbe","Sunday","یکشنبه بریم؟"],["دوشنبه","Doshanbe","Monday","دوشنبه کلاس دارم."],
+    ["شنبه","Shanbe","Saturday","شنبه سر کارم."],["یکشنبه","Yekshanbe","Sunday","یکشنبه بریم؟"],["دوشنبه","Doshanbe","Monday","دوشنبه کلاس دارم."],
     ["سه‌شنبه","Seshanbe","Tuesday","سه‌شنبه می‌ام."],["چهارشنبه","Chahaarshanbe","Wednesday","چهارشنبه جلسه دارم."],
     ["پنجشنبه","Panjshanbe","Thursday","پنجشنبه آزادم."],["جمعه","Jom'e","Friday","جمعه تعطیله."],["امروز","Emruz","Today","امروز خوبه."],
     ["فردا","Fardaa","Tomorrow","فردا می‌بینمت."],["دیروز","Diruz","Yesterday","دیروز رفتم."],["هفته","Hafte","Week","این هفته مشغولم."],["ماه","Maah","Month / Moon","این ماه بریم."]]],
