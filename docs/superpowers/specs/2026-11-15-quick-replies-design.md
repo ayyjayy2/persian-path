@@ -69,8 +69,9 @@ export const PAIRS = [
 ];
 export function pairsFor(lessonId)
 export function buildRepliesDrill(lessonId, shuffle = defaultShuffle)  // -> { title, npc, turns }
-export function replyOf(lessonId, phonetic)  // -> call text for "Reply to …" labels, or null
-export function pairOrder(lessonId, words)   // -> words with each reply moved right after its call
+export function pairUnits(words, lessonId)               // -> [[call, reply], [word], …]
+export function pairedPool(words, lessonId, shuffle, n)  // -> a deck of ≥ n words that never splits a pair
+export function replyTo(key)                            // -> "Khoshbakhtam" for "greetings:Hamchenin" (card spellings), else null
 ```
 
 ## The drill
@@ -98,7 +99,7 @@ Existing learners: the new activity is undone, so Greetings and Expressions drop
 ## Tests
 
 - **Regression (written first):** `tests/regression/PER-51-quick-replies.spec.mjs`: open Expressions, start Quick replies, answer *Che khabar?* wrongly (see the tip), then with *Salaamati*, finish, and see the lesson's Quick replies marked done. Greetings flashcards show *Khoshbakhtam* right before *Hamchenin*, and *Hamchenin*'s card says "Reply to *Khoshbakhtam*".
-- **Unit:** `tests/unit/pairs-data.test.mjs`: every pair's `word` exists in its lesson; drill round counts (5 and 9); each `you` turn has exactly one `ok` choice and three choices; polite rounds include the informal reply as a wrong choice; `pairOrder` puts every reply right after its call; lessons without pairs get no `replies` activity.
+- **Unit:** `tests/unit/pairs-data.test.mjs`: every pair's `word` exists in its lesson; drill round counts (5 and 9); each `you` turn has exactly one `ok` choice and three choices; polite rounds include the informal reply as a wrong choice; `pairedPool` puts every reply right after its call; lessons without pairs get no `replies` activity.
 - Existing `example-data` tests cover the new words' examples.
 
 ## Out of scope
