@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LESSONS } from '../../learn-data.js';
-import { PAIRS, pairsFor, buildRepliesDrill } from '../../pairs-data.js';
+import { PAIRS, pairsFor, buildRepliesDrill, pairUnits, pairedPool, replyTo } from '../../pairs-data.js';
 
 const lesson = id => LESSONS.find(l => l.id === id);
 const keep = a => a; // no shuffling, so results are predictable
@@ -47,4 +47,31 @@ test('a polite round offers the informal reply as a wrong choice when it differs
 test('pairsFor only returns that lesson', () => {
   assert.equal(pairsFor('greetings').length, 5);
   assert.ok(pairsFor('expressions').every(p => p.lesson === 'expressions'));
+});
+test('pairUnits keeps each call with its reply, and every word appears once', () => {
+  for (const id of ['greetings', 'expressions']) {
+    const words = lesson(id).words, units = pairUnits(words, id);
+    assert.equal(units.flat().length, words.length, `${id}: every word once`);
+    assert.equal(new Set(units.flat()).size, words.length);
+    // Two-word units are always [call, reply] of some pair
+    for (const u of units.filter(u => u.length === 2))
+      assert.ok(pairsFor(id).some(p => p.call.word === u[0].phonetic && p.reply.word === u[1].phonetic), u.map(w => w.phonetic).join(' + '));
+  }
+  // Every reply has a unit with a call, except a reply shared by two calls (it goes with the first)
+  assert.equal(pairUnits(lesson('greetings').words, 'greetings').filter(u => u.length === 2).length, 5);
+  assert.equal(pairUnits(lesson('expressions').words, 'expressions').filter(u => u.length === 2).length, 4);
+});
+
+test('pairedPool keeps pairs together and has at least n words', () => {
+  const words = lesson('greetings').words;
+  const pool = pairedPool(words, 'greetings', a => [...a].reverse(), 10);
+  assert.ok(pool.length >= 10 && pool.length <= 11);
+  const at = ph => pool.findIndex(w => w.phonetic === ph);
+  for (const p of pairsFor('greetings')) if (at(p.reply.word) >= 0) assert.equal(at(p.call.word), at(p.reply.word) - 1, p.reply.word);
+});
+
+test('replyTo names every call a reply answers, spelled as their cards spell them', () => {
+  assert.equal(replyTo('greetings:Hamchenin'), 'Khoshbakhtam');
+  assert.equal(replyTo('expressions:Salaamat Baashi'), 'Khaste Nabashi / Aafiyat Baashe');
+  assert.equal(replyTo('greetings:Salaam'), null);
 });

@@ -72,3 +72,33 @@ export function buildRepliesDrill(lessonId, shuffle = defaultShuffle) {
   }
   return { title: 'Quick replies', setting: 'Someone says a set phrase. Answer the way Iranians do.', npc: FRIEND, turns };
 }
+
+// A lesson's words as units: a call followed by its reply, or a single word. A reply shared by two
+// calls goes with the first one. Units keep the lesson's word order.
+export function pairUnits(words, lessonId) {
+  const by = new Map(words.map(w => [w.phonetic, w])), used = new Set(), units = [];
+  const pairs = pairsFor(lessonId);
+  for (const w of words) {
+    if (used.has(w)) continue;
+    const p = pairs.find(p => p.call.word === w.phonetic);
+    const r = p && by.get(p.reply.word);
+    const u = r && !used.has(r) ? [w, r] : [w];
+    u.forEach(x => used.add(x)); units.push(u);
+  }
+  return units;
+}
+
+// A random deck of at least n words that never splits a pair
+export function pairedPool(words, lessonId, shuffle, n) {
+  const out = [];
+  for (const u of shuffle(pairUnits(words, lessonId))) { if (out.length >= n) break; out.push(...u); }
+  return out;
+}
+
+// For a reply's word key ("lesson:Phonetic"): the calls it answers, spelled as their cards spell
+// them, e.g. "Khoshbakhtam"; null otherwise
+export function replyTo(key) {
+  const [lessonId, ph] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
+  const calls = pairsFor(lessonId).filter(p => p.reply.word === ph).map(p => p.call.word);
+  return calls.length ? calls.join(' / ') : null;
+}
