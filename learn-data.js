@@ -234,10 +234,13 @@ export const ACTIVITIES = [
   { id: "flashcard", title: "Flashcards", desc: "Meet each word with native audio", mins: 3, icon: "layers" },
   { id: "quiz", title: "Recognition", desc: "Both directions — Persian to English and back", mins: 4, icon: "list" },
   { id: "listen", title: "Listening", desc: "Hear it, then pick the meaning", mins: 3, icon: "headphones" },
+  { id: "replies", title: "Quick replies", desc: "Answer everyday phrases the way Iranians do", mins: 2, icon: "chat", isNew: true, only: ["greetings", "expressions"] },
   { id: "build", title: "Sentence builder", desc: "Put words in Persian order — verb last", mins: 4, icon: "blocks", isNew: true },
   { id: "speak", title: "Speaking", desc: "Shadow a native speaker, then compare", mins: 3, icon: "mic", isNew: true },
   { id: "grammar", title: "Grammar", desc: "Pick the right verb form — I eat, you eat…", mins: 2, icon: "blocks", isNew: true },
 ];
+// The activities a lesson offers: everything, except those limited to certain lessons
+export const activitiesFor = lessonId => ACTIVITIES.filter(a => !a.only || a.only.includes(lessonId));
 
 export const SENTENCES = [
   { en: "I am Iranian.", tiles: [["من","man"],["ایرانی","irani"],["هستم","hastam"]], extra: [["تو","to"]], tip: "The verb hastam (I am) goes at the very end." },

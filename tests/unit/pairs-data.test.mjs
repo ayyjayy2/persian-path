@@ -1,7 +1,7 @@
 // Everyday call-and-response pairs and the Quick replies drill (#57)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LESSONS } from '../../learn-data.js';
+import { LESSONS, activitiesFor } from '../../learn-data.js';
 import { PAIRS, pairsFor, buildRepliesDrill, pairUnits, pairedPool, replyTo } from '../../pairs-data.js';
 
 const lesson = id => LESSONS.find(l => l.id === id);
@@ -74,4 +74,10 @@ test('replyTo names every call a reply answers, spelled as their cards spell the
   assert.equal(replyTo('greetings:Hamchenin'), 'Khoshbakhtam');
   assert.equal(replyTo('expressions:Salaamat Baashi'), 'Khaste Nabashi / Aafiyat Baashe');
   assert.equal(replyTo('greetings:Salaam'), null);
+});
+test('Quick replies is an activity only in lessons with pairs', () => {
+  assert.ok(activitiesFor('greetings').some(a => a.id === 'replies'));
+  assert.ok(activitiesFor('expressions').some(a => a.id === 'replies'));
+  assert.ok(!activitiesFor('numbers').some(a => a.id === 'replies'));
+  assert.deepEqual(activitiesFor('numbers').map(a => a.id), ['flashcard', 'quiz', 'listen', 'build', 'speak', 'grammar']);
 });
