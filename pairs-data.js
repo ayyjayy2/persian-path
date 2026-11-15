@@ -61,9 +61,13 @@ export function buildRepliesDrill(lessonId, shuffle = defaultShuffle) {
     turns.push({ who: 'npc', speaker, ...side(call) });
     turns.push({ who: 'you', choices: shuffle([{ ...side(reply), ok: true, tip }, ...wrong]) });
   };
-  // Two wrong choices: other pairs' replies, each saying which call it answers
-  const others = (p, right, n) => shuffle(pairs.filter(q => q !== p && q.reply.fa !== right.fa && q.reply.fa !== p.reply.fa))
-    .slice(0, n).map(q => ({ ...side(q.reply), why: `${q.reply.lat} answers ${q.call.lat} (${q.call.en.toLowerCase()}).` }));
+  // Two wrong choices: other pairs' replies, each once, saying which calls it answers.
+  // A reply shared by two calls (Salaamat baashi) is offered once and names both.
+  const replies = [...new Set(pairs.map(q => q.reply.fa))].map(fa => {
+    const qs = pairs.filter(q => q.reply.fa === fa);
+    return { ...side(qs[0].reply), why: `${qs[0].reply.lat} answers ${qs.map(q => `${q.call.lat} (${q.call.en.toLowerCase()})`).join(' or ')}.` };
+  });
+  const others = (p, right, n) => shuffle(replies.filter(r => r.fa !== right.fa && r.fa !== p.reply.fa)).slice(0, n);
   for (const p of pairs) round(FRIEND, p.call, p.reply, others(p, p.reply, 2), p.tip);
   for (const p of pairs.filter(q => q.polite)) {
     const informal = p.reply.fa !== p.polite.reply.fa

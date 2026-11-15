@@ -36,6 +36,12 @@ test('turns alternate call then reply, with three choices and exactly one right'
   }
 });
 
+test('choices never repeat, whatever order the shuffle gives', () => {
+  for (let run = 0; run < 200; run++) for (const id of ['greetings', 'expressions'])
+    for (const turn of buildRepliesDrill(id).turns.filter(x => x.who === 'you'))
+      assert.equal(new Set(turn.choices.map(c => c.fa)).size, 3, `${id}: ${turn.choices.map(c => c.lat).join(', ')}`);
+});
+
 test('a polite round offers the informal reply as a wrong choice when it differs', () => {
   const t = buildRepliesDrill('expressions', keep).turns;
   const i = t.findIndex(x => x.who === 'npc' && x.lat === 'Khaste nabaashid');
