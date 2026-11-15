@@ -906,6 +906,7 @@ class App extends Component {
     v.authShowPw = s.authShowPw; v.toggleShowPw = () => this.setState({ authShowPw: !s.authShowPw });
     v.authPwAuto = s.authMode === 'signin' ? 'current-password' : 'new-password'; v.submitAuth = e => this.submitAuth(e); v.stop = e => e.stopPropagation();
     v.authTabs = [['signin', 'Sign in'], ['signup', 'Sign up']].map(([id, label], j) => ({ label, go: () => this.setState({ authMode: id, authMsg: null }), bl: j ? '1px solid var(--color-divider)' : '0', shadow: s.authMode === id ? 'inset 0 0 0 1px var(--color-accent)' : 'none', color: s.authMode === id ? 'var(--color-accent-700)' : 'var(--color-text)' }));
+    v.isSignup = s.authMode === 'signup';
     v.authCta = s.authBusy ? 'One moment…' : s.authMode === 'signin' ? 'Sign in' : 'Create account';
     v.doInstall = () => { if (this._deferred) this._deferred.prompt(); this.setState({ sheet: null }); };
     return v;

@@ -29,7 +29,7 @@ test('the sign-up sheet links to the policy', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in' }).first().click();
   await page.getByRole('button', { name: 'Sign up' }).click();
   await expect(page.getByText('By creating an account you agree to the')).toBeVisible();
-  await page.getByRole('link', { name: 'privacy policy' }).click();
+  await page.getByRole('link', { name: 'privacy policy', exact: true }).click();
   await isPolicy(page);
 });
 

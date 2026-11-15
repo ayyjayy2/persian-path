@@ -32,7 +32,8 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
 
   if (url.origin === location.origin) {
-    if (req.mode === "navigate") return e.respondWith(networkFirst(new Request("/index.html")));
+    // Every page is the app, except the privacy policy, which is a page of its own (#78)
+    if (req.mode === "navigate") return e.respondWith(networkFirst(url.pathname === "/privacy.html" ? new Request("/privacy.html") : new Request("/index.html")));
     if (url.pathname.startsWith("/audio/")) return e.respondWith(audio(req, url));
     return e.respondWith(networkFirst(req));
   }
