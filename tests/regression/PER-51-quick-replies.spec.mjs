@@ -2,20 +2,20 @@
 // flashcards and says what it answers, and a Quick replies drill marks the lesson done.
 import { test, expect } from '@playwright/test';
 import { openApp } from '../ui/helpers.mjs';
-import { buildRepliesDrill } from '../../pairs-data.js';
 
-// "speaker|call" -> the right reply's Latin, for every round of a lesson's drill
-function answers(lessonId) {
-  const t = buildRepliesDrill(lessonId, a => a).turns, out = {};
+// "speaker|call" -> the right reply's Latin, for every round of a lesson's drill.
+// Built in the page, where pairs-data.js is served as an ES module.
+const answers = (page, lessonId) => page.evaluate(async id => {
+  const t = (await import('/pairs-data.js')).buildRepliesDrill(id, a => a).turns, out = {};
   for (let i = 0; i < t.length; i += 2) out[`${t[i].speaker}|${t[i].lat}`] = t[i + 1].choices.find(c => c.ok).lat;
   return out;
-}
+}, lessonId);
 
 test('the Expressions Quick replies drill tips a wrong answer and marks the activity done', async ({ page }) => {
   await openApp(page);
   await page.getByRole('button', { name: /Expressions/ }).first().click();
   await page.getByRole('button', { name: /^Quick replies/ }).click();
-  const key = answers('expressions');
+  const key = await answers(page, 'expressions');
   let first = true;
   while (await page.locator('[data-choices]').count()) {
     const npc = page.locator('[data-who="npc"]').last();
